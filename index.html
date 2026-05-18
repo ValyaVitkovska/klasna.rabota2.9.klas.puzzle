@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Геометрична мисия 9. клас — Подготовка за класна работа 2</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --ink: #1e293b;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --violet: #7c3aed;
+      --accent: #f97316;
+      --good: #16a34a;
+      --bad: #dc2626;
+      --card: rgba(255,255,255,0.92);
+      --shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+      --radius: 28px;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(37,99,235,0.20), transparent 30%),
+        radial-gradient(circle at 90% 16%, rgba(249,115,22,0.19), transparent 34%),
+        radial-gradient(circle at 50% 100%, rgba(124,58,237,0.17), transparent 38%),
+        linear-gradient(135deg, #eef6ff 0%, #fff7ed 55%, #f5f3ff 100%);
+      overflow-x: hidden;
+    }
+
+    .floating {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .float-symbol {
+      position: absolute;
+      font-weight: 900;
+      color: rgba(37,99,235,0.22);
+      font-size: 30px;
+      animation: float 10s ease-in-out infinite;
+      text-shadow: 0 8px 18px rgba(255,255,255,0.8);
+    }
+
+    .s1 { top: 9%; left: 39%; }
+    .s2 { top: 76%; right: 21%; animation-delay: -3s; }
+    .s3 { top: 32%; right: 7%; animation-delay: -6s; }
+    .s4 { bottom: 12%; left: 8%; animation-delay: -4s; }
+
+    .orb {
+      position: absolute;
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      border: 8px dashed rgba(249,115,22,0.22);
+      right: 9%;
+      bottom: 23%;
+      animation: spin 18s linear infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-28px) rotate(7deg); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .app {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .hero,
+    .puzzle-card,
+    .map,
+    .screen-card {
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(37,99,235,0.96), rgba(124,58,237,0.94));
+      color: white;
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      border: 22px solid rgba(255,255,255,0.13);
+      right: -80px;
+      top: -65px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.25);
+      margin-bottom: 16px;
+      font-weight: 800;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      font-size: 17px;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .puzzle-card,
+    .map,
+    .screen-card,
+    .stat {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.75);
+    }
+
+    .puzzle-card {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .puzzle-card h2,
+    .map h2 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .puzzle-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 14px;
+    }
+
+    .puzzle-board {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 5px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #cbd5e1;
+      border: 4px solid rgba(37,99,235,0.16);
+      aspect-ratio: 16 / 9;
+    }
+
+    .tile {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+      transition: transform 0.35s ease, filter 0.35s ease;
+    }
+
+    .tile::before {
+      content: "?";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.86);
+      font-size: 24px;
+      font-weight: 1000;
+      z-index: 2;
+    }
+
+    .tile.revealed {
+      background-image: var(--tile-bg);
+      background-size: 600% 500%;
+      background-position: var(--pos);
+      background-repeat: no-repeat;
+      transform: scale(1.02);
+      filter: saturate(1.08);
+      animation: popTile 0.42s ease;
+    }
+
+    .tile.revealed::before { display: none; }
+
+    @keyframes popTile {
+      0% { transform: scale(0.6); opacity: 0.25; }
+      100% { transform: scale(1.02); opacity: 1; }
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .stat {
+      border-radius: 20px;
+      padding: 14px 16px;
+      box-shadow: 0 12px 26px rgba(15,23,42,0.08);
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .stat strong { font-size: 24px; }
+
+    .game {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .map {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .progress-wrap {
+      height: 16px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0 14px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2563eb, #f97316);
+      transition: width 0.35s ease;
+    }
+
+    .dots {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+    }
+
+    .dot {
+      border: 0;
+      border-radius: 12px;
+      aspect-ratio: 1;
+      font-weight: 900;
+      color: #475569;
+      background: #e2e8f0;
+      cursor: pointer;
+      box-shadow: inset 0 -3px 0 rgba(15,23,42,0.08);
+    }
+
+    .dot:hover { outline: 2px solid rgba(37,99,235,0.35); }
+    .dot.active { background: #f97316; color: white; transform: scale(1.08); }
+    .dot.correct { background: #22c55e; color: white; }
+    .dot.wrong { background: #fb7185; color: white; }
+
+    .legend {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .screen-card {
+      padding: 26px;
+      min-height: 560px;
+      overflow: hidden;
+    }
+
+    .start-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .info-box {
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(37,99,235,0.08);
+      border: 1px solid rgba(37,99,235,0.16);
+    }
+
+    .info-box.orange { background: rgba(249,115,22,0.09); border-color: rgba(249,115,22,0.2); }
+    .info-box.green { background: rgba(34,197,94,0.09); border-color: rgba(34,197,94,0.2); }
+    .info-box h3 { margin: 0 0 8px; }
+    .info-box p,
+    .info-box ul { margin: 0; line-height: 1.55; color: #475569; }
+
+    .question-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #1d4ed8;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .difficulty { background: #ccfbf1; color: #0f766e; }
+
+    .visual-box {
+      min-height: 170px;
+      border-radius: 24px;
+      margin: 14px 0;
+      background: linear-gradient(135deg, rgba(238,242,255,0.9), rgba(255,247,237,0.9));
+      border: 1px solid rgba(148,163,184,0.24);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .svg-visual {
+      width: min(520px, 100%);
+      height: 170px;
+    }
+
+    .question-text {
+      font-size: clamp(21px, 2.1vw, 29px);
+      line-height: 1.35;
+      margin: 16px 0 20px;
+      font-weight: 850;
+    }
+
+    .math {
+      font-family: "Cambria Math", "Times New Roman", serif;
+      background: rgba(15,23,42,0.06);
+      padding: 3px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .option {
+      border: 2px solid transparent;
+      text-align: left;
+      background: rgba(255,255,255,0.94);
+      border-radius: 18px;
+      padding: 15px 16px;
+      font-size: 17px;
+      cursor: pointer;
+      min-height: 62px;
+      box-shadow: 0 9px 20px rgba(15,23,42,0.08);
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+      animation: optionIn 0.34s ease both;
+      animation-delay: var(--delay);
+    }
+
+    @keyframes optionIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .option:hover { transform: translateY(-2px); border-color: rgba(37,99,235,0.45); }
+    .option.selected { border-color: #2563eb; background: #eff6ff; }
+    .option.correct { border-color: #16a34a; background: #dcfce7; }
+    .option.wrong { border-color: #dc2626; background: #fee2e2; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 18px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 12px 22px rgba(15,23,42,0.14);
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .primary { background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; }
+    .orange { background: linear-gradient(135deg, #f97316, #f59e0b); color: white; }
+    .ghost { background: #e2e8f0; color: #334155; box-shadow: none; }
+
+    .feedback {
+      min-height: 58px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      margin-top: 14px;
+      font-weight: 800;
+      display: none;
+    }
+
+    .feedback.show { display: block; }
+    .feedback.good { background: #dcfce7; color: #166534; }
+    .feedback.bad { background: #fee2e2; color: #991b1b; }
+    .feedback.hint { background: #ffedd5; color: #9a3412; }
+
+    .result-number {
+      font-size: clamp(56px, 8vw, 96px);
+      line-height: 1;
+      font-weight: 1000;
+      background: linear-gradient(135deg, #2563eb, #f97316);
+      -webkit-background-clip: text;
+      color: transparent;
+      margin: 18px 0 8px;
+    }
+
+    .review {
+      margin-top: 18px;
+      display: grid;
+      gap: 9px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .review-row {
+      padding: 11px 13px;
+      border-radius: 15px;
+      background: rgba(241,245,249,0.88);
+      border-left: 6px solid #94a3b8;
+      line-height: 1.35;
+    }
+
+    .review-row.ok { border-left-color: #16a34a; }
+    .review-row.no { border-left-color: #dc2626; }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 16px;
+      top: -20px;
+      border-radius: 3px;
+      animation: fall 2.4s linear forwards;
+      z-index: 9;
+    }
+
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+    @media (max-width: 950px) {
+      header,
+      .game,
+      .start-grid { grid-template-columns: 1fr; }
+      .map { position: static; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .options { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .app { width: min(100% - 20px, 1240px); padding-top: 14px; }
+      .hero,
+      .screen-card { padding: 20px; border-radius: 22px; }
+      .stats { grid-template-columns: 1fr; }
+      .dots { grid-template-columns: repeat(6, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating" aria-hidden="true">
+    <div class="float-symbol s1">△ABC ∼ △A₁B₁C₁</div>
+    <div class="float-symbol s2">h² = p·q</div>
+    <div class="float-symbol s3">sin α</div>
+    <div class="float-symbol s4">f(x) ≥ 0</div>
+    <div class="orb"></div>
+  </div>
+
+  <main class="app">
+    <header>
+      <section class="hero">
+        <div class="tag">🎮 9. клас · подготовка за класна работа 2</div>
+        <h1>Геометрична мисия:<br>Стратегии и решения</h1>
+        <p>30 задачи с чертежи, избор на отговор и отключване на красиво изображение. Темата на въпроса не се показва — ученикът сам разпознава подхода.</p>
+      </section>
+
+      <aside class="puzzle-card">
+        <h2>🖼️ Тайно изображение</h2>
+        <p>Всяка решена задача отключва едно парче от изображението.</p>
+        <div class="puzzle-board" id="puzzleBoard"></div>
+      </aside>
+    </header>
+
+    <section class="stats" aria-live="polite">
+      <div class="stat"><small>Въпрос</small><strong id="statQuestion">0/30</strong></div>
+      <div class="stat"><small>Точки</small><strong id="statScore">0</strong></div>
+      <div class="stat"><small>Верни</small><strong id="statCorrect">0</strong></div>
+      <div class="stat"><small>Ниво</small><strong id="statLevel">Старт</strong></div>
+    </section>
+
+    <section class="game">
+      <aside class="map">
+        <h2>Карта на мисията</h2>
+        <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+        <div class="dots" id="dots"></div>
+        <div class="legend">
+          <div>🟠 текущ въпрос</div>
+          <div>🟢 верен отговор</div>
+          <div>🌹 грешен отговор</div>
+          <div>🔢 може да се избира въпрос по номер</div>
+          <div>🖼️ всяка задача открива част от изображението</div>
+        </div>
+      </aside>
+
+      <section id="screen"></section>
+    </section>
+  </main>
+
+  <script>
+    const TOTAL_QUESTIONS = 30;
+    const POINTS_PER_QUESTION = 100 / TOTAL_QUESTIONS;
+    const puzzleBackground = `url("puzzle-9.png")`;
+
+    let questions = [];
+    let current = 0;
+    let score = 0;
+    let correct = 0;
+    let selected = null;
+    let answered = false;
+    let answers = [];
+    let started = false;
+
+    const screen = document.getElementById("screen");
+    const dots = document.getElementById("dots");
+    const statQuestion = document.getElementById("statQuestion");
+    const statScore = document.getElementById("statScore");
+    const statCorrect = document.getElementById("statCorrect");
+    const statLevel = document.getElementById("statLevel");
+    const progress = document.getElementById("progress");
+    const puzzleBoard = document.getElementById("puzzleBoard");
+
+    const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const choice = arr => arr[Math.floor(Math.random() * arr.length)];
+    const shuffle = arr => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    function makeOptions(correctValue, distractors) {
+      const values = [correctValue, ...distractors.filter(x => x !== correctValue)];
+      const unique = [...new Set(values)].slice(0, 4);
+      while (unique.length < 4) unique.push(`${rnd(2, 28)}`);
+      const mixed = shuffle(unique);
+      return { options: mixed, answer: mixed.indexOf(correctValue) };
+    }
+
+    function visual(type) {
+      const svg = {
+        similarity: `<svg class="svg-visual" viewBox="0 0 520 170"><polygon points="70,130 180,130 105,40" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="4"/><polygon points="285,130 430,130 330,20" fill="rgba(249,115,22,.10)" stroke="#f97316" stroke-width="4"/><text x="88" y="150" font-size="18" font-weight="800">△ABC</text><text x="320" y="150" font-size="18" font-weight="800">△A₁B₁C₁</text><text x="190" y="82" font-size="28" font-weight="900" fill="#334155">∼</text><text x="195" y="120" font-size="21" font-weight="800" fill="#334155">k</text></svg>`,
+        rational: `<svg class="svg-visual" viewBox="0 0 520 170"><rect x="55" y="35" width="410" height="96" rx="24" fill="rgba(124,58,237,.09)" stroke="#7c3aed" stroke-width="4"/><text x="120" y="75" font-size="29" font-weight="900" fill="#4c1d95">(x − 2)(x + 3)</text><line x1="122" y1="87" x2="343" y2="87" stroke="#4c1d95" stroke-width="3"/><text x="158" y="120" font-size="29" font-weight="900" fill="#4c1d95">x − 5</text><text x="355" y="96" font-size="29" font-weight="900" fill="#4c1d95">≥ 0</text></svg>`,
+        interval: `<svg class="svg-visual" viewBox="0 0 520 170"><line x1="60" y1="100" x2="460" y2="100" stroke="#334155" stroke-width="4"/><polygon points="460,100 445,92 445,108" fill="#334155"/><circle cx="150" cy="100" r="8" fill="#ef4444"/><circle cx="260" cy="100" r="8" fill="#ef4444"/><circle cx="370" cy="100" r="8" fill="#ef4444"/><text x="140" y="130" font-size="20" font-weight="900">−3</text><text x="255" y="130" font-size="20" font-weight="900">2</text><text x="365" y="130" font-size="20" font-weight="900">5</text><text x="95" y="72" font-size="24" font-weight="900" fill="#16a34a">+</text><text x="205" y="72" font-size="24" font-weight="900" fill="#dc2626">−</text><text x="315" y="72" font-size="24" font-weight="900" fill="#16a34a">+</text><text x="425" y="72" font-size="24" font-weight="900" fill="#dc2626">−</text></svg>`,
+        metric: `<svg class="svg-visual" viewBox="0 0 520 170"><polygon points="90,130 430,130 215,35" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="4"/><line x1="215" y1="35" x2="215" y2="130" stroke="#f97316" stroke-width="5"/><path d="M215 118 L228 118 L228 130" fill="none" stroke="#334155" stroke-width="3"/><text x="205" y="27" font-size="18" font-weight="900">C</text><text x="78" y="150" font-size="18" font-weight="900">A</text><text x="432" y="150" font-size="18" font-weight="900">B</text><text x="218" y="150" font-size="18" font-weight="900">H</text><text x="245" y="80" font-size="22" font-weight="900" fill="#f97316">h</text><text x="150" y="148" font-size="21" font-weight="900">p</text><text x="320" y="148" font-size="21" font-weight="900">q</text></svg>`,
+        rightTriangle: `<svg class="svg-visual" viewBox="0 0 520 170"><polygon points="120,130 410,130 120,42" fill="rgba(34,197,94,.10)" stroke="#16a34a" stroke-width="4"/><path d="M120 116 L134 116 L134 130" fill="none" stroke="#334155" stroke-width="3"/><text x="104" y="36" font-size="18" font-weight="900">A</text><text x="105" y="152" font-size="18" font-weight="900">C</text><text x="414" y="152" font-size="18" font-weight="900">B</text><text x="145" y="86" font-size="21" font-weight="900">a</text><text x="260" y="148" font-size="21" font-weight="900">b</text><text x="270" y="82" font-size="21" font-weight="900">c</text><text x="310" y="116" font-size="20" font-weight="900" fill="#2563eb">α</text></svg>`,
+        isoTriangle: `<svg class="svg-visual" viewBox="0 0 520 170"><polygon points="120,130 400,130 260,35" fill="rgba(249,115,22,.10)" stroke="#f97316" stroke-width="4"/><line x1="260" y1="35" x2="260" y2="130" stroke="#2563eb" stroke-width="4"/><path d="M260 116 L274 116 L274 130" fill="none" stroke="#334155" stroke-width="3"/><text x="252" y="28" font-size="18" font-weight="900">A</text><text x="105" y="152" font-size="18" font-weight="900">B</text><text x="405" y="152" font-size="18" font-weight="900">C</text><text x="270" y="88" font-size="21" font-weight="900" fill="#2563eb">h</text><text x="177" y="148" font-size="20" font-weight="900">a/2</text><text x="307" y="148" font-size="20" font-weight="900">a/2</text></svg>`,
+        rightTrapezoid: `<svg class="svg-visual" viewBox="0 0 520 170"><polygon points="120,130 420,130 330,50 120,50" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="4"/><line x1="120" y1="50" x2="120" y2="130" stroke="#f97316" stroke-width="5"/><path d="M120 116 L134 116 L134 130" fill="none" stroke="#334155" stroke-width="3"/><text x="215" y="42" font-size="21" font-weight="900">b</text><text x="260" y="152" font-size="21" font-weight="900">a</text><text x="132" y="92" font-size="21" font-weight="900" fill="#f97316">h</text></svg>`,
+        isoTrapezoid: `<svg class="svg-visual" viewBox="0 0 520 170"><polygon points="95,130 425,130 350,50 170,50" fill="rgba(124,58,237,.10)" stroke="#7c3aed" stroke-width="4"/><line x1="170" y1="50" x2="170" y2="130" stroke="#f97316" stroke-width="4"/><line x1="350" y1="50" x2="350" y2="130" stroke="#f97316" stroke-width="4"/><text x="235" y="42" font-size="21" font-weight="900">b</text><text x="250" y="152" font-size="21" font-weight="900">a</text><text x="128" y="145" font-size="20" font-weight="900">x</text><text x="378" y="145" font-size="20" font-weight="900">x</text></svg>`
+      };
+      return svg[type] || svg.rightTriangle;
+    }
+
+    function qSimilarityFindSide() {
+      const k = choice([2, 3, 4]);
+      const small = rnd(3, 9);
+      const big = small * k;
+      const correctValue = `${big} cm`;
+      const mo = makeOptions(correctValue, [`${small + k} cm`, `${big + k} cm`, `${Math.max(1, big - k)} cm`, `${small} cm`]);
+      return {
+        type: "similarity",
+        difficulty: "Предизвикателство",
+        q: `Два триъгълника са подобни с коефициент <span class='math'>k = ${k}</span>. На страна <span class='math'>${small} cm</span> от първия триъгълник съответства страна от втория. Колко сантиметра е тя?`,
+        ...mo,
+        hint: "При подобие съответните страни се умножават с коефициента на подобие.",
+        explain: `Съответната страна е ${small} · ${k} = ${big} cm.`,
+        visual: "similarity"
+      };
+    }
+
+    function qSimilarityRatio() {
+      const a = rnd(3, 8);
+      const k = choice([2, 3]);
+      const A = a * k;
+      const b = rnd(4, 9);
+      const B = b * k;
+      const correctValue = `${B} cm`;
+      const mo = makeOptions(correctValue, [`${b + k} cm`, `${B - k} cm`, `${A + b} cm`, `${B + k} cm`]);
+      return {
+        type: "similarity",
+        difficulty: "Предизвикателство",
+        q: `В подобни триъгълници две съответни страни са <span class='math'>${a} cm</span> и <span class='math'>${A} cm</span>. Ако на страна <span class='math'>${b} cm</span> от първия триъгълник съответства страна от втория, намерете я.`,
+        ...mo,
+        hint: "Първо намери коефициента на подобие.",
+        explain: `Коефициентът е ${A} : ${a} = ${k}. Търсената страна е ${b} · ${k} = ${B} cm.`,
+        visual: "similarity"
+      };
+    }
+
+    function qRationalInequalitySimple() {
+      const a = choice([-4, -3, -2, 1, 2, 3]);
+      const b = choice([4, 5, 6, 7].filter(x => x !== a));
+      const correctValue = a < b ? `(${a}; ${b})` : `(${b}; ${a})`;
+      const left = Math.min(a, b);
+      const right = Math.max(a, b);
+      const mo = makeOptions(correctValue, [`(−∞; ${left}) ∪ (${right}; +∞)`, `[${left}; ${right}]`, `(${left}; +∞)`, `x ≠ ${b}`]);
+      return {
+        type: "rational",
+        difficulty: "Бос задача",
+        q: `Решете неравенството <span class='math'>\(x − ${a}\)/(x − ${b}) &lt; 0</span>.`,
+        ...mo,
+        hint: "Отбележи нулата на числителя и забранената стойност от знаменателя. Направи интервали.",
+        explain: `Критичните точки са ${a} и ${b}. Дробта е отрицателна между тях, затова решението е (${left}; ${right}).`,
+        visual: "interval"
+      };
+    }
+
+    function qRationalDomain() {
+      const a = choice([-5, -3, -1, 2, 4]);
+      const correctValue = `x ≠ ${a}`;
+      const mo = makeOptions(correctValue, [`x = ${a}`, `x > ${a}`, `x < ${a}`, "всяко реално число"]);
+      return {
+        type: "rational",
+        difficulty: "Загрявка",
+        q: `Коя стойност трябва да се изключи при израза <span class='math'>\(2x + 1\)/(x − ${a})</span>?`,
+        ...mo,
+        hint: "Знаменателят не трябва да бъде равен на нула.",
+        explain: `x − ${a} = 0, следователно x = ${a} е забранена стойност.`,
+        visual: "rational"
+      };
+    }
+
+    function qMetricHeight() {
+      const p = choice([3, 4, 5, 9]);
+      const q = choice([4, 9, 16].filter(x => x !== p));
+      const h2 = p * q;
+      const h = Math.sqrt(h2);
+      const nice = Number.isInteger(h);
+      const correctValue = nice ? `${h} cm` : `√${h2} cm`;
+      const mo = makeOptions(correctValue, [`${p + q} cm`, `${Math.abs(q - p)} cm`, `${h2} cm`, `${p} cm`]);
+      return {
+        type: "metric",
+        difficulty: "Предизвикателство",
+        q: `В правоъгълен триъгълник височината към хипотенузата разделя хипотенузата на отсечки <span class='math'>p = ${p} cm</span> и <span class='math'>q = ${q} cm</span>. Намерете височината.`,
+        ...mo,
+        hint: "Използвай метричната зависимост h² = p·q.",
+        explain: `h² = p·q = ${p}·${q} = ${h2}. Следователно h = ${correctValue}.`,
+        visual: "metric"
+      };
+    }
+
+    function qMetricCathetus() {
+      const c = choice([10, 13, 15, 20]);
+      const p = choice([4, 5, 9]);
+      const a2 = c * p;
+      const a = Math.sqrt(a2);
+      const correctValue = Number.isInteger(a) ? `${a} cm` : `√${a2} cm`;
+      const mo = makeOptions(correctValue, [`${c + p} cm`, `${c - p} cm`, `${a2} cm`, `${p} cm`]);
+      return {
+        type: "metric",
+        difficulty: "Предизвикателство",
+        q: `В правоъгълен триъгълник хипотенузата е <span class='math'>c = ${c} cm</span>, а проекцията на катет върху нея е <span class='math'>p = ${p} cm</span>. Намерете този катет.`,
+        ...mo,
+        hint: "Използвай зависимостта a² = c·p.",
+        explain: `a² = c·p = ${c}·${p} = ${a2}. Следователно a = ${correctValue}.`,
+        visual: "metric"
+      };
+    }
+
+    function qRightTrianglePythagoras() {
+      const triples = [[3,4,5], [5,12,13], [6,8,10], [7,24,25], [8,15,17]];
+      const t = choice(triples);
+      const correctValue = `${t[2]} cm`;
+      const mo = makeOptions(correctValue, [`${t[0] + t[1]} cm`, `${t[2] - 1} cm`, `${t[2] + 2} cm`, `${Math.abs(t[1] - t[0])} cm`]);
+      return {
+        type: "rightTriangle",
+        difficulty: "Загрявка",
+        q: `Катетите на правоъгълен триъгълник са <span class='math'>${t[0]} cm</span> и <span class='math'>${t[1]} cm</span>. Намерете хипотенузата.`,
+        ...mo,
+        hint: "Използвай Питагорова теорема.",
+        explain: `c² = ${t[0]}² + ${t[1]}² = ${t[2]}², следователно c = ${t[2]} cm.`,
+        visual: "rightTriangle"
+      };
+    }
+
+    function qRightTriangleTrig() {
+      const angle = choice([30, 45, 60]);
+      let correctValue;
+      let distractors;
+      if (angle === 30) {
+        correctValue = "1/2";
+        distractors = ["√3/2", "√2/2", "√3", "2"];
+      } else if (angle === 45) {
+        correctValue = "√2/2";
+        distractors = ["1/2", "√3/2", "1", "√3"];
+      } else {
+        correctValue = "√3/2";
+        distractors = ["1/2", "√2/2", "√3", "2"];
+      }
+      const mo = makeOptions(correctValue, distractors);
+      return {
+        type: "rightTriangle",
+        difficulty: "Загрявка",
+        q: `В правоъгълен триъгълник остър ъгъл е <span class='math'>${angle}°</span>. Колко е <span class='math'>sin ${angle}°</span>?`,
+        ...mo,
+        hint: "Припомни стойностите на синус за специалните ъгли 30°, 45°, 60°.",
+        explain: `sin ${angle}° = ${correctValue}.`,
+        visual: "rightTriangle"
+      };
+    }
+
+    function qIsoscelesTriangleHeight() {
+      const side = choice([5, 10, 13, 17]);
+      const halfBase = choice([3, 6, 5, 8].filter(x => x < side));
+      const h2 = side * side - halfBase * halfBase;
+      const h = Math.sqrt(h2);
+      const correctValue = Number.isInteger(h) ? `${h} cm` : `√${h2} cm`;
+      const base = 2 * halfBase;
+      const mo = makeOptions(correctValue, [`${side + halfBase} cm`, `${side - halfBase} cm`, `${h2} cm`, `${base} cm`]);
+      return {
+        type: "isoTriangle",
+        difficulty: "Предизвикателство",
+        q: `В равнобедрен триъгълник бедрото е <span class='math'>${side} cm</span>, а основата е <span class='math'>${base} cm</span>. Намерете височината към основата.`,
+        ...mo,
+        hint: "Височината към основата е и медиана. Получава се правоъгълен триъгълник.",
+        explain: `Половината от основата е ${halfBase} cm. h² = ${side}² − ${halfBase}² = ${h2}. Следователно h = ${correctValue}.`,
+        visual: "isoTriangle"
+      };
+    }
+
+    function qRightTrapezoidLeg() {
+      const h = choice([6, 8, 12]);
+      const diff = choice([5, 9, 16]);
+      const leg2 = h*h + diff*diff;
+      const leg = Math.sqrt(leg2);
+      const correctValue = Number.isInteger(leg) ? `${leg} cm` : `√${leg2} cm`;
+      const mo = makeOptions(correctValue, [`${h + diff} cm`, `${Math.abs(diff - h)} cm`, `${leg2} cm`, `${h} cm`]);
+      return {
+        type: "rightTrapezoid",
+        difficulty: "Предизвикателство",
+        q: `В правоъгълен трапец височината е <span class='math'>${h} cm</span>, а разликата на основите е <span class='math'>${diff} cm</span>. Намерете наклоненото бедро.`,
+        ...mo,
+        hint: "Получава се правоъгълен триъгълник с катети височината и разликата на основите.",
+        explain: `Бедрото е хипотенуза: l² = ${h}² + ${diff}² = ${leg2}. Следователно l = ${correctValue}.`,
+        visual: "rightTrapezoid"
+      };
+    }
+
+    function qIsoTrapezoidHeight() {
+      const big = choice([18, 20, 26, 30]);
+      const small = choice([10, 12, 14, 18].filter(x => x < big));
+      const x = (big - small) / 2;
+      const leg = choice([5, 10, 13, 17].filter(v => v > x));
+      const h2 = leg*leg - x*x;
+      const h = Math.sqrt(h2);
+      const correctValue = Number.isInteger(h) ? `${h} cm` : `√${h2} cm`;
+      const mo = makeOptions(correctValue, [`${x} cm`, `${leg + x} cm`, `${h2} cm`, `${big - small} cm`]);
+      return {
+        type: "isoTrapezoid",
+        difficulty: "Бос задача",
+        q: `В равнобедрен трапец основите са <span class='math'>${big} cm</span> и <span class='math'>${small} cm</span>, а бедрото е <span class='math'>${leg} cm</span>. Намерете височината.`,
+        ...mo,
+        hint: "Спусни височини към голямата основа. Получаваш два еднакви правоъгълни триъгълника.",
+        explain: `Малката отсечка е (${big} − ${small}) : 2 = ${x} cm. h² = ${leg}² − ${x}² = ${h2}. Следователно h = ${correctValue}.`,
+        visual: "isoTrapezoid"
+      };
+    }
+
+    function qStrategy() {
+      const tasks = [
+        {
+          q: "В задача с равнобедрен трапец са дадени двете основи и бедрото. Коя е най-подходящата първа стъпка?",
+          ok: "Спускам височини към голямата основа",
+          ds: ["Прилагам директно подобие", "Намирам лице без височина", "Решавам рационално неравенство"],
+          ex: "При равнобедрен трапец височините образуват два еднакви правоъгълни триъгълника.",
+          visual: "isoTrapezoid"
+        },
+        {
+          q: "В задача с правоъгълен триъгълник е дадена височината към хипотенузата и двете проекции. Коя зависимост е подходяща?",
+          ok: "h² = p·q",
+          ds: ["a² + b² = h²", "S = a·b", "sin α = h/c"],
+          ex: "За височината към хипотенузата важи h² = p·q.",
+          visual: "metric"
+        },
+        {
+          q: "При рационално неравенство коя стойност задължително се изключва от решението?",
+          ok: "Стойността, която занулява знаменателя",
+          ds: ["Стойността, която занулява числителя", "Всички отрицателни числа", "Само числото 0"],
+          ex: "Знаменателят не може да бъде нула.",
+          visual: "rational"
+        }
+      ];
+      const t = choice(tasks);
+      const mo = makeOptions(t.ok, t.ds);
+      return {
+        type: "strategy",
+        difficulty: "Стратегия",
+        q: t.q,
+        ...mo,
+        hint: "Помисли какъв обект се получава след помощно построение или кои стойности са критични.",
+        explain: t.ex,
+        visual: t.visual
+      };
+    }
+
+    function generateQuestions() {
+      const makers = [
+        qSimilarityFindSide, qSimilarityRatio,
+        qRationalInequalitySimple, qRationalDomain,
+        qMetricHeight, qMetricCathetus,
+        qRightTrianglePythagoras, qRightTriangleTrig,
+        qIsoscelesTriangleHeight,
+        qRightTrapezoidLeg,
+        qIsoTrapezoidHeight,
+        qStrategy
+      ];
+      const list = [];
+      while (list.length < TOTAL_QUESTIONS) list.push(choice(makers)());
+      return shuffle(list);
+    }
+
+    function initDots() {
+      dots.innerHTML = "";
+      for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+        const b = document.createElement("button");
+        b.className = "dot";
+        b.textContent = i + 1;
+        b.type = "button";
+        b.onclick = () => jumpToQuestion(i);
+        dots.appendChild(b);
+      }
+    }
+
+    function initPuzzle() {
+      puzzleBoard.innerHTML = "";
+      for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+        const tile = document.createElement("div");
+        const col = i % 6;
+        const row = Math.floor(i / 6);
+        tile.className = "tile";
+        tile.style.setProperty("--tile-bg", puzzleBackground);
+        tile.style.setProperty("--pos", `${col * 20}% ${row * 25}%`);
+        puzzleBoard.appendChild(tile);
+      }
+    }
+
+    function revealTile(index) {
+      const tiles = [...puzzleBoard.children];
+      if (tiles[index]) tiles[index].classList.add("revealed");
+    }
+
+    function nextUnansweredIndex() {
+      for (let i = current + 1; i < TOTAL_QUESTIONS; i++) if (!answers[i]) return i;
+      for (let i = 0; i < current; i++) if (!answers[i]) return i;
+      return -1;
+    }
+
+    function jumpToQuestion(index) {
+      if (!started || !questions.length) return;
+      current = index;
+      renderQuestion();
+    }
+
+    function updateStats() {
+      const answeredCount = answers.filter(Boolean).length;
+      statQuestion.textContent = started ? `${current + 1}/${TOTAL_QUESTIONS}` : `0/${TOTAL_QUESTIONS}`;
+      statScore.textContent = Math.round(score);
+      statCorrect.textContent = correct;
+      statLevel.textContent = score >= 90 ? "Шампион" : score >= 70 ? "Майстор" : score >= 50 ? "Напреднал" : started ? "Изследовател" : "Старт";
+      progress.style.width = started ? `${(answeredCount / TOTAL_QUESTIONS) * 100}%` : "0%";
+
+      [...dots.children].forEach((dot, i) => {
+        dot.className = "dot";
+        if (answers[i]) dot.classList.add(answers[i].ok ? "correct" : "wrong");
+        if (started && i === current) dot.classList.add("active");
+      });
+    }
+
+    function showStart() {
+      started = false;
+      updateStats();
+      screen.innerHTML = `
+        <div class="screen-card">
+          <h2>Добре дошли в геометричната мисия! 🧭</h2>
+          <p style="font-size:18px; line-height:1.6; color:#475569; margin:0;">Това е тренировъчна игра за класна работа 2 в 9. клас. При всяко стартиране се генерират 30 задачи. Темата не се показва при въпроса, за да се тренира разпознаване на подхода.</p>
+
+          <div class="start-grid">
+            <div class="info-box">
+              <h3>📐 Геометрия</h3>
+              <ul>
+                <li>подобни триъгълници;</li>
+                <li>метрични зависимости;</li>
+                <li>правоъгълен и равнобедрен триъгълник;</li>
+                <li>правоъгълен и равнобедрен трапец.</li>
+              </ul>
+            </div>
+            <div class="info-box orange">
+              <h3>🧮 Алгебра</h3>
+              <ul>
+                <li>рационални изрази;</li>
+                <li>дефиниционно множество;</li>
+                <li>рационални неравенства;</li>
+                <li>метод на интервалите.</li>
+              </ul>
+            </div>
+            <div class="info-box green">
+              <h3>🖼️ Пъзел-изображение</h3>
+              <p>След всеки отговор се открива едно парче. При 30 отговора изображението се вижда изцяло.</p>
+            </div>
+            <div class="info-box">
+              <h3>🎯 Подход</h3>
+              <p>Чети условието, гледай чертежа и първо реши каква стратегия е нужна. После избери отговор.</p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" onclick="startGame()">🚀 Генерирай нова мисия</button>
+            <button class="btn ghost" onclick="previewFullPuzzle()">👀 Покажи цялото изображение</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function previewFullPuzzle() {
+      [...puzzleBoard.children].forEach(t => t.classList.add("revealed"));
+    }
+
+    function startGame() {
+      questions = generateQuestions();
+      started = true;
+      current = 0;
+      score = 0;
+      correct = 0;
+      selected = null;
+      answered = false;
+      answers = [];
+      initPuzzle();
+      renderQuestion();
+      updateStats();
+    }
+
+    function renderQuestion() {
+      const item = questions[current];
+      const saved = answers[current];
+      selected = saved ? saved.selected : null;
+      answered = Boolean(saved);
+
+      const optionsHtml = item.options.map((op, i) => {
+        let cls = "option";
+        if (!saved && selected === i) cls += " selected";
+        if (saved && i === item.answer) cls += " correct";
+        if (saved && i === saved.selected && !saved.ok) cls += " wrong";
+        return `<button class="${cls}" style="--delay:${i * 0.12}s" onclick="selectOption(${i})" ${saved ? "disabled" : ""}>${String.fromCharCode(1040 + i)}) ${op}</button>`;
+      }).join("");
+
+      const answeredCount = answers.filter(Boolean).length;
+      const actionHtml = saved
+        ? (answeredCount === TOTAL_QUESTIONS
+            ? `<button class="btn orange" onclick="finishGame()">Финал ➜</button>`
+            : `<button class="btn orange" onclick="goToNextUnanswered()">Следващ неотговорен въпрос ➜</button>`)
+        : `<button class="btn primary" id="checkBtn" onclick="checkAnswer()" disabled>Провери отговора</button>
+           <button class="btn ghost" onclick="showHint()">💡 Подсказка</button>`;
+
+      const feedbackHtml = saved
+        ? `<div class="feedback show ${saved.ok ? "good" : "bad"}">${saved.ok ? "✅ Браво!" : "🌹 Не е вярно."} ${item.explain}</div>`
+        : `<div class="feedback" id="feedback"></div>`;
+
+      screen.innerHTML = `
+        <div class="screen-card">
+          <div class="question-top">
+            <span class="pill">Въпрос ${current + 1} от ${TOTAL_QUESTIONS}</span>
+            <span class="pill difficulty">${item.difficulty}</span>
+          </div>
+          <div class="visual-box">${visual(item.visual)}</div>
+          <div class="question-text">${item.q}</div>
+          <div class="options" id="options">${optionsHtml}</div>
+          <div class="actions">${actionHtml}</div>
+          ${feedbackHtml}
+        </div>
+      `;
+      updateStats();
+    }
+
+    function goToNextUnanswered() {
+      const next = nextUnansweredIndex();
+      if (next === -1) finishGame();
+      else {
+        current = next;
+        renderQuestion();
+      }
+    }
+
+    function selectOption(index) {
+      if (answered) return;
+      selected = index;
+      document.querySelectorAll(".option").forEach((btn, i) => btn.classList.toggle("selected", i === index));
+      document.getElementById("checkBtn").disabled = false;
+    }
+
+    function showHint() {
+      const f = document.getElementById("feedback");
+      f.className = "feedback show hint";
+      f.innerHTML = "💡 " + questions[current].hint;
+    }
+
+    function checkAnswer() {
+      if (selected === null || answered) return;
+      answered = true;
+      const item = questions[current];
+      const ok = selected === item.answer;
+      const optionButtons = document.querySelectorAll(".option");
+      optionButtons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === item.answer) btn.classList.add("correct");
+        if (i === selected && !ok) btn.classList.add("wrong");
+      });
+
+      revealTile(current);
+
+      if (ok) {
+        score += POINTS_PER_QUESTION;
+        correct += 1;
+        burstConfetti(18);
+      }
+
+      answers[current] = {
+        ok,
+        selected,
+        explain: item.explain
+      };
+
+      const f = document.getElementById("feedback");
+      f.className = "feedback show " + (ok ? "good" : "bad");
+      f.innerHTML = ok ? `✅ Браво! ${item.explain}` : `🌹 Не е вярно. ${item.explain}`;
+
+      const answeredCount = answers.filter(Boolean).length;
+      document.querySelector(".actions").innerHTML = answeredCount === TOTAL_QUESTIONS
+        ? `<button class="btn orange" onclick="finishGame()">Финал ➜</button>`
+        : `<button class="btn orange" onclick="goToNextUnanswered()">Следващ неотговорен въпрос ➜</button>`;
+
+      updateStats();
+    }
+
+    function finishGame() {
+      progress.style.width = "100%";
+      burstConfetti(80);
+      const roundedScore = Math.round(score);
+      let message = "";
+      if (roundedScore >= 90) message = "Отлично! Разпознаваш стратегиите и прилагаш формулите уверено.";
+      else if (roundedScore >= 70) message = "Много добро ниво. Прегледай задачите с грешка и повтори подобни примери.";
+      else if (roundedScore >= 50) message = "Имаш основа, но е добре да потренираш избор на подход и помощни построения.";
+      else message = "Нужен е сериозен преговор. Започни с чертежите, формулите и типичните стратегии.";
+
+      const review = answers.map((a, i) => `
+        <div class="review-row ${a.ok ? 'ok' : 'no'}">
+          <strong>${i + 1}. ${a.ok ? 'Вярно' : 'Грешно'}:</strong> ${a.explain}
+        </div>
+      `).join("");
+
+      screen.innerHTML = `
+        <div class="screen-card">
+          <h2>Финал на мисията 🏁</h2>
+          <div class="result-number">${roundedScore}/100</div>
+          <p style="font-size:20px; line-height:1.55; color:#475569; margin:0 0 14px;">${message}</p>
+          <div class="info-box green">
+            <h3>Резултат</h3>
+            <p>Верни отговори: <strong>${correct}</strong> от <strong>${TOTAL_QUESTIONS}</strong></p>
+          </div>
+          <h3 style="margin:22px 0 10px;">Кратък преглед</h3>
+          <div class="review">${review}</div>
+          <div class="actions">
+            <button class="btn primary" onclick="startGame()">🔁 Генерирай нова игра</button>
+            <button class="btn ghost" onclick="showStart()">Начален екран</button>
+          </div>
+        </div>
+      `;
+      updateStats();
+    }
+
+    function burstConfetti(count) {
+      const colors = ["#2563eb", "#f97316", "#22c55e", "#06b6d4", "#ec4899", "#facc15"];
+      for (let i = 0; i < count; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.4 + "s";
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 2800);
+      }
+    }
+
+    initDots();
+    initPuzzle();
+    showStart();
+  </script>
+</body>
+</html>
