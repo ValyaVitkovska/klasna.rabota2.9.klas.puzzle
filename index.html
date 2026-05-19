@@ -698,6 +698,7 @@
       font-family: inherit;
       color: var(--ink);
       transition: background 0.2s;
+      position: relative;
     }
     .instructions-toggle:hover { background: var(--option-hover); }
     .instructions-toggle:focus-visible {
@@ -705,26 +706,110 @@
       outline-offset: -3px;
     }
 
+    /* Когато картичката е свита — бутонът „диша" и привлича внимание */
+    .instructions-card.collapsed .instructions-toggle {
+      background: linear-gradient(135deg,
+                    rgba(29, 78, 216, 0.08) 0%,
+                    rgba(124, 58, 237, 0.10) 50%,
+                    rgba(217, 119, 6, 0.08) 100%);
+      background-size: 200% 200%;
+      animation: instructionsGlow 3s ease-in-out infinite,
+                 instructionsGradient 6s ease infinite;
+    }
+    .instructions-card.collapsed .instructions-toggle:hover {
+      background: linear-gradient(135deg,
+                    rgba(29, 78, 216, 0.18) 0%,
+                    rgba(124, 58, 237, 0.20) 50%,
+                    rgba(217, 119, 6, 0.18) 100%);
+    }
+
+    @keyframes instructionsGlow {
+      0%, 100% { box-shadow: inset 0 0 0 0 rgba(124, 58, 237, 0); }
+      50%      { box-shadow: inset 0 0 40px 0 rgba(124, 58, 237, 0.15); }
+    }
+    @keyframes instructionsGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
     .instructions-title {
-      font-size: 14px;
+      font-size: 15px;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: var(--primary);
       font-weight: 800;
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      /* Ярък градиентен текст */
+      background: linear-gradient(90deg, #1d4ed8, #7c3aed, #d97706, #7c3aed, #1d4ed8);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 3.5s linear infinite;
     }
-    .ic-icon { font-size: 20px; }
+    @keyframes textShimmer {
+      0%   { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .ic-icon {
+      font-size: 22px;
+      /* Емоджито остава цветно — отменяме text-clip за него */
+      -webkit-text-fill-color: initial;
+      animation: iconBounce 2s ease-in-out infinite;
+      display: inline-block;
+    }
+    @keyframes iconBounce {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      30%      { transform: translateY(-3px) rotate(-6deg); }
+      60%      { transform: translateY(0) rotate(6deg); }
+    }
     .ic-text { line-height: 1; }
 
-    .instructions-chevron {
-      font-size: 22px;
+    /* Малък „click ме" таг до стрелката, докато е свито */
+    .instructions-toggle::after {
+      content: 'кликни тук';
+      position: absolute;
+      right: 56px;
+      font-size: 11px;
+      letter-spacing: 0.5px;
       color: var(--primary);
-      transition: transform 0.3s ease;
+      background: rgba(124, 58, 237, 0.12);
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      text-transform: uppercase;
+      animation: hintPulse 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .instructions-card.expanded .instructions-toggle::after { display: none; }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.6; transform: translateX(0); }
+      50%      { opacity: 1;   transform: translateX(-3px); }
+    }
+
+    /* На мобилно скриваме „кликни тук", за да не се препокрива */
+    @media (max-width: 540px) {
+      .instructions-toggle::after { display: none; }
+    }
+
+    .instructions-chevron {
+      font-size: 24px;
+      color: var(--primary);
+      transition: transform 0.3s ease, color 0.3s;
       line-height: 1;
+      font-weight: 800;
+    }
+    .instructions-card.collapsed .instructions-chevron {
+      animation: chevronBounce 1.6s ease-in-out infinite;
     }
     .instructions-card.expanded .instructions-chevron { transform: rotate(180deg); }
+    @keyframes chevronBounce {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(4px); }
+    }
 
     .instructions-body {
       max-height: 0;
