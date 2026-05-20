@@ -2092,6 +2092,46 @@
         <text x="135" y="150" class="point">H&#8321;</text><text x="255" y="150" class="point">H&#8322;</text>
       </svg>`,
 
+      trapezoidInCircle: `<svg class="svg-visual" viewBox="0 0 400 230">
+        <!-- Окръжност около трапеца -->
+        <circle cx="200" cy="125" r="90" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+        <!-- Равнобедрен трапец, вписан в окръжността. Изборът: горна основа 100 (CD), долна основа 160 (AB), височина около 80 -->
+        <polygon points="120,180 280,180 240,80 160,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <!-- Малки точки на върховете -->
+        <circle cx="120" cy="180" r="2.5" fill="#0f172a"/>
+        <circle cx="280" cy="180" r="2.5" fill="#0f172a"/>
+        <circle cx="240" cy="80" r="2.5" fill="#0f172a"/>
+        <circle cx="160" cy="80" r="2.5" fill="#0f172a"/>
+        <!-- Етикети -->
+        <text x="105" y="195" class="point">A</text>
+        <text x="285" y="195" class="point">B</text>
+        <text x="245" y="73" class="point">C</text>
+        <text x="143" y="73" class="point">D</text>
+      </svg>`,
+
+      rightTrapezoidInscribed: `<svg class="svg-visual" viewBox="0 0 400 230">
+        <!-- Правоъгълен трапец ABCD: A долу ляво, B долу дясно, C горе дясно, D горе ляво.
+             AD е лявото бедро (перпендикулярно на основите). AB е долната основа, CD горната. -->
+        <!-- Координати: A(60,180), D(60,40), C(190,40), B(300,180). AD=140, CD=130, AB=240, BC?=√((240-130)² + 140²) -->
+        <!-- Опростяваме: вписана окръжност с радиус r=70, AD=2r=140. AB=240, CD=130. -->
+        <polygon points="60,180 300,180 190,40 60,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <!-- Прав ъгъл при A -->
+        <path d="M 60 170 L 70 170 L 70 180" fill="none" stroke="#0f172a" stroke-width="1"/>
+        <!-- Прав ъгъл при D -->
+        <path d="M 60 50 L 70 50 L 70 40" fill="none" stroke="#0f172a" stroke-width="1"/>
+        <!-- Вписана окръжност с радиус r ≈ 70, център някъде в средата по вертикала и долепен до лявото бедро -->
+        <circle cx="130" cy="110" r="70" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+        <circle cx="130" cy="110" r="2" fill="#dc2626"/>
+        <text x="138" y="108" fill="#dc2626" font-size="13" font-style="italic">O</text>
+        <line x1="130" y1="110" x2="130" y2="180" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="135" y="150" fill="#dc2626" font-size="13" font-style="italic">r</text>
+        <!-- Етикети -->
+        <text x="45" y="195" class="point">A</text>
+        <text x="305" y="195" class="point">B</text>
+        <text x="195" y="33" class="point">C</text>
+        <text x="45" y="33" class="point">D</text>
+      </svg>`,
+
       rightTrapezoid: `<svg class="svg-visual" viewBox="0 0 400 150">
         <polygon points="120,130 320,130 240,40 120,40" fill="none" stroke="#0f172a" stroke-width="1.5"/>
         <line x1="240" y1="40" x2="240" y2="130" stroke="#0f172a" stroke-width="1" stroke-dasharray="4,4"/>
@@ -2335,18 +2375,18 @@
           solution: "<strong>Начин 1 (метрични зависимости — най-кратък):</strong> Построяваме височината от C към AB; нейното пето е H. Тогава AHCD е правоъгълник → AH = CD = 9 и CH = AD = 12. В правоъгълния △ABC височината CH е средно геометрична на проекциите на катетите: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CH²</span><span class='frac-den'>AH</span></span></span> = HB → HB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>144</span><span class='frac-den'>9</span></span></span> = 16. Тогава AB = AH + HB = 9 + 16 = 25 cm.<br><br><strong>Начин 2 (подобие):</strong> △ACD ~ △BCA (общ остър ъгъл и прав ъгъл) → <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC</span><span class='frac-den'>AB</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CD</span><span class='frac-den'>AC</span></span></span>. От теорема на Питагор в △ACD: AC² = 144 + 81 = 225. Тогава AB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC²</span><span class='frac-den'>CD</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>225</span><span class='frac-den'>9</span></span></span> = 25 cm."
         },
         {
-          topic: "Трапец",
-          visual: svgs.isoTrapezoid,
-          text: "В равнобедрен трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD, AD = BC</span>) основите са <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, а бедрото <span class='math'>AD = 10 cm</span>. Да се намери височината.",
+          topic: "Трапец · Вписан в окр.",
+          visual: svgs.trapezoidInCircle,
+          text: "Трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>) е <strong>вписан в окръжност</strong>. Основите са <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, а едното бедро е <span class='math'>AD = 10 cm</span>. Да се намери височината на трапеца.",
           ...buildOptions("8 cm", ["6 cm", "10 cm", "12 cm"]),
-          solution: "Проекцията на бедрото върху AB: (AB − CD)/2 = (21 − 9)/2 = 6. h² = AD² − 6² = 100 − 36 = 64, h = 8 cm."
+          solution: "Тъй като трапецът е вписан в окръжност, той е <strong>равнобедрен</strong> (за всеки вписан четириъгълник срещуположните ъгли са допълнителни — а в трапец това принуждава ъглите при основата да са равни, тоест AD = BC). Проекцията на бедрото върху AB: (AB − CD)/2 = (21 − 9)/2 = 6 cm. По теорема на Питагор в правоъгълния триъгълник с катети h и 6 и хипотенуза AD = 10: h² = 100 − 36 = 64 → <strong>h = 8 cm</strong>."
         },
         {
-          topic: "Трапец",
-          visual: svgs.isoTrapezoid,
-          text: "В равнобедрен трапец основите са <span class='math'>a = 21 cm</span> и <span class='math'>b = 9 cm</span>, а бедрото е <span class='math'>10 cm</span>. Да се намери диагоналът.",
+          topic: "Трапец · Вписан в окр.",
+          visual: svgs.trapezoidInCircle,
+          text: "Трапец <span class='math'>ABCD</span> е <strong>вписан в окръжност</strong>, като основите му са <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, а едното бедро е <span class='math'>AD = 10 cm</span>. Да се намери диагоналът.",
           ...buildOptions("17 cm", ["15 cm", "20 cm", "13 cm"]),
-          solution: "Проекция на бедро = 6, h = 8. Проекция на диагонала върху AB е 21 − 6 = 15. Диагонал = √(15² + 8²) = √289 = 17 cm."
+          solution: "Вписан трапец ⟹ <strong>равнобедрен</strong> (както в предишната задача), т.е. AD = BC = 10. Проекция на бедрото върху AB: (21 − 9)/2 = 6 → h = √(100 − 36) = 8 cm. Проекцията на диагонала върху AB е AB − 6 = 15 cm. По теорема на Питагор: диагонал = √(15² + 8²) = √289 = <strong>17 cm</strong>."
         },
         {
           topic: "Трапец",
@@ -2368,6 +2408,20 @@
           text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери диагоналът на трапеца.",
           ...buildOptions("<span class='math'>&radic;514 cm</span>", ["<span class='math'>&radic;706 cm</span>", "<span class='math'>17 cm</span>", "<span class='math'>25 cm</span>"]),
           solution: "Височината: h = 2r = 15 cm. От описан трапец: AB + CD = 2·17 = 34. Проекция на бедрото върху AB: (AB − CD)/2 = √(17² − 15²) = 8 → AB − CD = 16. Тогава AB = 25, CD = 9. Поставяме A(0,0), B(25,0), D(8,15), C(17,15). Диагонал <strong>AC = √(17² + 15²) = √(289 + 225) = √514 cm</strong>."
+        },
+        {
+          topic: "Правоъг. трапец · Вписана окр.",
+          visual: svgs.rightTrapezoidInscribed,
+          text: "В правоъгълен трапец <span class='math'>ABCD</span> (<span class='math'>&ang;A = &ang;D = 90&deg;</span>, <span class='math'>AB &parallel; CD</span>) е вписана окръжност с радиус <span class='math'>r = 4 cm</span>. Ако малката основа е <span class='math'>CD = 6 cm</span>, да се намери голямата основа <span class='math'>AB</span>.",
+          ...buildOptions("12 cm", ["10 cm", "14 cm", "8 cm</span>"]),
+          solution: "В правоъгълен трапец с вписана окръжност лявото бедро AD е перпендикулярно на двете основи, затова AD = 2r = 8 cm (диаметърът). За описан четириъгълник: AB + CD = AD + BC. Нека AB = x. Тогава BC = x + CD − AD = x + 6 − 8 = x − 2. От правоъгълния триъгълник, образуван от спускане на височина от C: BC² = (AB − CD)² + AD² → (x − 2)² = (x − 6)² + 64. Развиваме: x² − 4x + 4 = x² − 12x + 36 + 64 → 8x = 96 → <strong>AB = 12 cm</strong>. (Проверка: BC = 10, AB + CD = 18 = AD + BC = 18 ✓.)"
+        },
+        {
+          topic: "Правоъг. трапец · Вписана окр.",
+          visual: svgs.rightTrapezoidInscribed,
+          text: "В правоъгълен трапец <span class='math'>ABCD</span> (<span class='math'>&ang;A = &ang;D = 90&deg;</span>) е вписана окръжност с радиус <span class='math'>r = 4 cm</span>. Малката основа е <span class='math'>CD = 6 cm</span>. Да се намери дължината на наклоненото бедро <span class='math'>BC</span>.",
+          ...buildOptions("10 cm", ["8 cm", "12 cm", "&radic;145 cm"]),
+          solution: "AD = 2r = 8 cm (диаметърът, понеже AD ⊥ AB и AD ⊥ CD). За описан четириъгълник: AB + CD = AD + BC. Спускаме перпендикуляр от C към AB с пето E: тогава CE = AD = 8 и AE = CD = 6, значи EB = AB − 6. От правоъгълния △BEC: BC² = EB² + 8². Освен това AB = AD + BC − CD = 8 + BC − 6 = BC + 2, т.е. EB = BC − 4. Заместване: BC² = (BC − 4)² + 64 → BC² = BC² − 8·BC + 16 + 64 → 8·BC = 80 → <strong>BC = 10 cm</strong>."
         },
 
         // === Неравенства ===
