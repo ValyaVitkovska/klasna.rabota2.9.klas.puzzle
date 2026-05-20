@@ -227,6 +227,35 @@
     }
     .math-normal { font-family: var(--math-font); font-style: normal; }
 
+    /* Хоризонтални дроби — inline, без LaTeX */
+    .frac-inline {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      font-family: var(--math-font);
+      font-style: italic;
+      margin: 0 2px;
+    }
+    .frac-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.1;
+      vertical-align: middle;
+      font-size: 0.92em;
+    }
+    .frac-num,
+    .frac-den {
+      display: block;
+      padding: 0 4px;
+      white-space: nowrap;
+    }
+    .frac-num {
+      border-bottom: 1.2px solid currentColor;
+      padding-bottom: 1px;
+    }
+    .frac-den { padding-top: 1px; }
+
     /* KaTeX корекции — да наследи цвета от родителя */
     .katex { font-size: 1.05em; color: inherit; }
     .katex-display { margin: 0.6em 0; }
@@ -661,11 +690,39 @@
     /* ====== СТАРТОВ ЕКРАН ====== */
     .header-subtitle {
       margin: 0 auto;
-      color: var(--muted);
-      font-size: 16px;
+      font-size: 18px;
       line-height: 1.5;
-      max-width: 800px;
+      max-width: 820px;
       min-height: 1.5em;
+      font-weight: 600;
+      background: linear-gradient(135deg, #b45309 0%, #d97706 35%, #ea580c 65%, #b45309 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: subtitleShimmer 6s ease-in-out infinite;
+      padding: 4px 8px;
+    }
+    @keyframes subtitleShimmer {
+      0%, 100% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+    }
+    [data-theme='dark'] .header-subtitle {
+      background: linear-gradient(135deg, #fde68a 0%, #fbbf24 35%, #f59e0b 65%, #fde68a 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    /* Резерва за каретката (тя е <span>, която не наследява transparent fill) */
+    .header-subtitle .caret {
+      -webkit-text-fill-color: #d97706;
+      color: #d97706;
+    }
+    [data-theme='dark'] .header-subtitle .caret {
+      -webkit-text-fill-color: #fbbf24;
+      color: #fbbf24;
     }
 
     .start-screen {
@@ -1066,9 +1123,30 @@
       color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: space-between;
     }
     .player-bar strong { color: var(--ink); font-weight: 700; }
+    .new-set-btn {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: white;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25);
+    }
+    .new-set-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+    }
+    .new-set-btn:active {
+      transform: translateY(0);
+    }
 
     @media (max-width: 768px) {
       .credits-card { grid-template-columns: 1fr; text-align: center; gap: 16px; }
@@ -1076,6 +1154,130 @@
       .instructions-card, .credits-card, .start-form { padding: 18px; }
       .start-btn { padding: 16px 32px; font-size: 17px; width: 100%; max-width: 420px; }
       .typed-text { font-size: 15px; min-height: 14em; }
+    }
+
+    /* ===== Анимация „ключ" — обратна връзка ===== */
+    .key-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+    }
+    .key-overlay.show { animation: keyOverlayShow 2s ease-out forwards; }
+    @keyframes keyOverlayShow {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .key-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      min-width: 240px;
+      max-width: 90vw;
+    }
+    .key-card.correct {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      box-shadow: 0 20px 60px rgba(217, 119, 6, 0.4), 0 0 80px rgba(252, 211, 77, 0.5);
+    }
+    .key-card.wrong {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      box-shadow: 0 20px 60px rgba(185, 28, 28, 0.3);
+    }
+    [data-theme='dark'] .key-card.correct {
+      background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+      box-shadow: 0 20px 60px rgba(217, 119, 6, 0.5), 0 0 80px rgba(252, 211, 77, 0.4);
+    }
+    [data-theme='dark'] .key-card.wrong {
+      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    }
+    .key-svg-wrap {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .key-correct-svg {
+      width: 100px;
+      height: 100px;
+      animation: keyTurn 1.6s ease-out forwards;
+    }
+    @keyframes keyTurn {
+      0%   { transform: rotate(0deg) scale(0.5); opacity: 0; }
+      25%  { transform: rotate(0deg) scale(1.1); opacity: 1; }
+      50%  { transform: rotate(45deg) scale(1.1); }
+      75%  { transform: rotate(90deg) scale(1.1); }
+      100% { transform: rotate(90deg) scale(1); opacity: 1; }
+    }
+    .key-light {
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(252, 211, 77, 0.8) 0%, rgba(252, 211, 77, 0) 70%);
+      opacity: 0;
+      animation: keyLight 1.6s ease-out forwards 0.6s;
+    }
+    @keyframes keyLight {
+      0%   { opacity: 0; transform: scale(0.5); }
+      50%  { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0; transform: scale(1.5); }
+    }
+    .key-wrong-svg {
+      width: 100px;
+      height: 100px;
+      animation: keyWobble 0.8s ease-in-out;
+    }
+    @keyframes keyWobble {
+      0%, 100% { transform: rotate(0deg); }
+      15% { transform: rotate(-12deg); }
+      30% { transform: rotate(10deg); }
+      45% { transform: rotate(-8deg); }
+      60% { transform: rotate(6deg); }
+      75% { transform: rotate(-4deg); }
+      90% { transform: rotate(2deg); }
+    }
+    .lock-appear {
+      position: absolute;
+      bottom: -8px;
+      right: -8px;
+      width: 38px;
+      height: 38px;
+      opacity: 0;
+      animation: lockAppear 0.5s ease-out forwards 0.8s;
+    }
+    @keyframes lockAppear {
+      0%   { opacity: 0; transform: scale(0.3); }
+      60%  { opacity: 1; transform: scale(1.15); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .key-text {
+      text-align: center;
+      font-weight: 600;
+      font-size: 17px;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .key-text.correct-text { color: #92400e; }
+    .key-text.wrong-text { color: #991b1b; }
+    [data-theme='dark'] .key-text.correct-text { color: #fde68a; }
+    [data-theme='dark'] .key-text.wrong-text { color: #fecaca; }
+
+    @media (max-width: 480px) {
+      .key-card { padding: 22px 26px; min-width: 200px; }
+      .key-svg-wrap, .key-correct-svg, .key-wrong-svg { width: 80px; height: 80px; }
+      .key-text { font-size: 15px; }
     }
   </style>
 </head>
@@ -1240,7 +1442,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "math9_klasna2_v3";
+    const STORAGE_KEY = "math9_klasna2_v4";
     const THEME_KEY = "math9_theme";
     const SOUND_KEY = "math9_sound";
 
@@ -1485,18 +1687,128 @@
         startScreen.style.display = 'none';
         gameArea.style.display = 'block';
         gameArea.style.animation = 'fadeIn 0.5s ease';
-        // Покажи името
+        // Покажи името + бутон „Нов сет"
         const bar = document.getElementById('playerBar');
-        if (bar) bar.innerHTML = `Играч: <strong>${escapeHtml(playerName)}</strong>`;
+        if (bar) bar.innerHTML = `
+          <span>Играч: <strong>${escapeHtml(playerName)}</strong></span>
+          <button class="new-set-btn" onclick="confirmNewSet()" title="Генерирай нови случайни задачи">🎲 Нов сет задачи</button>
+        `;
         // Стартирай играта
         bootGame();
       }, 400);
     }
 
+    // Потвърди и генерирай нов сет задачи
+    window.confirmNewSet = function() {
+      if (confirm("Сигурен ли си, че искаш да започнеш с нов сет задачи? Текущият напредък ще бъде изтрит.")) {
+        clearState();
+        // Reset puzzle/screens state
+        currentScreenIdx = 0;
+        score = 0;
+        correctCount = 0;
+        screens = [];
+        allQuestionsFlat = [];
+        tileMeta = {};
+        // Премахни предишния пъзел board
+        const board = document.getElementById('puzzleBoard');
+        if (board) board.innerHTML = '';
+        generateMission();
+      }
+    };
+
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[c]));
+    }
+
+    // ===== Хоризонтални дроби =====
+    // Преобразува дроби A/B в HTML с .frac-inline (числител над знаменател),
+    // запазвайки HTML структурата и съществуващите ръчно написани frac-inline.
+    function formatFractions(html) {
+      if (!html) return html;
+      // Бързо излизане, ако няма '/'
+      if (html.indexOf('/') === -1) return html;
+
+      // Разделяме на части: HTML тагове vs. текст. Дробите се преобразуват
+      // САМО в текстовите части — за да не разваляме маркъп.
+      const parts = [];
+      let i = 0;
+      while (i < html.length) {
+        if (html[i] === '<') {
+          const end = html.indexOf('>', i);
+          if (end === -1) { parts.push({ type: 'text', value: html.substring(i) }); break; }
+          // Цял таг (включително <span class='math'>...)
+          const tag = html.substring(i, end + 1);
+          parts.push({ type: 'tag', value: tag });
+          i = end + 1;
+          // Ако сме на отварящ таг, който НЕ искаме да обработваме (frac-inline),
+          // прескочи всичко до съответния </тип>
+          const m = tag.match(/^<(\w+)[^>]*class\s*=\s*['"]([^'"]*)['"]/i);
+          if (m && (m[2].includes('frac-inline') || m[2].includes('frac-stack'))) {
+            // Намери затваряния таг (същия вид)
+            const closeTag = '</' + m[1] + '>';
+            let depth = 1;
+            let j = i;
+            while (j < html.length && depth > 0) {
+              const nextOpen = html.indexOf('<' + m[1], j);
+              const nextClose = html.indexOf(closeTag, j);
+              if (nextClose === -1) break;
+              if (nextOpen !== -1 && nextOpen < nextClose) {
+                depth++;
+                j = nextOpen + 1;
+              } else {
+                depth--;
+                j = nextClose + closeTag.length;
+              }
+            }
+            parts.push({ type: 'tag', value: html.substring(i, j) });
+            i = j;
+          }
+        } else {
+          // Натрупай текст до следващото <
+          const next = html.indexOf('<', i);
+          const end = next === -1 ? html.length : next;
+          parts.push({ type: 'text', value: html.substring(i, end) });
+          i = end;
+        }
+      }
+
+      // За всяка текстова част — replace дробите
+      return parts.map(p => p.type === 'tag' ? p.value : fracReplaceInText(p.value)).join('');
+    }
+
+    // Заместване в текст: A/B → горно/долно (хоризонтална черта)
+    function fracReplaceInText(text) {
+      if (!text || text.indexOf('/') === -1) return text;
+
+      // Разпознаваме:
+      // 1) (израз)/(израз)
+      // 2) число²/число (напр. AC²/CD)
+      // 3) число/число (напр. 225/9, 3/7)
+      // 4) Идентификатор²/идентификатор (напр. b²/a)
+      // 5) Идентификатор/идентификатор (напр. AB/CD)
+      //
+      // НЕ заместваме:
+      //   - URL-и (http://...)
+      //   - дати (1/1/2024)
+      //   - " и/или ", "ad/bc" в контексти, които не приличат на математика
+      //
+      // Допустими „части": букви (вкл. кирилица), цифри, ², ³, и скоби.
+      const numerator = "(?:\\([^()/]+\\)|[A-Za-zА-Яа-я0-9]+(?:[²³])?)";
+      const denominator = numerator;
+      // Внимание: предхождащият символ не трябва да е цифра + ':' (време/съотношение)
+      // Не заместваме, ако преди / има специфични контексти (";" + интервал = списък)
+      const re = new RegExp(`(?<![\\w:.])(${numerator})\\s*\\/\\s*(${denominator})(?![\\w.])`, 'g');
+
+      return text.replace(re, (match, num, den) => {
+        // Изключваме фалшиви случаи (URL, време)
+        if (num === 'http' || num === 'https') return match;
+        // Премахваме външните скоби, ако ги има
+        const cleanNum = (num.startsWith('(') && num.endsWith(')')) ? num.slice(1, -1) : num;
+        const cleanDen = (den.startsWith('(') && den.endsWith(')')) ? den.slice(1, -1) : den;
+        return `<span class="frac-inline"><span class="frac-stack"><span class="frac-num">${cleanNum}</span><span class="frac-den">${cleanDen}</span></span></span>`;
+      });
     }
 
     // ===== Интерактивен фон с плаващи математически символи =====
@@ -1795,6 +2107,57 @@
         <polygon points="60,130 260,130 340,30 140,30" fill="none" stroke="#0f172a" stroke-width="1.5"/>
         <text x="40" y="140" class="point">A</text><text x="270" y="140" class="point">B</text>
         <text x="350" y="25" class="point">C</text><text x="125" y="25" class="point">D</text>
+      </svg>`,
+
+      rhombusInTriangle: `<svg class="svg-visual" viewBox="0 0 400 220">
+        <!-- Триъгълник ABC: A долу ляво, B долу дясно, C горе. Не равнобедрен. -->
+        <polygon points="40,190 360,190 260,30" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <!-- Ромб BNMP: B=(360,190), P на AB, N на BC, M на AC, така че BN=NM=MP=PB -->
+        <!-- BC от (360,190) до (260,30), дължина ≈ 189. Вземаме страна на ромба ≈ 80 -->
+        <!-- P на AB: 360 - 80 = 280, y=190 -->
+        <!-- N на BC: единичен вектор (260-360, 30-190)/189 = (-0.529, -0.847). N = (360 - 0.529·80, 190 - 0.847·80) ≈ (318, 122) -->
+        <!-- M = P + (N - B) = (280, 190) + (-42, -68) = (238, 122) -->
+        <polygon points="360,190 318,122 238,122 280,190" fill="rgba(99,102,241,0.08)" stroke="#0f172a" stroke-width="1.5"/>
+        <!-- Маркери за точки -->
+        <circle cx="280" cy="190" r="2.5" fill="#0f172a"/>
+        <circle cx="318" cy="122" r="2.5" fill="#0f172a"/>
+        <circle cx="238" cy="122" r="2.5" fill="#0f172a"/>
+        <!-- Етикети -->
+        <text x="25" y="205" class="point">A</text>
+        <text x="368" y="205" class="point">B</text>
+        <text x="265" y="22" class="point">C</text>
+        <text x="275" y="208" class="point">P</text>
+        <text x="324" y="118" class="point">N</text>
+        <text x="222" y="118" class="point">M</text>
+      </svg>`,
+
+      circumCircle: `<svg class="svg-visual" viewBox="0 0 300 240">
+        <circle cx="150" cy="125" r="100" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <polygon points="80,180 220,180 150,40" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <circle cx="150" cy="125" r="2.5" fill="#0f172a"/>
+        <text x="155" y="120" class="point">O</text>
+        <text x="65" y="195" class="point">A</text>
+        <text x="225" y="195" class="point">B</text>
+        <text x="145" y="30" class="point">C</text>
+      </svg>`,
+
+      inscribedTrapezoid: `<svg class="svg-visual" viewBox="0 0 400 200">
+        <polygon points="50,170 350,170 270,40 130,40" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <circle cx="200" cy="115" r="55" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <circle cx="200" cy="115" r="2" fill="#0f172a"/>
+        <text x="210" y="113" class="point">O</text>
+        <text x="35" y="185" class="point">A</text><text x="355" y="185" class="point">B</text>
+        <text x="275" y="30" class="point">C</text><text x="115" y="30" class="point">D</text>
+      </svg>`,
+
+      rightTrigBisector: `<svg class="svg-visual" viewBox="0 0 400 220">
+        <polygon points="80,180 80,40 320,180" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="80" y1="100" x2="320" y2="180" stroke="#0f172a" stroke-width="1.5"/>
+        <path d="M 80 170 L 90 170 L 90 180" fill="none" stroke="#0f172a" stroke-width="1"/>
+        <text x="65" y="35" class="point">A</text>
+        <text x="65" y="195" class="point">C</text>
+        <text x="325" y="195" class="point">B</text>
+        <text x="60" y="105" class="point">L</text>
       </svg>`
     };
 
@@ -1846,6 +2209,13 @@
           ...buildOptions("6 cm", ["10 cm", "9 cm", "7,5 cm"]),
           solution: "k = CM/CA = 4/10 = 2/5. MN = k·AB = 2/5 · 15 = 6 cm."
         },
+        {
+          topic: "Подобни · Ромб в △",
+          visual: svgs.rhombusInTriangle,
+          text: "В <span class='math'>&#9651;ABC</span> е вписан ромбът <span class='math'>BNMP</span> така, че <span class='math'>P &isin; AB</span>, <span class='math'>N &isin; CB</span>, а <span class='math'>M &isin; AC</span>. Ако <span class='math'>AB = 24 cm</span> и <span class='math'>BC = 18 cm</span>, да се намери периметърът на ромба <span class='math'>BNMP</span>.",
+          ...buildOptions("<span class='math'>288/7 cm</span>", ["<span class='math'>42 cm</span>", "<span class='math'>40 cm</span>", "<span class='math'>36 cm</span>"]),
+          solution: "Нека страната на ромба е a. Тъй като BNMP е ромб с връх B, страните MP и BN са успоредни (на BC), а MN и BP са успоредни (на AB). Следователно MP ‖ BC и MP = a, AP = AB − BP = AB − a = 24 − a. От △APM ~ △ABC (MP ‖ BC): AP/AB = MP/BC → (24 − a)/24 = a/18 → 18(24 − a) = 24a → 432 = 42a → <strong>a = 72/7</strong>. Периметър = 4a = <strong>288/7 cm</strong>."
+        },
 
         // === Метрични зависимости ===
         {
@@ -1884,11 +2254,18 @@
           solution: "c = √(225+400) = 25. R = c/2 = 12,5. r = (a+b−c)/2 = (15+20−25)/2 = 5. Тогава r + R = 17,5 cm."
         },
         {
+          topic: "Прав. △ · Ъглополовяща",
+          visual: svgs.rightTrigBisector,
+          text: "В правоъгълния <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) ъглополовящата <span class='math'>BL</span> (<span class='math'>L &isin; AC</span>) дели катета <span class='math'>AC</span> на отсечки <span class='math'>AL = 5 cm</span> и <span class='math'>CL = 4 cm</span>. Да се намери дължината на <span class='math'>BL</span>.",
+          ...buildOptions("<span class='math'>4&radic;5 cm</span>", ["<span class='math'>&radic;41 cm</span>", "<span class='math'>12 cm</span>", "<span class='math'>10 cm</span>"]),
+          solution: "По свойство на ъглополовящата: AL/CL = AB/BC → 5/4 = AB/BC. Нека BC = 4t, AB = 5t. От △ABC: AB² = BC² + AC² → 25t² = 16t² + 81 → t² = 9, t = 3. Значи BC = 12. От правоъгълния △BCL: BL² = BC² + CL² = 144 + 16 = 160 → <strong>BL = √160 = 4√5 cm</strong>."
+        },
+        {
           topic: "Метрични зависимости",
-          visual: svgs.rightTrig,
-          text: "В правоъгълния <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) ъглополовящата <span class='math'>BL</span> (<span class='math'>L &isin; AC</span>) дели катета <span class='math'>AC</span> на отсечки <span class='math'>CL = 3 cm</span> и <span class='math'>AL = 5 cm</span>. Да се намери дължината на хипотенузата <span class='math'>AB</span>.",
-          ...buildOptions("10 cm", ["8 cm", "12 cm", "15 cm"]),
-          solution: "По свойство на ъглополовящата: CL/AL = BC/AB → 3/5 = BC/AB. Нека BC = 3t, AB = 5t. От △BCA: AB² = BC² + AC² → 25t² = 9t² + 64 → t² = 4, t = 2. AB = 10 cm."
+          visual: svgs.metric,
+          text: "В правоъгълен триъгълник единият катет е <span class='math'>6 cm</span>, а проекцията му върху хипотенузата е <span class='math'>3,6 cm</span>. Да се намери дължината на другия катет.",
+          ...buildOptions("8 cm", ["10 cm", "4,8 cm", "7,2 cm"]),
+          solution: "По метричните зависимости: катет² = проекция · хипотенуза, т.е. 36 = 3,6·c → c = 10. Тогава другата проекция е c − 3,6 = 6,4. Другият катет² = 6,4·10 = 64 → катет = 8 cm."
         },
 
         // === Равнобедрен триъгълник / височини / медиани ===
@@ -1900,11 +2277,32 @@
           solution: "BC = AC = 25. В △AHB: AB² = AH² + BH². В △AHC: AH² = AC² − CH² = 625 − 49 = 576. AB² = 576 + 324 = 900, AB = 30 cm."
         },
         {
-          topic: "Равнобедрен триъгълник",
+          topic: "Равнобедрен △ · Медиана",
           visual: svgs.isoTriangle,
           text: "В равнобедрения <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC</span>) основата е <span class='math'>AB = 12 cm</span>, а бедрото е <span class='math'>AC = 10 cm</span>. Да се намери дължината на медианата <span class='math'>m<sub>b</sub></span> към бедрото <span class='math'>AC</span>.",
-          ...buildOptions("&radic;97 cm", ["&radic;73 cm", "9 cm", "&radic;113 cm"]),
-          solution: "Формула на медианата от B към AC: m_b² = (2·AB² + 2·BC² − AC²)/4 = (2·144 + 2·100 − 100)/4 = (288 + 200 − 100)/4 = 388/4 = 97. Значи m_b = √97 cm."
+          ...buildOptions("<span class='math'>&radic;97 cm</span>", ["<span class='math'>&radic;73 cm</span>", "<span class='math'>9 cm</span>", "<span class='math'>&radic;113 cm</span>"]),
+          solution: "<strong>Начин 1 (формула за медиана):</strong> Медианата от B към AC се пресмята с формулата m_b² = (2·a² + 2·c² − b²)/4, където a = BC, b = AC, c = AB.<br>m_b² = (2·100 + 2·144 − 100)/4 = (200 + 288 − 100)/4 = 388/4 = 97 → <strong>m_b = √97 cm</strong>.<br><br><strong>Начин 2 (координати):</strong> Поставяме A(−6, 0), B(6, 0). Височината от C: h = √(10² − 6²) = 8, C(0, 8). Среда на AC: M = (−3, 4). Тогава BM = √((6 − (−3))² + (0 − 4)²) = √(81 + 16) = √97 cm."
+        },
+        {
+          topic: "Равнобедрен △ · Медиана",
+          visual: svgs.isoTriangle,
+          text: "В равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC = 10 cm</span>) основата е <span class='math'>AB = 16 cm</span>. Да се намери дължината на медианата от <span class='math'>A</span> към бедрото <span class='math'>BC</span>.",
+          ...buildOptions("<span class='math'>3&radic;17 cm</span>", ["<span class='math'>&radic;97 cm</span>", "<span class='math'>8 cm</span>", "<span class='math'>&radic;164 cm</span>"]),
+          solution: "Формула за медиана от A към BC: m_a² = (2·AB² + 2·AC² − BC²)/4, където AB = 16, AC = 10, BC = 10. m_a² = (2·256 + 2·100 − 100)/4 = (512 + 200 − 100)/4 = 612/4 = 153 → <strong>m_a = √153 = √(9·17) = 3√17 cm</strong>."
+        },
+        {
+          topic: "Равнобедрен △ · Медиана",
+          visual: svgs.isoTriangle,
+          text: "В равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC = 13 cm</span>) основата е <span class='math'>AB = 10 cm</span>. Да се намери дължината на медианата от <span class='math'>A</span> към бедрото <span class='math'>BC</span>.",
+          ...buildOptions("<span class='math'>3&radic;41/2 cm</span>", ["<span class='math'>12 cm</span>", "<span class='math'>&radic;169/2 cm</span>", "<span class='math'>13 cm</span>"]),
+          solution: "Формула за медиана от A към BC: m_a² = (2·AB² + 2·AC² − BC²)/4 = (2·100 + 2·169 − 169)/4 = (200 + 169)/4 = 369/4 → <strong>m_a = √369/2 = (3√41)/2 cm</strong>.<br><br>Проверка с координати: A(−5,0), B(5,0), C(0,12). Среда на BC: M = (2,5; 6). AM = √((7,5)² + 6²) = √(56,25 + 36) = √92,25 = √(369/4) = √369/2 cm."
+        },
+        {
+          topic: "Равнобедрен △ · Описана окр.",
+          visual: svgs.circumCircle,
+          text: "Даден е равнобедрен <span class='math'>&#9651;ABC</span> с основа <span class='math'>AB = 10 cm</span> и бедра <span class='math'>AC = BC = 13 cm</span>. Да се намери радиусът <span class='math'>R</span> на описаната около <span class='math'>&#9651;ABC</span> окръжност.",
+          ...buildOptions("<span class='math'>169/24 cm</span>", ["<span class='math'>13/2 cm</span>", "<span class='math'>12 cm</span>", "<span class='math'>10 cm</span>"]),
+          solution: "Височината от C към AB (понеже △ е равнобедрен, тя е и медиана): h = √(13² − 5²) = √144 = 12 cm. Лицето: S = AB·h/2 = 10·12/2 = 60 cm². Формула за радиус на описаната окръжност: R = (a·b·c)/(4S) = (13·13·10)/(4·60) = 1690/240 = <strong>169/24 cm</strong> (несъкратима дроб)."
         },
         {
           topic: "Правоъгълен триъгълник",
@@ -1934,7 +2332,7 @@
           visual: svgs.rightTrapezoid,
           text: "В правоъгълния трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD, &ang;A = 90&deg;</span>), диагоналът <span class='math'>AC &perp; BC</span>. Ако <span class='math'>AD = 12 cm</span> и <span class='math'>CD = 9 cm</span>, да се намери голямата основа <span class='math'>AB</span>.",
           ...buildOptions("25 cm", ["20 cm", "15 cm", "16 cm"]),
-          solution: "От правоъгълен △ACD: AC² = AD² + CD² = 144 + 81 = 225, AC = 15. В △ABC (правоъгълен при C) AC е катет, AB е хипотенуза. Височината от C към AB е равна на AD = 12. По h·AB = AC·BC и Питагор: AB = AC²/CD′. По-просто: △ACD ~ △BCA (общ остър ъгъл) → AC/AB = CD/AC → AB = AC²/CD = 225/9 = 25 cm."
+          solution: "<strong>Начин 1 (метрични зависимости — най-кратък):</strong> Построяваме височината от C към AB; нейното пето е H. Тогава AHCD е правоъгълник → AH = CD = 9 и CH = AD = 12. В правоъгълния △ABC височината CH е средно геометрична на проекциите на катетите: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CH²</span><span class='frac-den'>AH</span></span></span> = HB → HB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>144</span><span class='frac-den'>9</span></span></span> = 16. Тогава AB = AH + HB = 9 + 16 = 25 cm.<br><br><strong>Начин 2 (подобие):</strong> △ACD ~ △BCA (общ остър ъгъл и прав ъгъл) → <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC</span><span class='frac-den'>AB</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CD</span><span class='frac-den'>AC</span></span></span>. От теорема на Питагор в △ACD: AC² = 144 + 81 = 225. Тогава AB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC²</span><span class='frac-den'>CD</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>225</span><span class='frac-den'>9</span></span></span> = 25 cm."
         },
         {
           topic: "Трапец",
@@ -1956,6 +2354,20 @@
           text: "Диагоналите на трапеца се пресичат в <span class='math'>O</span>. Лицата на <span class='math'>&#9651;CDO : &#9651;ABO = 4 : 25</span>. Да се намери отношението <span class='math'>CD : AB</span>.",
           ...buildOptions("2 : 5", ["4 : 25", "1 : 5", "16 : 625"]),
           solution: "△CDO ~ △ABO. Отношението на лицата е равно на k², значи k = CD/AB = √(4/25) = 2/5."
+        },
+        {
+          topic: "Трапец · Вписана окр.",
+          visual: svgs.inscribedTrapezoid,
+          text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери сборът на основите му.",
+          ...buildOptions("34 cm", ["30 cm", "17 cm", "60 cm"]),
+          solution: "В описан четириъгълник: AB + CD = AD + BC (сборът на срещуположни страни е равен). За равнобедрен трапец AD = BC = 17, значи AB + CD = 17 + 17 = 34 cm. Височината на трапеца е 2r = 15 cm — проверка: проекция на бедрото = √(17² − 15²) = 8, тоест (AB − CD)/2 = 8 → AB − CD = 16. С AB + CD = 34: AB = 25, CD = 9."
+        },
+        {
+          topic: "Трапец · Вписана окр.",
+          visual: svgs.inscribedTrapezoid,
+          text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери диагоналът на трапеца.",
+          ...buildOptions("<span class='math'>&radic;514 cm</span>", ["<span class='math'>&radic;706 cm</span>", "<span class='math'>17 cm</span>", "<span class='math'>25 cm</span>"]),
+          solution: "Височината: h = 2r = 15 cm. От описан трапец: AB + CD = 2·17 = 34. Проекция на бедрото върху AB: (AB − CD)/2 = √(17² − 15²) = 8 → AB − CD = 16. Тогава AB = 25, CD = 9. Поставяме A(0,0), B(25,0), D(8,15), C(17,15). Диагонал <strong>AC = √(17² + 15²) = √(289 + 225) = √514 cm</strong>."
         },
 
         // === Неравенства ===
@@ -1981,11 +2393,11 @@
           solution: "(x−1)(x−1)(x−6) = (x−1)²(x−6) ≥ 0. (x−1)² ≥ 0 винаги, значи или x−6 ≥ 0, или x = 1: x ∈ [6; +∞) ∪ {1}."
         },
         {
-          topic: "Неравенства",
+          topic: "Неравенства · Дробно",
           visual: svgs.rational,
-          text: "Да се реши модулното неравенство <span class='math'>|2x - 1| > 9</span>.",
-          ...buildOptions("x &isin; (-&infin;; -4) &cup; (5; +&infin;)", ["x &isin; (-4; 5)", "x &isin; (-&infin;; -4)", "x &isin; (5; +&infin;)"]),
-          solution: "|2x−1| > 9 ⟺ 2x−1 > 9 или 2x−1 < −9. Първо: x > 5. Второ: x < −4. Решение: x ∈ (−∞; −4) ∪ (5; +∞)."
+          text: "Да се намерят целите числа от решенията на неравенството <span class='math'>(2x - 6) / (x + 1) &gt; 0</span>.",
+          ...buildOptions("Безкрайно много", ["{0; 1; 2}", "{2; 3}", "{ -1; 0; 1; 2 }"]),
+          solution: "ОДЗ: x ≠ -1. Нули: числител = 0 при x = 3; знаменател = 0 при x = -1. Метод на интервалите: на (3; +∞) знакът е (+)/(+) = +; на (-1; 3) знакът е (-)/(+) = -; на (-∞; -1) знакът е (-)/(-) = +. Решение: x ∈ (-∞; -1) ∪ (3; +∞) — безкрайно много цели числа (всички цели x ≤ -2 и x ≥ 4)."
         },
         {
           topic: "Неравенства",
@@ -2058,6 +2470,20 @@
           text: "Да се реши неравенството <span class='math'>(x&sup2; - 4) / (x + 3) &lt; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -3) &cup; (-2; 2)", ["x &isin; (-3; -2) &cup; (2; +&infin;)", "x &isin; (-2; 2)", "x &isin; (-&infin;; -3) &cup; (2; +&infin;)"]),
           solution: "Разлагаме: (x−2)(x+2)/(x+3) < 0. ОДЗ: x ≠ −3. Нули: −3, −2, 2. На (2; +∞): (+)(+)/(+) = +. Редувайки: (−2; 2) знак (−), (−3; −2) знак (+), (−∞; −3) знак (−). Строго неравенство → не включваме граничните точки. Решение: x ∈ (−∞; −3) ∪ (−2; 2)."
+        },
+        {
+          topic: "Неравенства · Дробно",
+          visual: svgs.rational,
+          text: "Да се реши неравенството <span class='math'>3/(x - 1) &le; 1</span>.",
+          ...buildOptions("x &isin; (-&infin;; 1) &cup; [4; +&infin;)", ["x &isin; (1; 4]", "x &isin; [4; +&infin;)", "x &isin; (-&infin;; 4]"]),
+          solution: "ОДЗ: x ≠ 1. Прехвърляме всичко вляво: 3/(x − 1) − 1 ≤ 0 → (3 − (x − 1))/(x − 1) ≤ 0 → (4 − x)/(x − 1) ≤ 0 → (x − 4)/(x − 1) ≥ 0. Метод на интервалите: нули x = 1, x = 4. На (4; +∞): + / +; на (1; 4): − / +; на (−∞; 1): − / −. x = 4 включваме, x = 1 — не. Решение: x ∈ (−∞; 1) ∪ [4; +∞)."
+        },
+        {
+          topic: "Неравенства · Дробно",
+          visual: svgs.rational,
+          text: "Да се реши неравенството <span class='math'>1/(x - 2) + 1/(x - 4) &gt; 0</span>.",
+          ...buildOptions("x &isin; (2; 3) &cup; (4; +&infin;)", ["x &isin; (2; 4)", "x &isin; (3; 4)", "x &isin; (-&infin;; 2) &cup; (4; +&infin;)"]),
+          solution: "Привеждаме под общ знаменател: [(x − 4) + (x − 2)] / [(x − 2)(x − 4)] = (2x − 6) / [(x − 2)(x − 4)] > 0 → 2(x − 3) / [(x − 2)(x − 4)] > 0. Нули: 2, 3, 4. Метод на интервалите: знаците от дясно наляво: (4; +∞): +; (3; 4): −; (2; 3): +; (−∞; 2): −. Решение: x ∈ (2; 3) ∪ (4; +∞)."
         },
 
         // === Допълнителни задачи за разнообразие ===
@@ -2182,11 +2608,11 @@
             {
               text: "Подредете алгоритъма за намиране на медианата <span class='math'>m<sub>a</sub></span> и ъглополовящата <span class='math'>l<sub>b</sub></span>:",
               ...buildOptions(
-                "1) Намиране на хипотенузата по Питагор; 2) Прилагане на формула за медиана към катет; 3) Прилагане на свойство на ъглополовяща за намиране на отношението; 4) Изчисляване на ъглополовящата по формула",
+                "1) Намиране на хипотенузата по теорема на Питагор; 2) Прилагане на формула за медиана към катет; 3) Прилагане на свойство на ъглополовяща за намиране на отношението; 4) Изчисляване на ъглополовящата по формула",
                 [
-                  "1) Формула за медиана; 2) Питагор; 3) Ъглополовяща; 4) Свойство",
-                  "1) Питагор; 2) Свойство на ъглополовяща; 3) Формула за ъглополовяща; 4) Медиана",
-                  "1) Свойство на ъглополовяща; 2) Формула за медиана; 3) Питагор; 4) Изчисляване"
+                  "1) Формула за медиана; 2) теорема на Питагор; 3) Ъглополовяща; 4) Свойство",
+                  "1) теорема на Питагор; 2) Свойство на ъглополовяща; 3) Формула за ъглополовяща; 4) Медиана",
+                  "1) Свойство на ъглополовяща; 2) Формула за медиана; 3) теорема на Питагор; 4) Изчисляване"
                 ]
               ),
               solution: "Първо намираме хипотенузата (нужна и за двете формули). После прилагаме формулата за медиана към катет. След това изчисляваме отношенията по свойство на ъглополовящата и накрая използваме формулата за ъглополовяща."
@@ -2194,7 +2620,7 @@
             {
               text: "Хипотенузата <span class='math'>c = AB</span> е:",
               ...buildOptions("c = 10 cm", ["c = 14 cm", "c = &radic;28 cm", "c = 12 cm"]),
-              solution: "По Питагорова теорема: c² = a² + b² = 36 + 64 = 100, значи c = 10 cm."
+              solution: "По теорема на Питагор: c² = a² + b² = 36 + 64 = 100, значи c = 10 cm."
             },
             {
               text: "Медианата <span class='math'>m<sub>a</sub></span> към катета <span class='math'>a = BC</span> (т.е. от върха <span class='math'>A</span> към средата на <span class='math'>BC</span>) се намира по формулата <span class='math'>m<sub>a</sub>&sup2; = (2b&sup2; + 2c&sup2; - a&sup2;) / 4</span>. Изчислете:",
@@ -2209,62 +2635,139 @@
           ]
         },
 
-        // ===== ЗАДАЧА 3: Радиуси в равнобедрен триъгълник + медиана към бедро (5 стъпки) =====
+        // ===== ЗАДАЧА 3А: Вписана окръжност в равнобедрен △ (3 стъпки) =====
         {
-          topic: "Окръжности и медиана в равнобедрен △",
-          context: "В равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span> да се намерят радиусите на вписаната и описаната окръжност, както и медианата към бедрото.",
+          topic: "Равнобедрен △ · Вписана окр.",
+          context: "В равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span> да се намери радиусът <span class='math'>r</span> на вписаната окръжност.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 280">
             <polygon points="100,240 300,240 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <line x1="200" y1="40" x2="200" y2="240" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
-            <circle cx="200" cy="194" r="46" fill="none" stroke="#dc2626" stroke-width="1.3"/>
-            <text x="200" y="200" text-anchor="middle" fill="#dc2626" font-size="13">r</text>
-            <circle cx="200" cy="125" r="85" fill="none" stroke="#1d4ed8" stroke-width="1.3"/>
-            <text x="294" y="125" fill="#1d4ed8" font-size="13">R</text>
-            <line x1="100" y1="240" x2="250" y2="140" stroke="#16a34a" stroke-width="1.4" stroke-dasharray="5,3"/>
-            <circle cx="250" cy="140" r="3" fill="#0f172a"/>
-            <text x="260" y="138" class="point">M</text>
-            <text x="170" y="195" fill="#16a34a" font-size="12">m</text>
+            <circle cx="200" cy="180" r="60" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+            <circle cx="200" cy="180" r="2" fill="#dc2626"/>
+            <text x="210" y="178" fill="#dc2626" font-size="14" font-style="italic">O</text>
+            <line x1="200" y1="180" x2="200" y2="240" stroke="#dc2626" stroke-width="1.2"/>
+            <text x="208" y="215" fill="#dc2626" font-size="13" font-style="italic">r</text>
             <path d="M 190 240 L 190 230 L 200 230" fill="none" stroke="#0f172a" stroke-width="1"/>
             <text x="85" y="255" class="point">A</text>
             <text x="305" y="255" class="point">B</text>
             <text x="195" y="32" class="point">C</text>
             <text x="195" y="258" class="point">H</text>
-            <text x="145" y="270">AB = 12</text>
-            <text x="125" y="135">10</text>
-            <text x="265" y="135">10</text>
+            <text x="130" y="135">10</text>
+            <text x="260" y="135">10</text>
+            <text x="180" y="270">12</text>
           </svg>`,
           steps: [
             {
-              text: "Подредете алгоритъма за намирането на <span class='math'>r</span>, <span class='math'>R</span> и медианата <span class='math'>m</span> към бедрото:",
+              text: "Подредете алгоритъма за намиране на радиуса <span class='math'>r</span> на вписаната окръжност:",
               ...buildOptions(
-                "1) Височина CH чрез Питагор; 2) Лице S = (1/2)·AB·CH; 3) Радиус r = S/p (полупериметър); 4) Радиус R = abc/(4S); 5) Медиана към бедро по формула",
+                "1) Височина CH чрез теорема на Питагор в △ACH; 2) Лице S = (1/2)·AB·CH; 3) r = S/p, където p е полупериметърът",
                 [
-                  "1) Лице S; 2) Височина CH; 3) Радиус r; 4) Радиус R; 5) Медиана",
-                  "1) Височина CH; 2) Радиус r директно; 3) Лице S; 4) Радиус R; 5) Медиана",
-                  "1) Медиана; 2) Височина; 3) Лице; 4) Радиус r; 5) Радиус R"
+                  "1) r = AB/2 (диаметър); 2) Лице; 3) Височина",
+                  "1) Полупериметър p; 2) r = p/3; 3) Без височина",
+                  "1) Лице директно от страните; 2) r от формула за описана; 3) Височина"
                 ]
               ),
-              solution: "Първо намираме височината (нужна за лицето). От лицето следват r и R. Медианата е независимо пресмятане по формула."
+              solution: "При вписана окръжност радиусът се намира чрез формулата r = S/p. За да открием лицето, ни трябва височината — намираме я с теорема на Питагор в правоъгълния △ACH (AH = AB/2)."
             },
             {
-              text: "Височината <span class='math'>CH</span> от върха <span class='math'>C</span> към основата <span class='math'>AB</span> и лицето <span class='math'>S</span> на триъгълника са:",
+              text: "Височината <span class='math'>CH</span> от върха <span class='math'>C</span> към основата и лицето <span class='math'>S</span> на △ABC са:",
               ...buildOptions("CH = 8 cm, S = 48 cm&sup2;", ["CH = 6 cm, S = 36 cm&sup2;", "CH = 8 cm, S = 96 cm&sup2;", "CH = &radic;28 cm, S = 6&radic;28 cm&sup2;"]),
-              solution: "AH = AB/2 = 6 (височината в равнобедрен △ е и медиана към основата). CH² = AC² − AH² = 100 − 36 = 64, CH = 8 cm. S = (1/2)·AB·CH = (1/2)·12·8 = 48 cm²."
+              solution: "В равнобедрен △ височината от C е и медиана към AB, значи AH = AB/2 = 6. От правоъгълния △ACH: CH² = AC² − AH² = 100 − 36 = 64 → CH = 8 cm. Лицето: S = (1/2)·AB·CH = (1/2)·12·8 = 48 cm²."
             },
             {
-              text: "Радиусът <span class='math'>r</span> на вписаната окръжност (където <span class='math'>p</span> е полупериметърът) е:",
+              text: "Радиусът на вписаната окръжност <span class='math'>r</span> е:",
               ...buildOptions("r = 3 cm", ["r = 4 cm", "r = 6 cm", "r = 8/3 cm"]),
-              solution: "p = (10 + 10 + 12)/2 = 16. r = S/p = 48/16 = 3 cm."
+              solution: "<strong>Начин 1 (S/p):</strong> Полупериметър p = (10 + 10 + 12)/2 = 16. <strong>r = S/p = 48/16 = 3 cm</strong>.<br><br><strong>Начин 2 (свойство на допирателните):</strong> Центърът O лежи на оста CH. От O построяваме перпендикуляр към AC с пето T. △ACH ~ △OCT (общ ъгъл при C, оба правоъгълни). От подобието: r/AH = (CH − r)/AC → r/6 = (8 − r)/10 → 10r = 48 − 6r → 16r = 48 → <strong>r = 3 cm</strong>."
+            }
+          ]
+        },
+
+        // ===== ЗАДАЧА 3Б: Описана окръжност около равнобедрен △ (3 стъпки) =====
+        {
+          topic: "Равнобедрен △ · Описана окр.",
+          context: "В равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 13 cm</span> и основа <span class='math'>AB = 10 cm</span> да се намери радиусът <span class='math'>R</span> на описаната окръжност.",
+          visual: `<svg class="svg-visual" viewBox="0 0 400 280">
+            <circle cx="200" cy="146" r="110" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+            <polygon points="120,230 280,230 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <line x1="200" y1="40" x2="200" y2="230" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
+            <circle cx="200" cy="146" r="2.5" fill="#1d4ed8"/>
+            <text x="210" y="143" fill="#1d4ed8" font-size="14" font-style="italic">O</text>
+            <line x1="200" y1="146" x2="280" y2="230" stroke="#1d4ed8" stroke-width="1.2" stroke-dasharray="3,3"/>
+            <text x="245" y="195" fill="#1d4ed8" font-size="13" font-style="italic">R</text>
+            <path d="M 190 230 L 190 220 L 200 220" fill="none" stroke="#0f172a" stroke-width="1"/>
+            <text x="105" y="245" class="point">A</text>
+            <text x="285" y="245" class="point">B</text>
+            <text x="195" y="32" class="point">C</text>
+            <text x="205" y="248" class="point">H</text>
+            <text x="140" y="135">13</text>
+            <text x="245" y="135">13</text>
+            <text x="185" y="260">10</text>
+          </svg>`,
+          steps: [
+            {
+              text: "Подредете алгоритъма за намиране на радиуса <span class='math'>R</span> на описаната окръжност:",
+              ...buildOptions(
+                "1) Височина CH чрез теорема на Питагор; 2) Лице S = (1/2)·AB·CH; 3) R = (AC·BC·AB)/(4S)",
+                [
+                  "1) Полупериметър; 2) R = p/2; 3) Лице",
+                  "1) R = AB/2 (за равнобедрен); 2) Без други стъпки",
+                  "1) Лице от страните; 2) Височина; 3) R = S/p"
+                ]
+              ),
+              solution: "Прилагаме формулата R = abc/(4S). За лицето S ни трябва височината — намираме я чрез теорема на Питагор в правоъгълния △ACH."
             },
             {
-              text: "Радиусът <span class='math'>R</span> на описаната окръжност е:",
-              ...buildOptions("R = 6,25 cm", ["R = 5 cm", "R = 8 cm", "R = 10 cm"]),
-              solution: "R = (a·b·c)/(4S) = (10·10·12)/(4·48) = 1200/192 = 6,25 cm."
+              text: "Височината <span class='math'>CH</span> от върха <span class='math'>C</span> към основата и лицето <span class='math'>S</span> на △ABC са:",
+              ...buildOptions("CH = 12 cm, S = 60 cm&sup2;", ["CH = 13 cm, S = 65 cm&sup2;", "CH = 12 cm, S = 120 cm&sup2;", "CH = &radic;144 cm, S = 5&radic;144 cm&sup2;"]),
+              solution: "AH = AB/2 = 5. От правоъгълния △ACH: CH² = AC² − AH² = 169 − 25 = 144 → CH = 12 cm. Лицето: S = (1/2)·AB·CH = (1/2)·10·12 = 60 cm²."
             },
             {
-              text: "Медианата <span class='math'>m</span> от <span class='math'>A</span> към средата <span class='math'>M</span> на бедрото <span class='math'>BC</span> по формулата <span class='math'>m&sup2; = (2·AB&sup2; + 2·AC&sup2; - BC&sup2;) / 4</span> е:",
+              text: "Радиусът на описаната окръжност <span class='math'>R</span> е:",
+              ...buildOptions("R = 169/24 cm", ["R = 13/2 cm", "R = 12 cm", "R = 25/4 cm"]),
+              solution: "<strong>Начин 1 (формула R = abc/(4S)):</strong> R = (13·13·10)/(4·60) = 1690/240 = <strong>169/24 cm</strong>.<br><br><strong>Начин 2 (центърът върху оста на симетрията):</strong> Центърът O лежи на оста CH (поради симетрията). Нека CO = R и OH = CH − R = 12 − R. От правоъгълния △AOH с хипотенуза AO = R: R² = AH² + OH² = 25 + (12 − R)². Решаваме: R² = 25 + 144 − 24R + R² → 24R = 169 → <strong>R = 169/24 cm</strong>."
+            }
+          ]
+        },
+
+        // ===== ЗАДАЧА 3В: Медиана към бедро на равнобедрен △ (3 стъпки) =====
+        {
+          topic: "Равнобедрен △ · Медиана към бедро",
+          context: "В равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span> да се намери дължината на медианата от <span class='math'>B</span> към средата <span class='math'>M</span> на бедрото <span class='math'>AC</span>.",
+          visual: `<svg class="svg-visual" viewBox="0 0 400 280">
+            <polygon points="100,240 300,240 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <circle cx="150" cy="140" r="3" fill="#0f172a"/>
+            <text x="130" y="138" class="point">M</text>
+            <line x1="300" y1="240" x2="150" y2="140" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <text x="240" y="195" fill="#16a34a" font-size="14" font-style="italic">m</text>
+            <text x="85" y="255" class="point">A</text>
+            <text x="305" y="255" class="point">B</text>
+            <text x="195" y="32" class="point">C</text>
+            <text x="120" y="135">10</text>
+            <text x="265" y="135">10</text>
+            <text x="180" y="265">12</text>
+          </svg>`,
+          steps: [
+            {
+              text: "Подредете алгоритъма за намиране на медианата <span class='math'>m</span> от <span class='math'>B</span> към средата на <span class='math'>AC</span>:",
+              ...buildOptions(
+                "1) Идентифициране на върха и страната; 2) Прилагане на формулата m&sup2; = (2·AB&sup2; + 2·BC&sup2; − AC&sup2;)/4; 3) Изчисляване и коренуване",
+                [
+                  "1) Формула m = (AC + BC)/2; 2) Изчисление",
+                  "1) теорема на Питагор от B към средата директно; 2) Без формула",
+                  "1) Височина на △; 2) Лице; 3) m = S/AC"
+                ]
+              ),
+              solution: "Тъй като M е среда на AC, медианата излиза от противоположния връх B. Формулата за медиана от връх към срещуположна страна е m_b² = (2·a² + 2·c² − b²)/4, където a, c са страните при върха B, а b е страната срещу B."
+            },
+            {
+              text: "Заместването в формулата за медиана от <span class='math'>B</span> към <span class='math'>AC</span> дава:",
+              ...buildOptions("m&sup2; = (2·144 + 2·100 − 100)/4", ["m&sup2; = (2·100 + 2·100 − 144)/4", "m&sup2; = (144 + 100 − 100)/2", "m&sup2; = (2·144 − 2·100 + 100)/4"]),
+              solution: "Страните при върха B са BA = AB = 12 и BC = 10; страната срещу B е AC = 10. Заместваме в m² = (2·AB² + 2·BC² − AC²)/4 = (2·144 + 2·100 − 100)/4."
+            },
+            {
+              text: "Дължината на медианата <span class='math'>m</span> е:",
               ...buildOptions("m = &radic;97 cm", ["m = &radic;73 cm", "m = 9 cm", "m = &radic;113 cm"]),
-              solution: "m² = (2·144 + 2·100 − 100)/4 = (288 + 200 − 100)/4 = 388/4 = 97. m = √97 cm."
+              solution: "<strong>Начин 1 (формула):</strong> m² = (288 + 200 − 100)/4 = 388/4 = 97 → <strong>m = √97 cm</strong>.<br><br><strong>Начин 2 (координати):</strong> Поставяме A(−6, 0), B(6, 0). Височината от C: h = √(10² − 6²) = 8, значи C(0, 8). Среда на AC: M = ((−6 + 0)/2, (0 + 8)/2) = (−3, 4). Тогава m = BM = √((6 − (−3))² + (0 − 4)²) = √(81 + 16) = <strong>√97 cm</strong>."
             }
           ]
         },
@@ -2296,9 +2799,9 @@
             {
               text: "Подредете алгоритъма за намиране на височината, диагонала и лицето на трапеца:",
               ...buildOptions(
-                "1) Спускане на височини от C и D към AB; 2) Намиране на проекциите на бедрата; 3) Височина чрез Питагор; 4) Диагонал чрез Питагор; (Лице — по формула)",
+                "1) Построяване на височини от C и D към AB; 2) Намиране на проекциите на бедрата; 3) Височина чрез теорема на Питагор; 4) Диагонал чрез теорема на Питагор; (Лице — по формула)",
                 [
-                  "1) Прекарване на диагонал; 2) Питагор за диагонала; 3) Височина; 4) Лице",
+                  "1) Построяване на диагонал; 2) теорема на Питагор за диагонала; 3) Височина; 4) Лице",
                   "1) Формула за лице; 2) Височина обратно; 3) Проекции; 4) Диагонал",
                   "1) Намиране на средната отсечка; 2) Лице; 3) Височина; 4) Диагонал"
                 ]
@@ -2349,14 +2852,14 @@
             {
               text: "Подредете алгоритъма за намиране на бедрото <span class='math'>BC</span>, диагонала и лицето:",
               ...buildOptions(
-                "1) Спускане на височина CH от C към AB; 2) Намиране на проекцията HB; 3) Бедро BC чрез Питагор в △CHB; 4) Диагонал и лице",
+                "1) Построяване на височина CH от C към AB; 2) Намиране на проекцията HB; 3) Бедро BC чрез теорема на Питагор в △CHB; 4) Диагонал и лице",
                 [
-                  "1) Намиране на лицето; 2) Диагонал чрез Питагор; 3) Бедро; 4) Проекция",
+                  "1) Намиране на лицето; 2) Диагонал чрез теорема на Питагор; 3) Бедро; 4) Проекция",
                   "1) Бедро директно от условието; 2) Височина; 3) Лице; 4) Диагонал",
                   "1) Подобие на △; 2) Височина; 3) Диагонал; 4) Лице"
                 ]
               ),
-              solution: "В правоъгълен трапец височината CH = AD. Проекцията HB = AB − CD. По Питагор намираме BC, после диагонала и лицето."
+              solution: "В правоъгълен трапец височината CH = AD. Проекцията HB = AB − CD. По теорема на Питагор намираме BC, после диагонала и лицето."
             },
             {
               text: "Проекцията <span class='math'>HB</span> и дължината на бедрото <span class='math'>BC</span> са:",
@@ -2366,7 +2869,7 @@
             {
               text: "Дължината на диагонала <span class='math'>BD</span> е:",
               ...buildOptions("BD = &radic;320 cm", ["BD = 18 cm", "BD = 16 cm", "BD = &radic;356 cm"]),
-              solution: "В правоъгълния △ABD (с прав ъгъл при A): BD² = AB² + AD² = 256 + 64 = 320. BD = √320 = 8√5 cm ≈ 17,89 cm. Записано като √320 cm."
+              solution: "В правоъгълния △ABD (с прав ъгъл при A): BD² = AB² + AD² = 256 + 64 = 320. <strong>BD = √320 = 8√5 cm</strong>."
             },
             {
               text: "Лицето <span class='math'>S</span> на трапеца е:",
@@ -2403,7 +2906,7 @@
                 "1) Прилагане на свойството на ъглополовящата: AC/BC = AL/LB; 2) Намиране на AC; 3) Установяване на подобие △AML ~ △ACB чрез LM ∥ BC; 4) Намиране на LM по подобие",
                 [
                   "1) Подобие на △AML ~ △ACB; 2) LM по подобие; 3) Свойство на ъглополовяща; 4) AC",
-                  "1) Питагор в △ABC; 2) Свойство на ъглополовяща; 3) Подобие; 4) LM",
+                  "1) теорема на Питагор в △ABC; 2) Свойство на ъглополовяща; 3) Подобие; 4) LM",
                   "1) Прилагане на теорема на Талес директно за AC; 2) Подобие; 3) Свойство на ъглополовяща; 4) LM"
                 ]
               ),
@@ -2447,9 +2950,9 @@
               ...buildOptions(
                 "1) Височина: h² = AH·BH; 2) Хипотенуза: c = AH + BH; 3) Катет b: b² = c·AH; 4) Катет a: a² = c·BH",
                 [
-                  "1) Питагор за целия △; 2) h = c/2; 3) Проекциите; 4) Катетите",
-                  "1) Сбор на проекциите за h; 2) Катетите по Питагор; 3) Хипотенузата; 4) Лице",
-                  "1) Катет b директно; 2) Катет a директно; 3) Питагор за c; 4) h = ab/c"
+                  "1) теорема на Питагор за целия △; 2) h = c/2; 3) Проекциите; 4) Катетите",
+                  "1) Сбор на проекциите за h; 2) Катетите по теорема на Питагор; 3) Хипотенузата; 4) Лице",
+                  "1) Катет b директно; 2) Катет a директно; 3) теорема на Питагор за c; 4) h = ab/c"
                 ]
               ),
               solution: "Метричните зависимости в правоъгълен триъгълник са: h² = a₁·b₁ (височина = средно геометрично на проекциите), b² = c·b₁ и a² = c·a₁ (катет = средно геометрично на хипотенузата и съответната проекция). Хипотенузата е сборът на двете проекции."
@@ -2498,9 +3001,9 @@
               ...buildOptions(
                 "1) Доказване на подобие △CDO ~ △ABO; 2) Намиране на коефициента k от отношението на лицата; 3) Прилагане на k за отсечките DO и OB",
                 [
-                  "1) Сбор на лицата на трапеца; 2) Подобие; 3) Питагор за BD",
+                  "1) Сбор на лицата на трапеца; 2) Подобие; 3) теорема на Питагор за BD",
                   "1) k = S(CDO)/S(ABO) директно; 2) Подобие; 3) DO и OB",
-                  "1) Питагор за диагонала BD; 2) Лицата; 3) Подобие"
+                  "1) теорема на Питагор за диагонала BD; 2) Лицата; 3) Подобие"
                 ]
               ),
               solution: "Първо доказваме подобието (от AB ∥ CD), което дава равенство на ъглите. От отношението на лицата (= k²) намираме коефициента, а оттам и отношението на съответните отсечки."
@@ -2543,7 +3046,7 @@
               ...buildOptions(
                 "1) Доказване на подобие △MDC ~ △MAB; 2) Коефициент k = DC : AB; 3) Отношение на лицата k²; 4) Свързване с S_ABCD",
                 [
-                  "1) Питагор за △MDC; 2) Питагор за △MAB; 3) Подобие; 4) Лица",
+                  "1) теорема на Питагор за △MDC; 2) теорема на Питагор за △MAB; 3) Подобие; 4) Лица",
                   "1) k = AB : DC; 2) Подобие; 3) Лица; 4) S_ABCD",
                   "1) Лице на трапец директно; 2) Подобие; 3) Изваждане; 4) k"
                 ]
@@ -2744,17 +3247,18 @@
       correctCount = state.correctCount;
 
       initPuzzleGrid(selectedPuzzle);
-      // Reveal вече отговорените плочки/сектори
+      // Reveal само ПРАВИЛНО отговорените плочки/сектори (по-строг режим)
       allQuestionsFlat.forEach(q => {
         if (q.answered) {
           const { tileIdx, sectorIdx } = findTileAndSector(q.globalIdx);
           const scr = screens[q.screenIdx];
           const isCorrect = q.userChoice === q.answer;
+          if (!isCorrect) return; // при грешка нищо не отваряме
           if (scr.type === 'chain') {
             const sectorEl = document.getElementById(`tile-${tileIdx}-sec-${sectorIdx}`);
             if (sectorEl) {
               sectorEl.classList.add('revealed');
-              sectorEl.classList.add(isCorrect ? 'correct' : 'wrong');
+              sectorEl.classList.add('correct');
             }
             const meta = tileMeta[tileIdx];
             if (meta) {
@@ -2764,7 +3268,7 @@
             const tileEl = document.getElementById(`tile-${tileIdx}`);
             if (tileEl) {
               tileEl.classList.add('revealed');
-              tileEl.classList.add(isCorrect ? 'correct' : 'wrong');
+              tileEl.classList.add('correct');
             }
           }
         }
@@ -2905,6 +3409,79 @@
       }
     }
 
+    // ===== Анимация „ключ" — обратна връзка =====
+    function showKeyFeedback(isCorrect) {
+      // Премахни предишен overlay, ако има
+      const existing = document.querySelector('.key-overlay');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.className = 'key-overlay show';
+
+      if (isCorrect) {
+        overlay.innerHTML = `
+          <div class="key-card correct">
+            <div class="key-svg-wrap">
+              <div class="key-light"></div>
+              <svg class="key-correct-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fde68a"/>
+                    <stop offset="50%" stop-color="#f59e0b"/>
+                    <stop offset="100%" stop-color="#b45309"/>
+                  </linearGradient>
+                </defs>
+                <!-- Глава на ключа (кръг с дупка) -->
+                <circle cx="28" cy="50" r="18" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+                <circle cx="28" cy="50" r="7" fill="#fef3c7" stroke="#92400e" stroke-width="1.5"/>
+                <!-- Тяло на ключа -->
+                <rect x="44" y="46" width="42" height="8" rx="2" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+                <!-- Зъбци -->
+                <rect x="72" y="54" width="6" height="10" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+                <rect x="80" y="54" width="6" height="7" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="key-text correct-text">🎉 Отключено! Продължи напред.</div>
+          </div>
+        `;
+      } else {
+        overlay.innerHTML = `
+          <div class="key-card wrong">
+            <div class="key-svg-wrap">
+              <svg class="key-wrong-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#e5e7eb"/>
+                    <stop offset="50%" stop-color="#9ca3af"/>
+                    <stop offset="100%" stop-color="#4b5563"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="28" cy="50" r="18" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
+                <circle cx="28" cy="50" r="7" fill="#f3f4f6" stroke="#374151" stroke-width="1.5"/>
+                <rect x="44" y="46" width="42" height="8" rx="2" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
+                <rect x="72" y="54" width="6" height="10" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
+                <rect x="80" y="54" width="6" height="7" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
+              </svg>
+              <svg class="lock-appear" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="18" width="24" height="18" rx="3" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1.5"/>
+                <path d="M 13 18 L 13 12 Q 13 6 20 6 Q 27 6 27 12 L 27 18" fill="none" stroke="#7f1d1d" stroke-width="2.5"/>
+                <circle cx="20" cy="25" r="2.5" fill="#fef3c7"/>
+                <rect x="19" y="26" width="2" height="5" fill="#fef3c7"/>
+              </svg>
+            </div>
+            <div class="key-text wrong-text">🔒 Ключът не пасва. Виж решението и опитай следващата задача.</div>
+          </div>
+        `;
+      }
+
+      document.body.appendChild(overlay);
+
+      // Премахни overlay след анимацията
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) overlay.remove();
+      }, 2100);
+    }
+
     window.handleOption = function(globalIdx, optIdx) {
       const q = allQuestionsFlat[globalIdx];
       if (q.answered) return;
@@ -2916,27 +3493,34 @@
       // Звуков ефект
       if (isCorrect) playCorrect(); else playWrong();
 
-      // Отваряне на правилния сектор от съответната плочка
+      // Отваряне на пъзела САМО при правилен отговор (по-строг режим)
       const { tileIdx, sectorIdx } = findTileAndSector(globalIdx);
       const scr = screens[q.screenIdx];
 
       if (scr.type === 'chain') {
-        // Отваряме един сектор от триъгълно-секторираната плочка
-        const sectorEl = document.getElementById(`tile-${tileIdx}-sec-${sectorIdx}`);
-        if (sectorEl) {
-          sectorEl.classList.add('revealed');
-          sectorEl.classList.add(isCorrect ? 'correct' : 'wrong');
+        // Отваряме един сектор от триъгълно-секторираната плочка САМО при верен
+        if (isCorrect) {
+          const sectorEl = document.getElementById(`tile-${tileIdx}-sec-${sectorIdx}`);
+          if (sectorEl) {
+            sectorEl.classList.add('revealed');
+            sectorEl.classList.add('correct');
+          }
+          const meta = tileMeta[tileIdx];
+          meta.sectorsRevealed++;
         }
-        const meta = tileMeta[tileIdx];
-        meta.sectorsRevealed++;
       } else {
-        // Single tile — отваряме цялата плочка
-        const tileEl = document.getElementById(`tile-${tileIdx}`);
-        if (tileEl) {
-          tileEl.classList.add('revealed');
-          tileEl.classList.add(isCorrect ? 'correct' : 'wrong');
+        // Single tile — отваряме цялата плочка САМО при верен
+        if (isCorrect) {
+          const tileEl = document.getElementById(`tile-${tileIdx}`);
+          if (tileEl) {
+            tileEl.classList.add('revealed');
+            tileEl.classList.add('correct');
+          }
         }
       }
+
+      // Анимация „ключ" (визуална обратна връзка)
+      showKeyFeedback(isCorrect);
 
       const dot = document.getElementById(`dot-${globalIdx}`);
       if (isCorrect) {
@@ -3072,7 +3656,7 @@
         `;
       }
 
-      screenEl.innerHTML = html;
+      screenEl.innerHTML = formatFractions(html);
       renderMath(screenEl);
     }
 
