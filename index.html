@@ -1271,23 +1271,33 @@
     }
     .player-bar strong { color: var(--ink); font-weight: 700; }
     .new-set-btn {
-      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
       color: white;
-      border: none;
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
+      border: 2px solid #ea580c;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
     }
     .new-set-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(234, 88, 12, 0.5);
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
     }
     .new-set-btn:active {
       transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35);
+    }
+    [data-theme='dark'] .new-set-btn {
+      box-shadow: 0 4px 16px rgba(234, 88, 12, 0.45);
+    }
+    [data-theme='dark'] .new-set-btn:hover {
+      box-shadow: 0 7px 22px rgba(234, 88, 12, 0.6);
     }
 
     @media (max-width: 768px) {
@@ -1989,7 +1999,7 @@
         const bar = document.getElementById('playerBar');
         if (bar) bar.innerHTML = `
           <span>Играч: <strong>${escapeHtml(playerName)}</strong></span>
-          <button class="new-set-btn" onclick="confirmNewSet()" title="Генерирай нови случайни задачи">🎲 Нов сет задачи</button>
+          <button class="new-set-btn" onclick="confirmNewSet()" title="Започни нова мисия със случайни задачи">🔄 Започни отначало</button>
         `;
         // Стартирай играта
         bootGame();
@@ -1998,7 +2008,7 @@
 
     // Потвърди и генерирай нов сет задачи
     window.confirmNewSet = function() {
-      if (confirm("Сигурен ли си, че искаш да започнеш с нов сет задачи? Текущият напредък ще бъде изтрит.")) {
+      if (confirm("Сигурен ли си, че искаш да започнеш отначало с нов сет случайни задачи?\n\nТекущият напредък ще бъде изтрит, но името ти ще остане запазено.")) {
         clearState();
         // Reset puzzle/screens state
         currentScreenIdx = 0;
@@ -3093,7 +3103,7 @@
         {
           topic: "Трапец · Вписан в окр.",
           visual: svgs.trapezoidInCircle,
-          text: "Трапец <span class='math'>ABCD</span> е <strong>вписан в окръжност</strong>, като основите му са <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, а едното бедро е <span class='math'>AD = 10 cm</span>. Да се намери диагоналът.",
+          text: "Трапец <span class='math'>ABCD</span> е <strong>вписан в окръжност</strong>, като основите му са <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, а едното бедро е <span class='math'>AD = 10 cm</span>. Да се намери дължината на диагонала на трапеца.",
           ...buildOptions("17 cm", ["15 cm", "20 cm", "13 cm"]),
           solution: "Вписан трапец ⟹ <strong>равнобедрен</strong> (както в предишната задача), т.е. AD = BC = 10. Проекция на бедрото върху AB: (21 − 9)/2 = 6 → h = √(100 − 36) = 8 cm. Проекцията на диагонала върху AB е AB − 6 = 15 cm. По теорема на Питагор: диагонал = √(15² + 8²) = √289 = <strong>17 cm</strong>."
         },
@@ -3114,7 +3124,7 @@
         {
           topic: "Трапец · Вписана окр.",
           visual: svgs.inscribedTrapezoid,
-          text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери диагоналът на трапеца.",
+          text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери дължината на диагонала на трапеца.",
           ...buildOptions("<span class='math'>&radic;514 cm</span>", ["<span class='math'>&radic;706 cm</span>", "<span class='math'>17 cm</span>", "<span class='math'>25 cm</span>"]),
           solution: "Височината на трапеца: h = 2r = 15 cm (защото в описан трапец диаметърът = височината). От описан четириъгълник: AB + CD = AD + BC = 2·17 = 34 cm. Спускаме перпендикуляри от C и D към AB; нека K е петата на перпендикуляра от C. От правоъгълния триъгълник, образуван от бедрото BC, височината и проекцията: проекцията (AB − CD)/2 = √(17² − 15²) = √64 = 8, значи AB − CD = 16. Сборът AB + CD = 34 и разликата AB − CD = 16 дават AB = 25 cm и CD = 9 cm. <br>Диагоналът AC: точка C се намира над точка K от AB, където AK = (AB − CD)/2 + CD = 8 + 9 = 17 cm (т.е. C е на хоризонтално разстояние 17 от A и на височина 15). В правоъгълния <span class='math'>&#9651;ACK</span> (с прав ъгъл при K): AC² = AK² + CK² = 17² + 15² = 289 + 225 = 514. Следователно <strong>AC = √514 cm</strong>."
         },
@@ -4846,7 +4856,7 @@
                   ${step.freeModeCorrect ? '✓' : '✗'} Свободен режим: твоят финален отговор беше „<strong>${escapeHtml(step.freeModeAnswer)}</strong>"
                 </div>
                 ${step.freeModeCorrect
-                  ? `<div class="free-mode-display-note">Стигнал си до правилния резултат. Очакваният финален отговор: <strong>${expectedFinal}</strong>.</div>`
+                  ? `<div class="free-mode-display-note">Стигна до правилния резултат. Очакваният финален отговор: <strong>${expectedFinal}</strong>.</div>`
                   : `<div class="free-mode-display-note">Очакваният финален отговор беше: <strong>${expectedFinal}</strong>. Препоръчителен подход: <em>${correctText}</em></div>`
                 }
               </div>
