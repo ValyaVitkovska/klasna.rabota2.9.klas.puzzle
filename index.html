@@ -2609,10 +2609,62 @@
         },
         {
           topic: "Подобни триъгълници",
-          visual: svgs.parallelogram,
+          visual: `<svg class="svg-visual" viewBox="0 0 460 240">
+            <!-- Успоредник ABCD: A долу ляво, B долу дясно, C горе дясно, D горе ляво.
+                 Координати: A(50,180), B(280,180), C(360,50), D(130,50).
+                 BC от B(280,180) до C(360,50); вектор = (80,-130). M дели BC така, че BM:MC=1:2 → M = B + (1/3)(C-B) = (280 + 80/3, 180 - 130/3) ≈ (306.67, 136.67). -->
+            <!-- Продължение на DC: D(130,50)→C(360,50)→N (отвъд C). Правата AM пресича лъча DC.
+                 AM посока от A(50,180) до M(306.67,136.67): вектор (256.67, -43.33). 
+                 Намираме N такова, че N е на хоризонталата y=50 (правата DC): t·(−43.33) = 50−180 = −130 → t = 3. 
+                 N = (50 + 3·256.67, 180 + 3·(−43.33)) = (820.01, 50.01). Извън viewBox!
+                 Решение: преоразмеряваме успоредника, да го направим по-нисък. Преизчисляваме:
+                 A(40,200), B(280,200), C(360,80), D(120,80). BC вектор (80,−120), M=B+(1/3)·(80,−120)=(306.67,160).
+                 AM посока: (266.67, −40). За y=80: t·(−40)=−120 → t=3 → N=(40+3·266.67, 200−120)=(840, 80). Все още извън.
+                 Опитваме много нисък успоредник за да съберем N в кадъра:
+                 A(30,200), B(180,200), C(280,120), D(130,120). 
+                 BC вектор=(100,−80), M = B+(1/3)·(100,−80) = (213.33, 173.33).
+                 AM посока=(183.33,−26.67). За y=120 (правата DC): t·(−26.67)=−80 → t=3 → N=(30+3·183.33, 200−80)=(580, 120). Все още извън!
+                 Истинският проблем: AM трябва да пресече ПРОДЪЛЖЕНИЕТО на DC (отвъд C), а N е далеч.
+                 Решение: правя успоредника КОМПАКТЕН и разширявам viewBox:
+                 viewBox 0 0 600 240, A(40,180), B(220,180), C(310,60), D(130,60).
+                 BC=(90,−120). M = B+(1/3)·(90,−120) = (250,140). 
+                 AM посока = (210,−40). За y=60: t·(−40)=−120 → t=3. N = (40+3·210, 60) = (670, 60). Все още!
+                 Окончателно: успоредник съвсем тесен, N точно отвъд C:
+                 A(30,180), B(150,180), C(240,80), D(120,80). BC=(90,−100). M=B+(1/3)·(90,−100)=(180,146.67). 
+                 AM посока=(150,−33.33). За y=80: t·(−33.33)=−100 → t=3. N=(30+3·150, 80)=(480, 80). Все още.
+                 Очевидно при BM:MC=1:2 точка N е далеч от C. Това е математически вярно: NC/AB = 2/1, значи NC = 2·AB.
+                 Затова ще видя AB-то по-късо. AB=120 → NC=240. Тогава D-C=120, C-N=240, общо хоризонтално разстояние = 360.
+                 Финал: A(50,200), B(170,200), C(260,80), D(140,80), M(200,160), N(500,80).
+                 Проверка: BC=(90,−120). BM=(30,−40), MC=(60,−80) ✓ (BM:MC=1:2). 
+                 Правата AM: от (50,200) до (200,160). Посока (150,−40). Продължена: y=80 → t·(−40)=−120 → t=3 → x = 50+3·150 = 500. N=(500,80) ✓ -->
+            <!-- Успоредник -->
+            <polygon points="50,200 170,200 260,80 140,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Продължение на DC до N (пунктирано) -->
+            <line x1="260" y1="80" x2="500" y2="80" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,3"/>
+            <!-- Правата AM, продължена до N (синя, пунктирана) -->
+            <line x1="50" y1="200" x2="500" y2="80" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="6,3"/>
+            <!-- Точки M, N -->
+            <circle cx="200" cy="160" r="3.5" fill="#0f172a"/>
+            <circle cx="500" cy="80" r="3.5" fill="#dc2626"/>
+            <!-- Малки тикчета за BM:MC = 1:2 (един тик на BM, два тика на MC) -->
+            <line x1="180" y1="184" x2="190" y2="174" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="225" y1="138" x2="235" y2="128" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="231" y1="132" x2="241" y2="122" stroke="#0f172a" stroke-width="1.4"/>
+            <!-- Етикети -->
+            <text x="32" y="215" class="point">A</text>
+            <text x="175" y="215" class="point">B</text>
+            <text x="263" y="72" class="point">C</text>
+            <text x="125" y="72" class="point">D</text>
+            <text x="205" y="158" class="point">M</text>
+            <text x="505" y="78" class="point" fill="#dc2626">N</text>
+            <!-- Стойности -->
+            <text x="180" y="195" font-size="12" font-style="italic">1</text>
+            <text x="230" y="135" font-size="12" font-style="italic">2</text>
+            <text x="375" y="73" font-size="12" font-style="italic" fill="#dc2626">NC = ?</text>
+          </svg>`,
           text: "В успоредника <span class='math'>ABCD</span> точка <span class='math'>M</span> лежи върху страната <span class='math'>BC</span>, като <span class='math'>BM : MC = 1 : 2</span>. Правата <span class='math'>AM</span> пресича продължението на <span class='math'>DC</span> в точка <span class='math'>N</span>. Да се намери отношението <span class='math'>NC : AB</span>.",
           ...buildOptions("2 : 1", ["1 : 2", "1 : 3", "3 : 1"]),
-          solution: "△NCM ~ △ABM (като накръст лежащи). NC/AB = CM/BM = 2/1, значи NC : AB = 2 : 1."
+          solution: "Тъй като AB &parallel; CN (защото AB &parallel; DC и N е на продължението на DC), &#9651;NCM ~ &#9651;ABM (накръст лежащи ъгли при пресичането на AM с двете успоредни прави + общи вертикални ъгли при M). От подобието: NC/AB = CM/BM = 2/1, значи <strong>NC : AB = 2 : 1</strong>."
         },
         {
           topic: "Подобни триъгълници",
@@ -2627,6 +2679,67 @@
           text: "В <span class='math'>&#9651;ABC</span> е вписан ромбът <span class='math'>BNMP</span> така, че <span class='math'>P &isin; AB</span>, <span class='math'>N &isin; CB</span>, а <span class='math'>M &isin; AC</span>. Ако <span class='math'>AB = 24 cm</span> и <span class='math'>BC = 18 cm</span>, да се намери периметърът на ромба <span class='math'>BNMP</span>.",
           ...buildOptions("<span class='math'>288/7 cm</span>", ["<span class='math'>42 cm</span>", "<span class='math'>40 cm</span>", "<span class='math'>36 cm</span>"]),
           solution: "Нека страната на ромба е a. Тъй като BNMP е ромб с връх B, страните MP и BN са успоредни (на BC), а MN и BP са успоредни (на AB). Следователно MP ‖ BC и MP = a, AP = AB − BP = AB − a = 24 − a. От △APM ~ △ABC (MP ‖ BC): AP/AB = MP/BC → (24 − a)/24 = a/18 → 18(24 − a) = 24a → 432 = 42a → <strong>a = 72/7</strong>. Периметър = 4a = <strong>288/7 cm</strong>."
+        },
+        {
+          topic: "Подобни · Ромб в △",
+          visual: svgs.rhombusInTriangle,
+          text: "В <span class='math'>&#9651;ABC</span> е вписан ромбът <span class='math'>BNMP</span> със същата постановка (<span class='math'>P &isin; AB</span>, <span class='math'>N &isin; CB</span>, <span class='math'>M &isin; AC</span>). Ако <span class='math'>AB = 20 cm</span> и <span class='math'>BC = 30 cm</span>, да се намери периметърът на ромба <span class='math'>BNMP</span>.",
+          ...buildOptions("48 cm", ["50 cm", "60 cm", "40 cm"]),
+          solution: "Нека страната на ромба е a. От △APM ~ △ABC (MP ‖ BC): AP/AB = MP/BC → (20 − a)/20 = a/30 → 30(20 − a) = 20a → 600 = 50a → <strong>a = 12 cm</strong>. Периметър = 4a = <strong>48 cm</strong>."
+        },
+        {
+          topic: "Подобни триъгълници · Подобни △",
+          visual: `<svg class="svg-visual" viewBox="0 0 460 240">
+            <!-- Задача: ∠PMN = ∠EFP, ME=12, EP=3, PF=6, искаме EF:MN.
+                 От ∠EFP = ∠NMP следва: в △PEF и △PMN има общ ъгъл при P, а ∠EFP = ∠NMP.
+                 Тогава &#9651;PEF ~ &#9651;PMN (по два равни ъгъла).
+                 Отношения: PE/PM = PF/PN = EF/MN. PM = PE + EM = 3 + 12 = 15. EF/MN = PF/PM = 6/15 = 2/5.
+                 Чертеж: M долу ляво, N долу дясно, P горе дясно (триъгълник MNP).
+                 E на MP, F на PN. ME = 12, EP = 3 → MP = 15. PF = 6 (не знаем PN).
+                 Изчисление за координати: 1 cm = 24 px. M(40, 200), P(360, 80). 
+                 |MP| = √(320² + 120²) = √(102400+14400) = √116800 ≈ 341.8. Не е 15·24 = 360. Не съвпада.
+                 Опростено: 1 cm = 20 px. |MP| трябва = 300. Опит: M(40,200), P(310,80). |MP|=√(270²+120²)=√(72900+14400)=√87300≈295.5. Близо.
+                 Точно: M(50,200), P нагоре-дясно, |MP|=300. Нека P(50+a, 200-b) с a²+b²=90000. Изберем a=240, b=180: 240²+180²=57600+32400=90000 ✓. P=(290,20).
+                 E на MP в съотношение ME:EP=12:3=4:1 → E = M + (4/5)·(P−M) = (50+0.8·240, 200+0.8·(−180)) = (50+192, 200−144)=(242, 56).
+                 Сега N долу дясно, на хоризонталата (някъде). Нека N=(400, 200). 
+                 PN от P(290,20) до N(400,200): вектор (110,180), |PN|=√(12100+32400)=√44500≈211.
+                 F на PN с PF=6 → 6·20=120 px. F = P + (120/211)·(110,180) = (290+62.6, 20+102.4) = (352.6, 122.4).
+                 За E точно: 192=192, 144=144 ✓ ME = √(192²+144²) = √(36864+20736) = √57600 = 240 ✓ (=12 cm).
+                 EP: √((290-242)² + (20-56)²) = √(48²+36²) = √(2304+1296) = √3600 = 60 ✓ (=3 cm). -->
+            <polygon points="50,200 400,200 290,20" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Линия EF -->
+            <line x1="242" y1="56" x2="352.6" y2="122.4" stroke="#1d4ed8" stroke-width="1.6"/>
+            <!-- Точки E, F -->
+            <circle cx="242" cy="56" r="3.5" fill="#0f172a"/>
+            <circle cx="352.6" cy="122.4" r="3.5" fill="#0f172a"/>
+            <!-- Маркер за равните ъгли: дъга при M (между MP и MN) и дъга при F (между FE и FP).
+                 При M: лъчите MP (към 290,20) и MN (към 400,200).
+                 Единични вектори: към P (240/300, -180/300)=(0.8, -0.6); към N (350/350, 0)=(1, 0).
+                 Радиус 30: на MP: (50+24, 200-18)=(74, 182); на MN: (50+30, 200)=(80, 200).
+                 Дъга: път от (80,200) до (74,182) с радиус 30 — small arc, counter-clockwise. -->
+            <path d="M 80 200 A 30 30 0 0 0 74 182" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+            <!-- При F: лъчите FE и FP. F=(352.6, 122.4). 
+                 Към E(242,56): вектор (-110.6, -66.4), дължина √(12233+4409)=√16642≈129. Норм: (-0.857, -0.515).
+                 Към P(290,20): вектор (-62.6, -102.4), дължина √(3919+10486)=√14405≈120. Норм: (-0.522, -0.853).
+                 Радиус 25 от F: 
+                 на FE: (352.6 - 21.4, 122.4 - 12.9) = (331.2, 109.5)
+                 на FP: (352.6 - 13.1, 122.4 - 21.3) = (339.5, 101.1) -->
+            <path d="M 331.2 109.5 A 25 25 0 0 0 339.5 101.1" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+            <!-- Етикети -->
+            <text x="32" y="218" class="point">M</text>
+            <text x="408" y="218" class="point">N</text>
+            <text x="285" y="14" class="point">P</text>
+            <text x="225" y="56" class="point">E</text>
+            <text x="358" y="120" class="point">F</text>
+            <!-- Стойности -->
+            <text x="135" y="135" font-size="13" font-style="italic">ME = 12</text>
+            <text x="255" y="46" font-size="13" font-style="italic">EP = 3</text>
+            <text x="340" y="80" font-size="13" font-style="italic">PF = 6</text>
+            <text x="280" y="105" fill="#1d4ed8" font-size="13" font-style="italic">EF</text>
+          </svg>`,
+          text: "На чертежа е дадено, че <span class='math'>&ang;PMN = &ang;EFP</span>, <span class='math'>ME = 12 cm</span>, <span class='math'>EP = 3 cm</span> и <span class='math'>PF = 6 cm</span>. Да се намери отношението <span class='math'>EF : MN</span>.",
+          ...buildOptions("2 : 5", ["1 : 4", "1 : 2", "3 : 5"]),
+          solution: "<strong>Идея:</strong> В &#9651;PEF и &#9651;PMN ъгълът при P е общ, а &ang;PFE = &ang;PMN (дадено). По признака за подобие (два равни ъгъла): <strong>&#9651;PEF ~ &#9651;PMN</strong>. Внимание към съответствието на върховете: P↔P, E↔M, F↔N. Тогава отношението на подобие е PE/PM = PF/PN = EF/MN. <br>PM = ME + EP = 12 + 3 = 15. Коефициентът на подобие: k = EF/MN = PF/PM = 6/15 = <strong>2/5</strong>, тоест <strong>EF : MN = 2 : 5</strong>."
         },
 
         // === Метрични зависимости ===
@@ -2714,7 +2827,7 @@
           visual: svgs.circumCircle,
           text: "Даден е равнобедрен <span class='math'>&#9651;ABC</span> с основа <span class='math'>AB = 10 cm</span> и бедра <span class='math'>AC = BC = 13 cm</span>. Да се намери радиусът <span class='math'>R</span> на описаната около <span class='math'>&#9651;ABC</span> окръжност.",
           ...buildOptions("<span class='math'>169/24 cm</span>", ["<span class='math'>13/2 cm</span>", "<span class='math'>12 cm</span>", "<span class='math'>10 cm</span>"]),
-          solution: "Височината от C към AB (понеже △ е равнобедрен, тя е и медиана): h = √(13² − 5²) = √144 = 12 cm. Лицето: S = AB·h/2 = 10·12/2 = 60 cm². Формула за радиус на описаната окръжност: R = (a·b·c)/(4S) = (13·13·10)/(4·60) = 1690/240 = <strong>169/24 cm</strong> (несъкратима дроб)."
+          solution: "<strong>Метод за 9. клас (продължение на височина + метрични зависимости):</strong> Нека H е средата на AB (AH = 5). Височината CH = √(AC² − AH²) = √(169 − 25) = 12 cm. Продължаваме CH до пресичане с описаната окръжност в точка C'. Тогава CC' е диаметър (минава през центъра поради симетрия), а по теорема на Талес ъгълът &ang;CAC' = 90° (вписан в полуокръжност). В правоъгълния &#9651;CAC' AH е височина към хипотенузата CC' = 2R. По метричната зависимост AH² = CH · HC': 25 = 12 · HC' → HC' = 25/12 cm. Тогава 2R = CC' = CH + HC' = 12 + 25/12 = 169/12 cm, откъдето <strong>R = 169/24 cm</strong>."
         },
         {
           topic: "Правоъгълен триъгълник",
@@ -3232,45 +3345,86 @@
         {
           topic: "Равнобедрен △ · Описана окр.",
           context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 13 cm</span> и основа <span class='math'>AB = 10 cm</span>.<br><strong>Търси се:</strong> Радиусът <span class='math'>R</span> на описаната окръжност.",
-          visual: `<svg class="svg-visual" viewBox="0 0 400 280">
-            <circle cx="200" cy="146" r="110" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
-            <polygon points="120,230 280,230 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <line x1="200" y1="40" x2="200" y2="230" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
-            <circle cx="200" cy="146" r="2.5" fill="#1d4ed8"/>
-            <text x="210" y="143" fill="#1d4ed8" font-size="14" font-style="italic">O</text>
-            <line x1="200" y1="146" x2="280" y2="230" stroke="#1d4ed8" stroke-width="1.2" stroke-dasharray="3,3"/>
-            <text x="245" y="195" fill="#1d4ed8" font-size="13" font-style="italic">R</text>
-            <path d="M 190 230 L 190 220 L 200 220" fill="none" stroke="#0f172a" stroke-width="1"/>
-            <text x="105" y="245" class="point">A</text>
-            <text x="285" y="245" class="point">B</text>
-            <text x="195" y="32" class="point">C</text>
-            <text x="205" y="248" class="point">H</text>
-            <text x="140" y="135">13</text>
-            <text x="245" y="135">13</text>
-            <text x="185" y="260">10</text>
+          visual: `<svg class="svg-visual" viewBox="0 0 400 360">
+            <!-- Мащаб 12 px / cm. AB = 120 px, AC = 156 px, CH = 144 px (=12 cm).
+                 Координати: A(140,260), B(260,260), H(200,260) — средата на AB.
+                 C: над H, на разстояние 144 → C(200, 116).
+                 Радиус R = 169/24 ≈ 7.04 cm → 84.5 px.
+                 Център O лежи на оста CH, на разстояние R от C → O = (200, 116 + 84.5) = (200, 200.5).
+                 Проверка: OA² = (200-140)² + (200.5-260)² = 60² + 59.5² = 3600 + 3540.25 = 7140.25; √=84.5 ✓
+                 Точка C′ диаметрално срещуположна на C: C′ = (200, 116 + 169) = (200, 285). Тогава HC′ = 285 - 260 = 25 px = 25/12 cm ✓ -->
+            <!-- Описана окръжност -->
+            <circle cx="200" cy="200.5" r="84.5" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+            <!-- Триъгълник ABC -->
+            <polygon points="140,260 260,260 200,116" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Височина CH, ПРОДЪЛЖЕНА до C′ (пунктирана зелена) -->
+            <line x1="200" y1="116" x2="200" y2="260" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4,3"/>
+            <line x1="200" y1="260" x2="200" y2="285" stroke="#16a34a" stroke-width="1.8" stroke-dasharray="5,3"/>
+            <!-- Диаметър CC′ маркиран — целият от C до C′ -->
+            <circle cx="200" cy="285" r="3.5" fill="#16a34a"/>
+            <!-- Спомагателна линия AC′ (показва правоъгълния △CAC′ от теорема на Талес) -->
+            <line x1="140" y1="260" x2="200" y2="285" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <!-- Прав ъгъл при A в △CAC′ -->
+            <!-- Векторите от A: към C (200-140, 116-260)=(60,-144); към C′ (200-140, 285-260)=(60,25)
+                 Те са перпендикулярни? 60·60 + (-144)·25 = 3600 - 3600 = 0 ✓ Перпендикулярни. -->
+            <!-- Малък правоъгълен маркер при A -->
+            <path d="M 152.7 257.2 L 156.4 247.7 L 146.7 244.0" fill="none" stroke="#dc2626" stroke-width="1.1"/>
+            <!-- Прав ъгъл при H -->
+            <path d="M 188 260 L 188 248 L 200 248" fill="none" stroke="#0f172a" stroke-width="1.1"/>
+            <!-- Център O -->
+            <circle cx="200" cy="200.5" r="2.5" fill="#1d4ed8"/>
+            <text x="210" y="198" fill="#1d4ed8" font-size="13" font-style="italic">O</text>
+            <!-- Радиус OB (пунктиран) -->
+            <line x1="200" y1="200.5" x2="260" y2="260" stroke="#1d4ed8" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="232" y="234" fill="#1d4ed8" font-size="13" font-style="italic">R</text>
+            <!-- Етикети на върхове -->
+            <text x="122" y="276" class="point">A</text>
+            <text x="265" y="276" class="point">B</text>
+            <text x="195" y="108" class="point">C</text>
+            <text x="205" y="278" class="point">H</text>
+            <text x="207" y="298" class="point" fill="#16a34a">C'</text>
+            <!-- Стойности -->
+            <text x="155" y="195" font-size="13" font-style="italic">13</text>
+            <text x="225" y="195" font-size="13" font-style="italic">13</text>
+            <text x="195" y="320" font-size="13" font-style="italic">AB = 10</text>
+            <text x="208" y="180" fill="#475569" font-size="12" font-style="italic">CH</text>
           </svg>`,
           steps: [
             {
-              text: "Подредете алгоритъма за намиране на радиуса <span class='math'>R</span> на описаната окръжност:",
+              text: "Подредете алгоритъма за намиране на радиуса <span class='math'>R</span> чрез метод от 9. клас:",
               ...buildAlgorithmOptions(
-                "1) Височина CH чрез теорема на Питагор; 2) Лице S = (1/2)·AB·CH; 3) R = (AC·BC·AB)/(4S)",
+                "1) Височина <span class='math'>CH</span> чрез теорема на Питагор; 2) Продължаваме <span class='math'>CH</span> до пресичане с окръжността в точка <span class='math'>C'</span> — тогава <span class='math'>CC'</span> е диаметър (= 2R); по теорема на Талес <span class='math'>&ang;CAC' = 90&deg;</span>; 3) В правоъгълния <span class='math'>&#9651;CAC'</span> с височина <span class='math'>AH</span> към хипотенузата прилагаме метричната зависимост <span class='math'>AH&sup2; = CH · HC'</span>",
                 [
-                  "1) Полупериметър; 2) R = p/2; 3) Лице",
+                  "1) Лице чрез координати; 2) Формула R = abc/(4S); 3) Изчисление",
                   "1) R = AB/2 (за равнобедрен); 2) Без други стъпки",
-                  "1) Лице от страните; 2) Височина; 3) R = S/p"
+                  "1) Полупериметър p; 2) R = p/2; 3) Лице"
                 ]
               ),
-              solution: "Прилагаме формулата R = abc/(4S). За лицето S ни трябва височината — намираме я чрез теорема на Питагор в правоъгълния △ACH."
+              solution: "В 9. клас се изучават: теоремата на Талес (ъгъл, вписан в полуокръжност, е прав) и метричните зависимости в правоъгълен триъгълник. Затова продължаваме височината CH до диаметрално срещуположната на C точка C′. В правоъгълния &#9651;CAC' (по Талес — защото CC' е диаметър), AH е височина към хипотенузата CC' = 2R. Прилагаме: AH² = CH · HC′."
             },
             {
-              text: "Височината <span class='math'>CH</span> от върха <span class='math'>C</span> към основата и лицето <span class='math'>S</span> на △ABC са:",
-              ...buildOptions("CH = 12 cm, S = 60 cm&sup2;", ["CH = 13 cm, S = 65 cm&sup2;", "CH = 12 cm, S = 120 cm&sup2;", "CH = &radic;144 cm, S = 5&radic;144 cm&sup2;"]),
-              solution: "AH = AB/2 = 5. От правоъгълния △ACH: CH² = AC² − AH² = 169 − 25 = 144 → CH = 12 cm. Лицето: S = (1/2)·AB·CH = (1/2)·10·12 = 60 cm²."
+              text: "Височината <span class='math'>CH</span> и отсечката <span class='math'>HC'</span> (от пресичането на CH с окръжността от другата страна на H) са:",
+              ...buildOptions(
+                "CH = 12 cm, HC' = 25/12 cm",
+                [
+                  "CH = 12 cm, HC' = 5 cm",
+                  "CH = 12 cm, HC' = 12 cm",
+                  "CH = 13 cm, HC' = 25/13 cm"
+                ]
+              ),
+              solution: "AH = AB/2 = 5 (защото в равнобедрен △ височината от C е и медиана). От правоъгълния &#9651;ACH по теорема на Питагор: CH² = AC² − AH² = 169 − 25 = 144 → <strong>CH = 12 cm</strong>. От метричната зависимост AH² = CH · HC' в правоъгълния &#9651;CAC': 25 = 12 · HC' → <strong>HC' = 25/12 cm</strong>."
             },
             {
-              text: "Радиусът на описаната окръжност <span class='math'>R</span> е:",
-              ...buildOptions("R = 169/24 cm", ["R = 13/2 cm", "R = 12 cm", "R = 25/4 cm"]),
-              solution: "<strong>Начин 1 (формула R = abc/(4S)):</strong> R = (13·13·10)/(4·60) = 1690/240 = <strong>169/24 cm</strong>.<br><br><strong>Начин 2 (центърът върху оста на симетрията):</strong> Центърът O лежи на оста CH (поради симетрията). Нека CO = R и OH = CH − R = 12 − R. От правоъгълния △AOH с хипотенуза AO = R: R² = AH² + OH² = 25 + (12 − R)². Решаваме: R² = 25 + 144 − 24R + R² → 24R = 169 → <strong>R = 169/24 cm</strong>."
+              text: "Диаметърът <span class='math'>CC' = CH + HC'</span> и радиусът <span class='math'>R</span> на описаната окръжност са:",
+              ...buildOptions(
+                "CC' = 169/12 cm, R = 169/24 cm",
+                [
+                  "CC' = 25 cm, R = 12,5 cm",
+                  "CC' = 169/12 cm, R = 169/12 cm",
+                  "CC' = 13 cm, R = 6,5 cm"
+                ]
+              ),
+              solution: "CC' = CH + HC' = 12 + 25/12 = 144/12 + 25/12 = 169/12 cm. Тъй като CC' е диаметър, <strong>R = CC'/2 = 169/24 cm</strong>."
             }
           ]
         },
