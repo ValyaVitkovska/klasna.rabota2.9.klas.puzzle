@@ -2323,6 +2323,26 @@
         <text x="290" y="120" class="point">N</text>
       </svg>`,
 
+      twoSimilarTriangles: `<svg class="svg-visual" viewBox="0 0 460 200">
+        <!-- Два отделни подобни △-ка: малък ляво, голям дясно. Един и същи ъгли. -->
+        <!-- Малък: A₁(20,150), B₁(130,150), C₁(85,70). -->
+        <polygon points="20,150 130,150 85,70" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+        <!-- Голям (k=2): A(220,170), B(440,170), C(330,10). -->
+        <polygon points="220,170 440,170 330,10" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+        <!-- Маркери за равни ъгли (малки дъги): една дъга при всеки от съответни ъгли -->
+        <!-- Малък: при A₁ -->
+        <path d="M 38 150 A 18 18 0 0 0 36.5 142" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+        <!-- Голям: при A -->
+        <path d="M 244 170 A 24 24 0 0 0 242.0 158.4" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+        <!-- Етикети -->
+        <text x="5" y="165" class="point">A&#8321;</text>
+        <text x="135" y="165" class="point">B&#8321;</text>
+        <text x="78" y="62" class="point">C&#8321;</text>
+        <text x="200" y="185" class="point">A</text>
+        <text x="445" y="185" class="point">B</text>
+        <text x="325" y="5" class="point">C</text>
+      </svg>`,
+
       rational: `<svg class="svg-visual" viewBox="0 0 400 120">
         <line x1="20" y1="60" x2="380" y2="60" stroke="#0f172a" stroke-width="1.5"/>
         <polygon points="380,60 370,55 370,65" fill="#0f172a"/>
@@ -2588,7 +2608,7 @@
         // === Подобни триъгълници ===
         {
           topic: "Подобни триъгълници",
-          visual: svgs.similarity,
+          visual: svgs.twoSimilarTriangles,
           text: "Дадени са подобните <span class='math'>&#9651;ABC</span> и <span class='math'>&#9651;A&#8321;B&#8321;C&#8321;</span>. Периметрите им са съответно <span class='math'>P = 30 cm</span> и <span class='math'>P&#8321; = 10 cm</span>. Ако разликата от лицата им е <span class='math'>S - S&#8321; = 32 cm&sup2;</span>, да се намери лицето <span class='math'>S</span> на <span class='math'>&#9651;ABC</span>.",
           ...buildOptions("36 cm&sup2;", ["18 cm&sup2;", "4 cm&sup2;", "40 cm&sup2;"]),
           solution: "k = P/P₁ = 3, S/S₁ = k² = 9. Значи S = 9·S₁, а S − S₁ = 8·S₁ = 32, откъдето S₁ = 4 и S = 36 cm²."
@@ -2602,48 +2622,54 @@
         },
         {
           topic: "Подобни триъгълници",
-          visual: `<svg class="svg-visual" viewBox="0 0 520 240">
-            <!-- Задача: На чертежа ∠PMN = ∠EFP, ME = 12, EP = 3, PF = 6. Намери EF:MN.
-                 Геометрия: голям △MNP (M ляво, N дясно, P горе вдясно), E на MP с ME=12, EP=3 → MP=15.
-                 F на MN. Условие: ъгъл при F (∠EFP) = ъгъл при M (∠PMN).
-                 Поради общия ъгъл при P и равенството ∠EFP = ∠PMN, имаме △PEF ~ △PNM:
-                   - общ ∠P (FP·E със страни PE и PF; ∠P (MN·) със страни PM и PN)
-                   - ∠PFE = ∠PMN (дадено)
-                   → подобие, k = PE/PM = 3/15 = 1/5
-                 От подобието: PF/PN = 1/5 → PN = 5·PF = 30. И EF/MN = 1/5.
-                 За чертежа: M(50,190), N(380,190), P(420,80). 
-                 MP = √((420-50)²+(80-190)²) = √(136900+12100) = √149000 ≈ 386. Мащаб ~25.7 px/cm.
-                 E на MP с ME = 12 cm → ME/MP = 12/15 = 4/5. E = M + 0.8·(P-M) = (50 + 0.8·370, 190 + 0.8·(-110)) = (346, 102).
-                 F на MN: за визуална яснота поставяме F = (250, 190) — точното положение се извежда от обратите. -->
-            <!-- Основен △MNP -->
-            <polygon points="50,190 380,190 420,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <!-- Отсечка EF (вътре в триъгълника) -->
-            <line x1="346" y1="102" x2="250" y2="190" stroke="#1d4ed8" stroke-width="1.6"/>
-            <!-- Отсечка PF -->
-            <line x1="420" y1="80" x2="250" y2="190" stroke="#1d4ed8" stroke-width="1.6"/>
+          visual: `<svg class="svg-visual" viewBox="0 0 540 280">
+            <!-- Задача 1: ME = 12, EP = 3, PF = 6. PM = 15. Подобието △PEF ~ △PMN с
+                 k = PF/PM = 6/15 = 2/5 → EF/MN = 2/5.
+                 
+                 Същата стандартна геометрия като за втората задача:
+                 M(60, 230), N(380, 230), P(440, 80).
+                 MP вектор = (380, -150), дължина ≈ 408.5 px.
+                 E на MP при ME/MP = 12/15 = 4/5:
+                   E = M + (4/5)·(P-M) = (60 + 0.8·380, 230 + 0.8·(-150)) = (364, 110)
+                 F на MN: за визуална яснота поставяме F ≈ средата = (240, 230). -->
+            <!-- Основен триъгълник MNP -->
+            <polygon points="60,230 380,230 440,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <!-- Точки E и F -->
-            <circle cx="346" cy="102" r="3.5" fill="#0f172a"/>
-            <circle cx="250" cy="190" r="3.5" fill="#0f172a"/>
-            <!-- Маркер за равни ъгли: дъга при M и дъга при F. Голяма дъга -->
-            <!-- Ъгъл при M (∠PMN): отворен в посока (P-M) и (N-M), радиус 28 -->
-            <path d="M 78 190 A 28 28 0 0 0 76.2 178" fill="none" stroke="#dc2626" stroke-width="1.4"/>
-            <!-- Ъгъл при F (∠EFP): два лъча FE и FP -->
-            <!-- F=(250,190). FE посока (346-250, 102-190)=(96,-88), норм. ≈(0.737,-0.676)
-                 FP посока (420-250, 80-190)=(170,-110), норм. ≈(0.840,-0.543)
-                 Радиус 24 от F:
-                 На FE: F + 24·(0.737,-0.676) = (267.7, 173.8)
-                 На FP: F + 24·(0.840,-0.543) = (270.2, 177.0) -->
-            <path d="M 267.7 173.8 A 24 24 0 0 1 270.2 177.0" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+            <circle cx="364" cy="110" r="4" fill="#0f172a"/>
+            <circle cx="240" cy="230" r="4" fill="#0f172a"/>
+            <!-- Отсечки EF и PF -->
+            <line x1="364" y1="110" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
+            <line x1="440" y1="80" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
+            <!-- Дъгички за равни ъгли (радиус 26):
+                 При M: между MN (надясно) и MP (към P).
+                 MN_единичен = (1, 0); MP_единичен = (380, -150)/408.5 ≈ (0.930, -0.367).
+                 Точки на дъгата:
+                   на MN: M + 26·(1, 0) = (86, 230)
+                   на MP: M + 26·(0.930, -0.367) = (84.2, 220.5)
+                 Дъгата започва от точката на MN и стига до точката на MP, нагоре (sweep=0). 
+                 При F: между FE и FP.
+                 F(240,230). FE = (364-240, 110-230) = (124, -120). |FE| ≈ 172.5. ед.: (0.719, -0.696).
+                 FP = (440-240, 80-230) = (200, -150). |FP| = 250. ед.: (0.8, -0.6).
+                 Точки на дъга радиус 26:
+                   на FE: F + 26·(0.719, -0.696) = (258.7, 211.9)
+                   на FP: F + 26·(0.8, -0.6)    = (260.8, 214.4)
+                 Между тях е по-малък ъгъл — дъгата ще е едва видима. Удвоявам радиуса на дъгата при F до 40:
+                   на FE: F + 40·(0.719, -0.696) = (268.8, 202.2)
+                   на FP: F + 40·(0.8, -0.6)    = (272, 206) -->
+            <path d="M 86 230 A 26 26 0 0 0 84.2 220.5" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+            <path d="M 268.8 202.2 A 40 40 0 0 1 272 206" fill="none" stroke="#dc2626" stroke-width="1.5"/>
             <!-- Етикети на върхове -->
-            <text x="34" y="207" class="point">M</text>
-            <text x="385" y="207" class="point">N</text>
-            <text x="427" y="78" class="point">P</text>
-            <text x="350" y="98" class="point">E</text>
-            <text x="245" y="207" class="point">F</text>
-            <!-- Стойности -->
-            <text x="180" y="155" font-size="13" font-style="italic">12</text>
-            <text x="376" y="92" font-size="13" font-style="italic">3</text>
-            <text x="345" y="155" font-size="13" font-style="italic">6</text>
+            <text x="42" y="248" class="point">M</text>
+            <text x="383" y="248" class="point">N</text>
+            <text x="447" y="76" class="point">P</text>
+            <text x="368" y="103" class="point">E</text>
+            <text x="234" y="252" class="point">F</text>
+            <!-- Стойности (далеч от линиите) -->
+            <text x="170" y="172" font-size="13" font-style="italic">12</text>
+            <text x="415" y="98" font-size="13" font-style="italic">3</text>
+            <text x="408" y="160" font-size="13" font-style="italic">6</text>
+            <!-- Маркиране на търсеното -->
+            <text x="295" y="200" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">EF : MN = ?</text>
           </svg>`,
           text: "На чертежа са дадени два триъгълника със споделен връх <span class='math'>P</span>. Известно е, че <span class='math'>&ang;PMN = &ang;EFP</span>, <span class='math'>ME = 12 cm</span>, <span class='math'>EP = 3 cm</span> и <span class='math'>PF = 6 cm</span>. Да се намери отношението <span class='math'>EF : MN</span>.",
           ...buildOptions("2 : 5", ["1 : 5", "1 : 3", "3 : 5"]),
@@ -2651,30 +2677,80 @@
         },
         {
           topic: "Подобни триъгълници",
-          visual: `<svg class="svg-visual" viewBox="0 0 520 240">
-            <!-- Подобна на горната, но с различни числа: ME = 10, EP = 4, PF = 7. Намери PN.
-                 PM = ME + EP = 14. От подобието: k = PF/PM = 7/14 = 1/2. PN = PE/k = 4/(1/2) = 8. -->
-            <!-- Същата геометрия с по-различни числа -->
-            <polygon points="50,190 380,190 420,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <line x1="346" y1="102" x2="250" y2="190" stroke="#1d4ed8" stroke-width="1.6"/>
-            <line x1="420" y1="80" x2="250" y2="190" stroke="#1d4ed8" stroke-width="1.6"/>
-            <circle cx="346" cy="102" r="3.5" fill="#0f172a"/>
-            <circle cx="250" cy="190" r="3.5" fill="#0f172a"/>
-            <path d="M 78 190 A 28 28 0 0 0 76.2 178" fill="none" stroke="#dc2626" stroke-width="1.4"/>
-            <path d="M 267.7 173.8 A 24 24 0 0 1 270.2 177.0" fill="none" stroke="#dc2626" stroke-width="1.4"/>
-            <text x="34" y="207" class="point">M</text>
-            <text x="385" y="207" class="point">N</text>
-            <text x="427" y="78" class="point">P</text>
-            <text x="350" y="98" class="point">E</text>
-            <text x="245" y="207" class="point">F</text>
-            <text x="180" y="155" font-size="13" font-style="italic">10</text>
-            <text x="376" y="92" font-size="13" font-style="italic">4</text>
-            <text x="345" y="155" font-size="13" font-style="italic">7</text>
-            <text x="200" y="207" font-size="13" font-style="italic" fill="#dc2626">PN = ?</text>
+          visual: `<svg class="svg-visual" viewBox="0 0 540 280">
+            <!-- Задача: ME = 10, EP = 4, PF = 7. PM = 14. От подобието △PEF ~ △PMN
+                 (общ ∠P, ∠PFE = ∠PMN) с k = PF/PM = 7/14 = 1/2 следва PN = 2·PE = 8.
+                 
+                 Геометрична конструкция (пропорциите трябва да са в съответствие с числата):
+                 - △MNP с M ляво долу, N дясно долу, P горе дясно.
+                 - E ∈ MP с ME:EP = 10:4 = 5:2
+                 - F ∈ MN. Точното положение на F трябва да изпълнява ∠EFP = ∠PMN.
+                 
+                 Избор на координати:
+                 M(60, 230), N(380, 230) → MN = 320 px.
+                 P(440, 80). Тогава MP = √((440-60)² + (80-230)²) = √(144400 + 22500) = √166900 ≈ 408.5 px.
+                 Скала ≈ 29.2 px на cm.
+                 E = M + (10/14)·(P-M) = M + (5/7)·(P-M):
+                   E_x = 60 + (5/7)·380 = 60 + 271.4 = 331.4
+                   E_y = 230 + (5/7)·(-150) = 230 - 107.1 = 122.9
+                 → E ≈ (331, 123).
+                 
+                 Положение на F: трябва ∠EFP = ∠PMN. Чрез подобието △PEF ~ △PMN със k = PF/PM = 7/14 = 1/2:
+                   PE/PN = 1/2 → PN = 2·PE. PE = √((440-331)² + (80-123)²) = √(11881 + 1849) = √13730 ≈ 117.2 px.
+                   Реална PE = 4 cm, мащаб = 117.2/4 = 29.3 px/cm. ✓
+                   PN_real = 8 cm = 8 · 29.3 = 234.4 px.
+                   Намираме F на отсечката MN така, че PN = 234.4 px.
+                   От P(440, 80), N(380, 230). Дистанция = √(60² + 150²) = √(3600+22500) = √26100 ≈ 161.6 px.
+                   Реална PN = 161.6/29.3 ≈ 5.5 cm — НЕ съответства на 8 cm.
+                   
+                 Проблем: пропорциите на моя чертеж не отговарят. Ще преоразмеря.
+                 
+                 Алтернативна конструкция: запазвам M, N, P, но НЕ настоявам точно на пропорциите.
+                 Чертежът ще е „схематичен" — F ще е там, където визуално подобието работи.
+                 
+                 Опитвам: F на MN, така че MF:FN = ?. От подобие △MFE може да изведем (но условията дават подобие на △PEF и △PMN, не на тези).
+                 
+                 По-прост подход: задавам F = (240, 230) (приблизително 1/2 от MN от M).
+                 Тогава MF = 180 px. -->
+            <!-- Основен триъгълник MNP -->
+            <polygon points="60,230 380,230 440,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Точки E (на MP) и F (на MN) -->
+            <circle cx="331" cy="123" r="4" fill="#0f172a"/>
+            <circle cx="240" cy="230" r="4" fill="#0f172a"/>
+            <!-- Отсечки EF и PF (синьо — те са „вътрешните" обекти) -->
+            <line x1="331" y1="123" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
+            <line x1="440" y1="80" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
+            <!-- Дъгички за равни ъгли. Радиус 26, символично:
+                 При M: ъгълът ∠PMN е между лъчите MP (към горе-дясно) и MN (към дясно).
+                 MP единичен вектор: (380, -150)/408.5 ≈ (0.930, -0.367)
+                 MN единичен вектор: (1, 0)
+                 Точки на дъгата при M (радиус 26):
+                   на MP: M + 26·(0.930, -0.367) = (84.2, 220.5)
+                   на MN: M + 26·(1, 0) = (86, 230)
+                 При F: ъгълът ∠EFP е между лъчите FE и FP.
+                 F(240, 230). FE вектор: (331-240, 123-230) = (91, -107), дължина ≈ 140.4. Единичен: (0.648, -0.762)
+                 FP вектор: (440-240, 80-230) = (200, -150), дължина = 250. Единичен: (0.8, -0.6)
+                 Точки на дъгата при F (радиус 26):
+                   на FE: F + 26·(0.648, -0.762) = (256.85, 210.18)
+                   на FP: F + 26·(0.8, -0.6) = (260.8, 214.4) -->
+            <path d="M 84.2 220.5 A 26 26 0 0 0 86 230" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+            <path d="M 256.85 210.18 A 26 26 0 0 1 260.8 214.4" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+            <!-- Етикети на върхове -->
+            <text x="42" y="248" class="point">M</text>
+            <text x="383" y="248" class="point">N</text>
+            <text x="447" y="76" class="point">P</text>
+            <text x="335" y="115" class="point">E</text>
+            <text x="234" y="252" class="point">F</text>
+            <!-- Стойности на страните (с разстояние от линиите за четливост) -->
+            <text x="170" y="172" font-size="13" font-style="italic">10</text>
+            <text x="390" y="105" font-size="13" font-style="italic">4</text>
+            <text x="400" y="170" font-size="13" font-style="italic">7</text>
+            <!-- Маркиране на търсеното — НА ОТДЕЛНО МЯСТО, далеч от F и от страните -->
+            <text x="295" y="200" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">PN = ?</text>
           </svg>`,
           text: "На чертежа <span class='math'>&ang;PMN = &ang;EFP</span>, <span class='math'>ME = 10 cm</span>, <span class='math'>EP = 4 cm</span> и <span class='math'>PF = 7 cm</span>. Да се намери дължината на <span class='math'>PN</span>.",
           ...buildOptions("8 cm", ["7 cm", "10 cm", "12 cm"]),
-          solution: "&#9651;PEF ~ &#9651;PNM (общ &ang;P + &ang;PFE = &ang;PMN). Съответствие на върховете: P↔P, E↔N, F↔M. PM = ME + EP = 10 + 4 = 14. Коефициент k = PF/PM = 7/14 = 1/2. От подобието: PE/PN = k = 1/2 → PN = 2·PE = 2·4 = <strong>8 cm</strong>."
+          solution: "&#9651;PEF ~ &#9651;PMN, защото имат общ &ang;P и &ang;PFE = &ang;PMN (дадено). <strong>Съответствие на върховете:</strong> P↔P (общ ъгъл); F↔M (равни ъгли); E↔N. <br>Коефициент на подобие: k = PF/PM = EF/MN = PE/PN. <br>PM = ME + EP = 10 + 4 = 14 cm. Тогава k = PF/PM = 7/14 = 1/2. <br>От PE/PN = 1/2 → <strong>PN = 2·PE = 2·4 = 8 cm</strong>."
         },
         {
           topic: "Подобни триъгълници",
@@ -2748,61 +2824,6 @@
           ...buildOptions("48 cm", ["50 cm", "60 cm", "40 cm"]),
           solution: "Нека страната на ромба е a. От △APM ~ △ABC (MP ‖ BC): AP/AB = MP/BC → (20 − a)/20 = a/30 → 30(20 − a) = 20a → 600 = 50a → <strong>a = 12 cm</strong>. Периметър = 4a = <strong>48 cm</strong>."
         },
-        {
-          topic: "Подобни триъгълници · Подобни △",
-          visual: `<svg class="svg-visual" viewBox="0 0 460 240">
-            <!-- Задача: ∠PMN = ∠EFP, ME=12, EP=3, PF=6, искаме EF:MN.
-                 От ∠EFP = ∠NMP следва: в △PEF и △PMN има общ ъгъл при P, а ∠EFP = ∠NMP.
-                 Тогава &#9651;PEF ~ &#9651;PMN (по два равни ъгъла).
-                 Отношения: PE/PM = PF/PN = EF/MN. PM = PE + EM = 3 + 12 = 15. EF/MN = PF/PM = 6/15 = 2/5.
-                 Чертеж: M долу ляво, N долу дясно, P горе дясно (триъгълник MNP).
-                 E на MP, F на PN. ME = 12, EP = 3 → MP = 15. PF = 6 (не знаем PN).
-                 Изчисление за координати: 1 cm = 24 px. M(40, 200), P(360, 80). 
-                 |MP| = √(320² + 120²) = √(102400+14400) = √116800 ≈ 341.8. Не е 15·24 = 360. Не съвпада.
-                 Опростено: 1 cm = 20 px. |MP| трябва = 300. Опит: M(40,200), P(310,80). |MP|=√(270²+120²)=√(72900+14400)=√87300≈295.5. Близо.
-                 Точно: M(50,200), P нагоре-дясно, |MP|=300. Нека P(50+a, 200-b) с a²+b²=90000. Изберем a=240, b=180: 240²+180²=57600+32400=90000 ✓. P=(290,20).
-                 E на MP в съотношение ME:EP=12:3=4:1 → E = M + (4/5)·(P−M) = (50+0.8·240, 200+0.8·(−180)) = (50+192, 200−144)=(242, 56).
-                 Сега N долу дясно, на хоризонталата (някъде). Нека N=(400, 200). 
-                 PN от P(290,20) до N(400,200): вектор (110,180), |PN|=√(12100+32400)=√44500≈211.
-                 F на PN с PF=6 → 6·20=120 px. F = P + (120/211)·(110,180) = (290+62.6, 20+102.4) = (352.6, 122.4).
-                 За E точно: 192=192, 144=144 ✓ ME = √(192²+144²) = √(36864+20736) = √57600 = 240 ✓ (=12 cm).
-                 EP: √((290-242)² + (20-56)²) = √(48²+36²) = √(2304+1296) = √3600 = 60 ✓ (=3 cm). -->
-            <polygon points="50,200 400,200 290,20" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <!-- Линия EF -->
-            <line x1="242" y1="56" x2="352.6" y2="122.4" stroke="#1d4ed8" stroke-width="1.6"/>
-            <!-- Точки E, F -->
-            <circle cx="242" cy="56" r="3.5" fill="#0f172a"/>
-            <circle cx="352.6" cy="122.4" r="3.5" fill="#0f172a"/>
-            <!-- Маркер за равните ъгли: дъга при M (между MP и MN) и дъга при F (между FE и FP).
-                 При M: лъчите MP (към 290,20) и MN (към 400,200).
-                 Единични вектори: към P (240/300, -180/300)=(0.8, -0.6); към N (350/350, 0)=(1, 0).
-                 Радиус 30: на MP: (50+24, 200-18)=(74, 182); на MN: (50+30, 200)=(80, 200).
-                 Дъга: път от (80,200) до (74,182) с радиус 30 — small arc, counter-clockwise. -->
-            <path d="M 80 200 A 30 30 0 0 0 74 182" fill="none" stroke="#dc2626" stroke-width="1.4"/>
-            <!-- При F: лъчите FE и FP. F=(352.6, 122.4). 
-                 Към E(242,56): вектор (-110.6, -66.4), дължина √(12233+4409)=√16642≈129. Норм: (-0.857, -0.515).
-                 Към P(290,20): вектор (-62.6, -102.4), дължина √(3919+10486)=√14405≈120. Норм: (-0.522, -0.853).
-                 Радиус 25 от F: 
-                 на FE: (352.6 - 21.4, 122.4 - 12.9) = (331.2, 109.5)
-                 на FP: (352.6 - 13.1, 122.4 - 21.3) = (339.5, 101.1) -->
-            <path d="M 331.2 109.5 A 25 25 0 0 0 339.5 101.1" fill="none" stroke="#dc2626" stroke-width="1.4"/>
-            <!-- Етикети -->
-            <text x="32" y="218" class="point">M</text>
-            <text x="408" y="218" class="point">N</text>
-            <text x="285" y="14" class="point">P</text>
-            <text x="225" y="56" class="point">E</text>
-            <text x="358" y="120" class="point">F</text>
-            <!-- Стойности -->
-            <text x="135" y="135" font-size="13" font-style="italic">ME = 12</text>
-            <text x="255" y="46" font-size="13" font-style="italic">EP = 3</text>
-            <text x="340" y="80" font-size="13" font-style="italic">PF = 6</text>
-            <text x="280" y="105" fill="#1d4ed8" font-size="13" font-style="italic">EF</text>
-          </svg>`,
-          text: "На чертежа е дадено, че <span class='math'>&ang;PMN = &ang;EFP</span>, <span class='math'>ME = 12 cm</span>, <span class='math'>EP = 3 cm</span> и <span class='math'>PF = 6 cm</span>. Да се намери отношението <span class='math'>EF : MN</span>.",
-          ...buildOptions("2 : 5", ["1 : 4", "1 : 2", "3 : 5"]),
-          solution: "<strong>Идея:</strong> В &#9651;PEF и &#9651;PMN ъгълът при P е общ, а &ang;PFE = &ang;PMN (дадено). По признака за подобие (два равни ъгъла): <strong>&#9651;PEF ~ &#9651;PMN</strong>. Внимание към съответствието на върховете: P↔P, E↔M, F↔N. Тогава отношението на подобие е PE/PM = PF/PN = EF/MN. <br>PM = ME + EP = 12 + 3 = 15. Коефициентът на подобие: k = EF/MN = PF/PM = 6/15 = <strong>2/5</strong>, тоест <strong>EF : MN = 2 : 5</strong>."
-        },
-
         // === Метрични зависимости ===
         {
           topic: "Метрични зависимости",
@@ -2891,31 +2912,49 @@
           solution: "<strong>Метод за 9. клас (продължение на височина + метрични зависимости):</strong> Нека H е средата на AB (AH = 5). Височината CH = √(AC² − AH²) = √(169 − 25) = 12 cm. Продължаваме CH до пресичане с описаната окръжност в точка C'. Тогава CC' е диаметър (минава през центъра поради симетрия), а по теорема на Талес ъгълът &ang;CAC' = 90° (вписан в полуокръжност). В правоъгълния &#9651;CAC' AH е височина към хипотенузата CC' = 2R. По метричната зависимост AH² = CH · HC': 25 = 12 · HC' → HC' = 25/12 cm. Тогава 2R = CC' = CH + HC' = 12 + 25/12 = 169/12 cm, откъдето <strong>R = 169/24 cm</strong>."
         },
         {
-          topic: "Правоъгълен триъгълник",
-          visual: svgs.rightTrig,
-          text: "В правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C=90&deg;</span>) катетите са <span class='math'>a = 6 cm</span> и <span class='math'>b = 8 cm</span>. Да се намери медианата <span class='math'>m<sub>a</sub></span> към катета <span class='math'>a</span>.",
-          ...buildOptions("&radic;73 cm", ["&radic;52 cm", "5 cm", "&radic;97 cm"]),
-          solution: "m_a² = (2b² + 2c² − a²)/4. c = 10. m_a² = (128 + 200 − 36)/4 = 292/4 = 73. m_a = √73 cm."
-        },
-        {
-          topic: "Правоъгълен триъгълник",
-          visual: svgs.rightTrig,
-          text: "В правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C=90&deg;</span>) катетите са <span class='math'>a = 6 cm</span> и <span class='math'>b = 8 cm</span>. Да се намери ъглополовящата <span class='math'>l<sub>b</sub></span> към катета <span class='math'>b</span>.",
-          ...buildOptions("3&radic;5 cm", ["4&radic;5 cm", "5&radic;3 cm", "6&radic;2 cm"]),
-          solution: "Ъглополовящата от B дели AC в отношение AB:BC = 10:6 = 5:3. AC = 8, дели се на 5 и 3. l_b² = AB·BC − (5·3) = 60 − 15 = 45 → l_b = 3√5 cm."
-        },
-        {
-          topic: "Правоъгълен триъгълник",
-          visual: svgs.rightTrig,
-          text: "В правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90°</span>) катетите са <span class='math'>a = 5 cm</span> и <span class='math'>b = 12 cm</span>. Да се намери височината към хипотенузата.",
+          topic: "Метрични зависимости",
+          visual: svgs.metric,
+          text: "В правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90°</span>) катетите са <span class='math'>a = 5 cm</span> и <span class='math'>b = 12 cm</span>. Да се намери височината <span class='math'>h<sub>c</sub></span> към хипотенузата.",
           ...buildOptions("60/13 cm", ["6 cm", "8,5 cm", "5 cm"]),
-          solution: "c = 13. От h·c = a·b → h = 60/13 cm."
+          solution: "По теорема на Питагор: c² = a² + b² = 25 + 144 = 169 → c = 13. Лицето на &#9651;ABC се пресмята по два начина: S = a·b/2 = 5·12/2 = 30 cm² и S = c·h_c/2 = 13·h_c/2. Приравняваме: 13·h_c/2 = 30 → <strong>h_c = 60/13 cm</strong>."
         },
 
         // === Трапец ===
         {
           topic: "Трапец",
-          visual: svgs.rightTrapezoid,
+          visual: `<svg class="svg-visual" viewBox="0 0 400 220">
+            <!-- Правоъгълен трапец ABCD с диагонал AC, перпендикулярен на BC.
+                 Условие: AC ⊥ BC, AD = 12, CD = 9, ∠A = 90° → AB = 25.
+                 Мащаб 8 px/cm: AD=96, CD=72, AB=200.
+                 Координати: A(50,180), D(50,84), C(122,84), B(250,180).
+                 Тогава AC от (50,180) до (122,84). |AC|² = 72² + 96² = 5184 + 9216 = 14400 → |AC| = 120.
+                 BC от (122,84) до (250,180). |BC|² = 128² + 96² = 16384 + 9216 = 25600 → |BC| = 160.
+                 Проверка AC ⊥ BC: вектори AC = (72,-96), BC = (128,96). Скаларно: 72·128 + (-96)·96 = 9216 - 9216 = 0 ✓ -->
+            <polygon points="50,180 250,180 122,84 50,84" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Диагонал AC (червен) -->
+            <line x1="50" y1="180" x2="122" y2="84" stroke="#dc2626" stroke-width="1.6"/>
+            <!-- Прав ъгъл при A -->
+            <path d="M 50 168 L 62 168 L 62 180" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <!-- Прав ъгъл при D -->
+            <path d="M 50 96 L 62 96 L 62 84" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <!-- Прав ъгъл при C между AC и CB (важно — централната конструкция!) -->
+            <!-- Вектори от C: към A (-72,96), към B (128,96). Перпендикулярни ✓
+                 Малък правоъгълник: 12 px от C по двата вектора.
+                 На AC от C: C + 12·(-72,96)/120 = C + (-7.2, 9.6) = (114.8, 93.6)
+                 На CB от C: C + 12·(128,96)/160 = C + (9.6, 7.2) = (131.6, 91.2)
+                 Точка във вътрешността: C + двата вектора = (114.8 + 9.6 - 122, 93.6 + 7.2 - 84) + C = (124.4, 100.8) -->
+            <path d="M 114.8 93.6 L 124.4 100.8 L 131.6 91.2" fill="none" stroke="#dc2626" stroke-width="1.3"/>
+            <!-- Етикети на върховете -->
+            <text x="35" y="195" class="point">A</text>
+            <text x="255" y="195" class="point">B</text>
+            <text x="127" y="78" class="point">C</text>
+            <text x="35" y="78" class="point">D</text>
+            <!-- Дадените стойности (раздалечени от етикетите на върховете) -->
+            <text x="20" y="135" font-size="13" font-style="italic">AD = 12</text>
+            <text x="70" y="76" font-size="13" font-style="italic">CD = 9</text>
+            <!-- Търсеното (с акцент) -->
+            <text x="135" y="200" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">AB = ?</text>
+          </svg>`,
           text: "В правоъгълния трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD, &ang;A = 90&deg;</span>), диагоналът <span class='math'>AC &perp; BC</span>. Ако <span class='math'>AD = 12 cm</span> и <span class='math'>CD = 9 cm</span>, да се намери голямата основа <span class='math'>AB</span>.",
           ...buildOptions("25 cm", ["20 cm", "15 cm", "16 cm"]),
           solution: "<strong>Начин 1 (метрични зависимости — най-кратък):</strong> Построяваме височината от C към AB; нейното пето е H. Тогава AHCD е правоъгълник → AH = CD = 9 и CH = AD = 12. В правоъгълния △ABC височината CH е средно геометрична на проекциите на катетите: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CH²</span><span class='frac-den'>AH</span></span></span> = HB → HB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>144</span><span class='frac-den'>9</span></span></span> = 16. Тогава AB = AH + HB = 9 + 16 = 25 cm.<br><br><strong>Начин 2 (подобие):</strong> △ACD ~ △BCA (общ остър ъгъл и прав ъгъл) → <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC</span><span class='frac-den'>AB</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CD</span><span class='frac-den'>AC</span></span></span>. От теорема на Питагор в △ACD: AC² = 144 + 81 = 225. Тогава AB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC²</span><span class='frac-den'>CD</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>225</span><span class='frac-den'>9</span></span></span> = 25 cm."
@@ -3111,7 +3150,7 @@
         // === Допълнителни задачи за разнообразие ===
         {
           topic: "Подобни триъгълници",
-          visual: svgs.similarity,
+          visual: svgs.twoSimilarTriangles,
           text: "Височините на два подобни триъгълника, спуснати към съответни страни, се отнасят <span class='math'>3 : 7</span>. Ако лицето на големия е <span class='math'>147 cm&sup2;</span>, намерете лицето на малкия.",
           ...buildOptions("27 cm&sup2;", ["63 cm&sup2;", "49 cm&sup2;", "21 cm&sup2;"]),
           solution: "k = 3/7, k² = 9/49. S_малък = 147 · 9/49 = 27 cm²."
@@ -3132,14 +3171,35 @@
         },
         {
           topic: "Трапец",
-          visual: svgs.isoTrapezoid,
+          visual: `<svg class="svg-visual" viewBox="0 0 400 180">
+            <!-- Трапец ABCD с маркирана средна отсечка MN -->
+            <polygon points="50,140 350,140 270,40 130,40" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+            <!-- Средна отсечка MN: M = среда на AD = (90, 90), N = среда на BC = (310, 90) -->
+            <line x1="90" y1="90" x2="310" y2="90" stroke="#1d4ed8" stroke-width="1.8" stroke-dasharray="6,3"/>
+            <circle cx="90" cy="90" r="3" fill="#0f172a"/>
+            <circle cx="310" cy="90" r="3" fill="#0f172a"/>
+            <!-- Тикчета за равенство на половините на бедрата -->
+            <line x1="65" y1="115" x2="75" y2="105" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="110" y1="70" x2="120" y2="60" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="325" y1="115" x2="335" y2="105" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="285" y1="70" x2="295" y2="60" stroke="#0f172a" stroke-width="1.4"/>
+            <!-- Етикети -->
+            <text x="35" y="155" class="point">A</text>
+            <text x="355" y="155" class="point">B</text>
+            <text x="273" y="32" class="point">C</text>
+            <text x="120" y="32" class="point">D</text>
+            <text x="78" y="86" class="point">M</text>
+            <text x="313" y="86" class="point">N</text>
+            <!-- Етикет за средната отсечка -->
+            <text x="180" y="84" fill="#1d4ed8" font-size="13" font-style="italic" font-weight="600">m = 14</text>
+          </svg>`,
           text: "Средната отсечка на трапец е <span class='math'>14 cm</span>, а едната основа е <span class='math'>9 cm</span>. Да се намери другата основа.",
           ...buildOptions("19 cm", ["23 cm", "5 cm", "14 cm"]),
           solution: "Средна отсечка m = (a + b)/2 → 14 = (9 + b)/2 → b = 19 cm."
         },
         {
           topic: "Подобни триъгълници",
-          visual: svgs.similarity,
+          visual: svgs.twoSimilarTriangles,
           text: "Страните на триъгълник са <span class='math'>5, 6, 7</span>. Намерете най-голямата страна на подобен на него триъгълник с периметър <span class='math'>54</span>.",
           ...buildOptions("21", ["18", "15", "14"]),
           solution: "P_малък = 5+6+7 = 18. k = 54/18 = 3. Най-голяма страна = 7 · 3 = 21."
@@ -3520,7 +3580,7 @@
             <!-- Стойности -->
             <text x="110" y="165" font-size="13" font-style="italic">10</text>
             <text x="255" y="155" font-size="13" font-style="italic">10</text>
-            <text x="190" y="260" font-size="13" font-style="italic">12</text>
+            <text x="220" y="270" font-size="13" font-style="italic">AB = 12</text>
             <!-- Етикет на търсената отсечка -->
             <text x="225" y="195" fill="#16a34a" font-size="14" font-style="italic" font-weight="600">BM = ?</text>
           </svg>`,
@@ -3792,12 +3852,12 @@
             <text x="360" y="195" class="point">B</text>
             <text x="275" y="52" class="point">C</text>
             <text x="120" y="52" class="point">D</text>
-            <text x="207" y="115" class="point">O</text>
-            <text x="155" y="105" fill="#1d4ed8">BD = 16</text>
-            <text x="195" y="52">CD</text>
-            <text x="195" y="200">AB</text>
-            <text x="195" y="80" font-size="11">S = 1</text>
-            <text x="195" y="160" font-size="11">S = 9</text>
+            <text x="207" y="118" class="point">O</text>
+            <!-- BD надпис — преместен далеч от O, между D и точка O в горната част на диагонала -->
+            <text x="98" y="85" fill="#1d4ed8" font-size="13" font-style="italic">BD = 16</text>
+            <!-- Лицата на двата подобни △ — на нови места -->
+            <text x="225" y="85" font-size="12" font-style="italic">S = 1</text>
+            <text x="155" y="160" font-size="12" font-style="italic">S = 9</text>
           </svg>`,
           steps: [
             {
