@@ -209,14 +209,22 @@
       box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    .svg-visual { width: 100%; max-width: 420px; height: auto; }
+    .svg-visual { width: 100%; max-width: 420px; height: auto; color: var(--ink); }
     .svg-visual text { font-family: var(--math-font); font-style: italic; font-size: 16px; fill: var(--ink); }
     .svg-visual .point { font-style: normal; font-weight: 700; }
-    .svg-visual line, .svg-visual path, .svg-visual polygon, .svg-visual circle, .svg-visual polyline { stroke: var(--ink); }
-    .svg-visual path[fill]:not([fill="none"]),
-    .svg-visual polygon[fill]:not([fill="none"]),
-    .svg-visual circle[fill]:not([fill="none"]) { fill: var(--ink); }
-    [data-theme="dark"] .svg-visual { filter: invert(0.92) hue-rotate(180deg); }
+    /* Главни линии — currentColor наследява от var(--ink) и се променя в тъмна тема */
+    .svg-visual line[stroke="#0f172a"],
+    .svg-visual path[stroke="#0f172a"],
+    .svg-visual polygon[stroke="#0f172a"],
+    .svg-visual circle[stroke="#0f172a"],
+    .svg-visual polyline[stroke="#0f172a"] { stroke: var(--ink) !important; }
+    /* По-светли (помощни) линии — за пунктирани конструкции */
+    .svg-visual line[stroke="#94a3b8"],
+    .svg-visual path[stroke="#94a3b8"] { stroke: var(--muted) !important; }
+    /* Запълвания (например за точки) */
+    .svg-visual circle[fill="#0f172a"],
+    .svg-visual path[fill="#0f172a"],
+    .svg-visual polygon[fill="#0f172a"]:not([fill="none"]) { fill: var(--ink) !important; }
 
     .math {
       font-family: var(--math-font);
@@ -2683,23 +2691,23 @@
         {
           topic: "Равнобедрен △ · Медиана",
           visual: svgs.isoTriangle,
-          text: "В равнобедрения <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC</span>) основата е <span class='math'>AB = 12 cm</span>, а бедрото е <span class='math'>AC = 10 cm</span>. Да се намери дължината на медианата <span class='math'>m<sub>b</sub></span> към бедрото <span class='math'>AC</span>.",
+          text: "В равнобедрения <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC</span>) основата е <span class='math'>AB = 12 cm</span>, а бедрото е <span class='math'>AC = 10 cm</span>. <span class='math'>M</span> е средата на бедрото <span class='math'>AC</span>. Да се намери дължината на медианата <span class='math'>BM</span>.",
           ...buildOptions("<span class='math'>&radic;97 cm</span>", ["<span class='math'>&radic;73 cm</span>", "<span class='math'>9 cm</span>", "<span class='math'>&radic;113 cm</span>"]),
-          solution: "<strong>Начин 1 (формула за медиана):</strong> Медианата от B към AC се пресмята с формулата m_b² = (2·a² + 2·c² − b²)/4, където a = BC, b = AC, c = AB.<br>m_b² = (2·100 + 2·144 − 100)/4 = (200 + 288 − 100)/4 = 388/4 = 97 → <strong>m_b = √97 cm</strong>.<br><br><strong>Начин 2 (координати):</strong> Поставяме A(−6, 0), B(6, 0). Височината от C: h = √(10² − 6²) = 8, C(0, 8). Среда на AC: M = (−3, 4). Тогава BM = √((6 − (−3))² + (0 − 4)²) = √(81 + 16) = √97 cm."
+          solution: "<strong>Решение чрез координати и Питагор (9. клас):</strong> Поставяме координатна система: A(−6, 0), B(6, 0) (защото AB = 12). Височината от C към AB пада в средата (равнобедрен △). По теорема на Питагор: h = √(AC² − 6²) = √(100 − 36) = √64 = 8, значи C(0, 8). Средата на AC: <strong>M</strong> = ((−6+0)/2, (0+8)/2) = (−3, 4). Тогава <strong>BM</strong> = √((6 − (−3))² + (0 − 4)²) = √(81 + 16) = <strong>√97 cm</strong>."
         },
         {
           topic: "Равнобедрен △ · Медиана",
           visual: svgs.isoTriangle,
-          text: "В равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC = 10 cm</span>) основата е <span class='math'>AB = 16 cm</span>. Да се намери дължината на медианата от <span class='math'>A</span> към бедрото <span class='math'>BC</span>.",
+          text: "В равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC = 10 cm</span>) основата е <span class='math'>AB = 16 cm</span>. <span class='math'>M</span> е средата на бедрото <span class='math'>BC</span>. Да се намери дължината на медианата <span class='math'>AM</span>.",
           ...buildOptions("<span class='math'>3&radic;17 cm</span>", ["<span class='math'>&radic;97 cm</span>", "<span class='math'>8 cm</span>", "<span class='math'>&radic;164 cm</span>"]),
-          solution: "Формула за медиана от A към BC: m_a² = (2·AB² + 2·AC² − BC²)/4, където AB = 16, AC = 10, BC = 10. m_a² = (2·256 + 2·100 − 100)/4 = (512 + 200 − 100)/4 = 612/4 = 153 → <strong>m_a = √153 = √(9·17) = 3√17 cm</strong>."
+          solution: "<strong>Решение чрез координати и Питагор (9. клас):</strong> Поставяме A(−8, 0), B(8, 0) (защото AB = 16). Височината от C: h = √(10² − 8²) = √(100 − 64) = √36 = 6, значи C(0, 6). Средата на BC: <strong>M</strong> = ((8+0)/2, (0+6)/2) = (4, 3). Тогава <strong>AM</strong> = √((4 − (−8))² + (3 − 0)²) = √(144 + 9) = √153 = √(9·17) = <strong>3√17 cm</strong>."
         },
         {
           topic: "Равнобедрен △ · Медиана",
           visual: svgs.isoTriangle,
-          text: "В равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC = 13 cm</span>) основата е <span class='math'>AB = 10 cm</span>. Да се намери дължината на медианата от <span class='math'>A</span> към бедрото <span class='math'>BC</span>.",
-          ...buildOptions("<span class='math'>3&radic;41/2 cm</span>", ["<span class='math'>12 cm</span>", "<span class='math'>&radic;169/2 cm</span>", "<span class='math'>13 cm</span>"]),
-          solution: "Формула за медиана от A към BC: m_a² = (2·AB² + 2·AC² − BC²)/4 = (2·100 + 2·169 − 169)/4 = (200 + 169)/4 = 369/4 → <strong>m_a = √369/2 = (3√41)/2 cm</strong>.<br><br>Проверка с координати: A(−5,0), B(5,0), C(0,12). Среда на BC: M = (2,5; 6). AM = √((7,5)² + 6²) = √(56,25 + 36) = √92,25 = √(369/4) = √369/2 cm."
+          text: "В равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC = 13 cm</span>) основата е <span class='math'>AB = 10 cm</span>. <span class='math'>M</span> е средата на бедрото <span class='math'>BC</span>. Да се намери дължината на медианата <span class='math'>AM</span>.",
+          ...buildOptions("<span class='math'>(3&radic;41)/2 cm</span>", ["<span class='math'>12 cm</span>", "<span class='math'>(&radic;169)/2 cm</span>", "<span class='math'>13 cm</span>"]),
+          solution: "<strong>Решение чрез координати и Питагор (9. клас):</strong> Поставяме A(−5, 0), B(5, 0) (защото AB = 10). Височината от C: h = √(13² − 5²) = √(169 − 25) = √144 = 12, значи C(0, 12). Средата на BC: <strong>M</strong> = ((5+0)/2, (0+12)/2) = (2,5; 6). Тогава <strong>AM</strong> = √((2,5 − (−5))² + (6 − 0)²) = √(7,5² + 6²) = √(56,25 + 36) = √92,25 = √(369/4) = √369/2 = <strong>(3√41)/2 cm</strong>."
         },
         {
           topic: "Равнобедрен △ · Описана окр.",
@@ -3024,50 +3032,68 @@
         // ===== ЗАДАЧА 2А: Медиана към катет в правоъгълен △ (3 стъпки) =====
         {
           topic: "Прав. △ · Медиана към катет",
-          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Търси се:</strong> Медианата <span class='math'>m<sub>a</sub></span> от върха <span class='math'>A</span> към средата <span class='math'>M</span> на катета <span class='math'>BC</span>.",
+          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Търси се:</strong> Медианата <span class='math'>m<sub>a</sub> = AM</span> от върха <span class='math'>A</span> към средата <span class='math'>M</span> на срещуположния катет <span class='math'>BC</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 250">
-            <!-- Правоъгълен △: A долу ляво, C долу дясно (прав ъгъл), B горе дясно. AC = 8 (хоризонтален катет), BC = 6 (вертикален). Мащаб 30 px / cm. -->
-            <!-- A(50,210), C(290,210), B(290,30). Среда M на BC: (290, 120). -->
+            <!-- Правоъгълен △: A(50,210), C(290,210), B(290,30). AC = 240 px (b=8), BC = 180 px (a=6).
+                 Среда M на BC: (290, 120). -->
             <polygon points="50,210 290,210 290,30" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <!-- Прав ъгъл при C -->
-            <path d="M 280 210 L 280 200 L 290 200" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <path d="M 278 210 L 278 198 L 290 198" fill="none" stroke="#0f172a" stroke-width="1.3"/>
             <!-- Медиана от A до M (средата на BC) -->
             <line x1="50" y1="210" x2="290" y2="120" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3"/>
             <circle cx="290" cy="120" r="3.5" fill="#0f172a"/>
-            <!-- Етикети -->
+            <!-- Малки тикчета върху BM и MC, показващи равенство -->
+            <line x1="285" y1="72" x2="295" y2="78" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="285" y1="162" x2="295" y2="168" stroke="#0f172a" stroke-width="1.4"/>
+            <!-- Етикети на върхове -->
             <text x="35" y="225" class="point">A</text>
             <text x="295" y="225" class="point">C</text>
             <text x="295" y="25" class="point">B</text>
             <text x="298" y="125" class="point">M</text>
-            <!-- Стойности -->
+            <!-- Стойности на катетите -->
             <text x="155" y="228" font-size="13" font-style="italic">b = 8</text>
             <text x="300" y="180" font-size="13" font-style="italic">a = 6</text>
+            <!-- Етикет на търсената отсечка -->
             <text x="135" y="155" fill="#dc2626" font-size="14" font-style="italic" font-weight="600">m</text>
             <text x="148" y="158" fill="#dc2626" font-size="11" font-style="italic">a</text>
             <text x="160" y="155" fill="#dc2626" font-size="14" font-style="italic"> = ?</text>
           </svg>`,
           steps: [
             {
-              text: "Подредете алгоритъма за намиране на медианата <span class='math'>m<sub>a</sub></span>:",
+              text: "Подредете алгоритъма за намиране на медианата <span class='math'>m<sub>a</sub> = AM</span>:",
               ...buildAlgorithmOptions(
-                "1) Намиране на хипотенузата по теорема на Питагор; 2) Прилагане на формула за медиана към катет; 3) Изчисляване",
+                "1) <span class='math'>M</span> е среда на <span class='math'>BC</span>, значи <span class='math'>MC = BC/2</span>; 2) В правоъгълния <span class='math'>&#9651;AMC</span> (<span class='math'>&ang;C = 90&deg;</span>) катетите са <span class='math'>AC</span> и <span class='math'>MC</span>, хипотенузата е <span class='math'>AM</span>; 3) Прилагане на теорема на Питагор",
                 [
-                  "1) Формула за медиана директно; 2) теорема на Питагор накрая; 3) Изчисляване",
-                  "1) Намиране на височина към хипотенуза; 2) Формула за медиана; 3) Сравнение",
-                  "1) Свойство на ъглополовящата; 2) Формула за медиана; 3) теорема на Питагор"
+                  "1) Намиране на хипотенузата AB; 2) Прилагане на формула за медиана към катет; 3) Изчисление",
+                  "1) Свойство на ъглополовящата; 2) Лице; 3) Теорема на Питагор",
+                  "1) Метрични зависимости в △ABC; 2) Подобие; 3) Изчисление"
                 ]
               ),
-              solution: "Формулата за медиана <span class='math'>m<sub>a</sub>² = (2b² + 2c² − a²)/4</span> съдържа хипотенузата <span class='math'>c</span>, затова първо я намираме чрез теорема на Питагор."
+              solution: "<strong>Идея в 9. клас:</strong> Не е нужна формула за медиана. Понеже &ang;C = 90&deg;, триъгълникът AMC също е правоъгълен (споделя ъгъла при C). Катетите му са AC = b и MC = a/2 (защото M е среда на BC). Прилагаме теорема на Питагор."
             },
             {
-              text: "Хипотенузата <span class='math'>c = AB</span> е:",
-              ...buildOptions("c = 10 cm", ["c = 14 cm", "c = &radic;28 cm", "c = 12 cm"]),
-              solution: "По теорема на Питагор: c² = a² + b² = 36 + 64 = 100, значи <strong>c = 10 cm</strong>."
+              text: "Дължината на <span class='math'>MC</span> и определянето на правоъгълния триъгълник, в който ще приложим теорема на Питагор, са:",
+              ...buildOptions(
+                "MC = 3 cm; правоъгълен &#9651;AMC с прав ъгъл при C, катети AC = 8 и MC = 3",
+                [
+                  "MC = 6 cm; правоъгълен &#9651;AMC с катети AC = 8 и MC = 6",
+                  "MC = 4 cm; правоъгълен &#9651;ABM с катети AB и BM",
+                  "MC = 3 cm; правоъгълен &#9651;ABC с катети 6 и 8"
+                ]
+              ),
+              solution: "M е среда на BC, значи MC = BC/2 = 6/2 = 3 cm. Тъй като &ang;C = 90°, в &#9651;AMC ъгълът при C също е прав → катетите са AC = 8 и MC = 3, а хипотенузата е търсената медиана AM."
             },
             {
-              text: "Медианата <span class='math'>m<sub>a</sub></span> от <span class='math'>A</span> към средата <span class='math'>M</span> на <span class='math'>BC</span>, по формула <span class='math'>m<sub>a</sub>&sup2; = (2b&sup2; + 2c&sup2; − a&sup2;) / 4</span>, е:",
-              ...buildOptions("m<sub>a</sub> = &radic;73 cm", ["m<sub>a</sub> = &radic;52 cm", "m<sub>a</sub> = 5 cm", "m<sub>a</sub> = &radic;97 cm"]),
-              solution: "<strong>Начин 1 (формула):</strong> m_a² = (2·64 + 2·100 − 36)/4 = (128 + 200 − 36)/4 = 292/4 = 73 → <strong>m_a = √73 cm</strong>.<br><br><strong>Начин 2 (директно с координати):</strong> Поставяме C(0,0), A(8,0), B(0,6). Средата на BC: M = (0, 3). Тогава AM = √(8² + 3²) = √(64 + 9) = <strong>√73 cm</strong>."
+              text: "По теорема на Питагор в правоъгълния <span class='math'>&#9651;AMC</span> дължината на медианата <span class='math'>m<sub>a</sub> = AM</span> е:",
+              ...buildOptions(
+                "m<sub>a</sub> = &radic;73 cm",
+                [
+                  "m<sub>a</sub> = &radic;100 cm = 10 cm",
+                  "m<sub>a</sub> = 5 cm",
+                  "m<sub>a</sub> = &radic;52 cm"
+                ]
+              ),
+              solution: "В правоъгълния &#9651;AMC: AM² = AC² + MC² = 8² + 3² = 64 + 9 = 73 → <strong>AM = m<sub>a</sub> = √73 cm</strong>."
             }
           ]
         },
@@ -3075,53 +3101,82 @@
         // ===== ЗАДАЧА 2Б: Ъглополовяща в правоъгълен △ (3 стъпки) =====
         {
           topic: "Прав. △ · Ъглополовяща",
-          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Търси се:</strong> Ъглополовящата <span class='math'>l<sub>B</sub></span> от върха <span class='math'>B</span>, която пресича <span class='math'>AC</span> в точка <span class='math'>L</span>.",
+          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Търси се:</strong> Ъглополовящата <span class='math'>l<sub>b</sub></span> от върха <span class='math'>B</span>, която пресича срещуположната страна <span class='math'>AC</span> в точка <span class='math'>L</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 250">
-            <!-- Същата геометрия: A(50,210), C(290,210), B(290,30). AC = 8 (от 50 до 290 = 240 px, мащаб 30/cm). -->
-            <!-- Ъглополовяща от B дели AC в отношение AL:LC = BA:BC = 10:6 = 5:3. AC=8, AL = 5, LC = 3. -->
-            <!-- L = A + (5/8)·(C-A) = (50 + (5/8)·240, 210) = (200, 210) -->
+            <!-- Геометрия: A(50,210), C(290,210), B(290,30). AC = 240 px (b=8, мащаб 30/cm). BC = 180 px (a=6).
+                 AB (хипотенуза) = √(240² + 180²) = √(57600 + 32400) = √90000 = 300 px (c=10). ✓
+                 Ъглополовяща от B дели AC в AL:LC = c:a = 10:6 = 5:3 → AL=5cm=150px, LC=3cm=90px.
+                 L = (50+150, 210) = (200, 210). ✓ -->
             <polygon points="50,210 290,210 290,30" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <path d="M 280 210 L 280 200 L 290 200" fill="none" stroke="#0f172a" stroke-width="1.3"/>
-            <!-- Ъглополовяща от B до L -->
+            <!-- Прав ъгъл при C -->
+            <path d="M 278 210 L 278 198 L 290 198" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <!-- Ъглополовяща BL (синя, пунктирана) -->
             <line x1="290" y1="30" x2="200" y2="210" stroke="#1d4ed8" stroke-width="1.8" stroke-dasharray="6,3"/>
             <circle cx="200" cy="210" r="3.5" fill="#0f172a"/>
-            <!-- Маркер за ъгъл при B (две малки дъги, показващи разделяне на ъгъла) -->
-            <path d="M 290 60 A 30 30 0 0 1 263 51" fill="none" stroke="#1d4ed8" stroke-width="1.2"/>
-            <path d="M 290 60 A 30 30 0 0 1 273 38" fill="none" stroke="#1d4ed8" stroke-width="1.2"/>
-            <!-- Етикети -->
+            <!-- СИМЕТРИЧНИ ДЪГИЧКИ при B, маркиращи равните ъгли ABL и LBC.
+                 Лъчите от B(290,30) имат единични вектори:
+                   BA: (-0.8, 0.6),  BL: (-0.447, 0.894),  BC: (0, 1).
+                 Радиус 32: точки на дъгите:
+                   на BA: (290-25.6, 30+19.2) = (264.4, 49.2)
+                   на BL: (290-14.3, 30+28.6) = (275.7, 58.6)
+                   на BC: (290+0,    30+32  ) = (290,   62)
+                 Дъга 1 (ABL): от (264.4, 49.2) до (275.7, 58.6).
+                 Дъга 2 (LBC): от (275.7, 58.6) до (290, 62).
+                 За A 32 0 0 1 в SVG (rx ry x-axis-rotation large-arc-flag sweep-flag end-x end-y). -->
+            <path d="M 264.4 49.2 A 32 32 0 0 1 275.7 58.6" fill="none" stroke="#1d4ed8" stroke-width="1.4"/>
+            <path d="M 275.7 58.6 A 32 32 0 0 1 290 62" fill="none" stroke="#1d4ed8" stroke-width="1.4"/>
+            <!-- Малки тикчета върху всяка дъга (показващи равенство) -->
+            <line x1="266.6" y1="56.0" x2="272.6" y2="51.2" stroke="#1d4ed8" stroke-width="1.4"/>
+            <line x1="280.2" y1="63.0" x2="285.0" y2="57.6" stroke="#1d4ed8" stroke-width="1.4"/>
+            <!-- Етикети на върхове -->
             <text x="35" y="225" class="point">A</text>
             <text x="295" y="225" class="point">C</text>
             <text x="295" y="25" class="point">B</text>
             <text x="194" y="228" class="point">L</text>
-            <!-- Стойности -->
-            <text x="105" y="228" font-size="13" font-style="italic">b = 8</text>
+            <!-- Стойности на катетите -->
+            <text x="115" y="228" font-size="13" font-style="italic">b = 8</text>
             <text x="300" y="130" font-size="13" font-style="italic">a = 6</text>
-            <text x="220" y="120" fill="#1d4ed8" font-size="14" font-style="italic" font-weight="600">l</text>
-            <text x="230" y="123" fill="#1d4ed8" font-size="11" font-style="italic">B</text>
-            <text x="242" y="120" fill="#1d4ed8" font-size="14" font-style="italic"> = ?</text>
+            <!-- Етикет на търсената отсечка -->
+            <text x="218" y="118" fill="#1d4ed8" font-size="14" font-style="italic" font-weight="600">l</text>
+            <text x="229" y="123" fill="#1d4ed8" font-size="11" font-style="italic">b</text>
+            <text x="240" y="118" fill="#1d4ed8" font-size="14" font-style="italic"> = ?</text>
           </svg>`,
           steps: [
             {
-              text: "Подредете алгоритъма за намиране на ъглополовящата <span class='math'>l<sub>B</sub></span>:",
+              text: "Подредете алгоритъма за намиране на ъглополовящата <span class='math'>l<sub>b</sub> = BL</span>:",
               ...buildAlgorithmOptions(
-                "1) Намиране на хипотенузата по теорема на Питагор; 2) Прилагане на свойство на ъглополовящата за <span class='math'>AL : LC</span>; 3) Прилагане на формулата <span class='math'>l<sub>B</sub>&sup2; = a·c − AL·LC</span>",
+                "1) Намиране на хипотенузата <span class='math'>AB = c</span> по теорема на Питагор; 2) Прилагане на свойството на ъглополовящата за намиране на <span class='math'>LC</span>; 3) Прилагане на теорема на Питагор в правоъгълния <span class='math'>&#9651;BLC</span>",
                 [
-                  "1) Формула за ъглополовяща; 2) Свойство; 3) теорема на Питагор",
-                  "1) Свойство на медианата; 2) теорема на Питагор; 3) Изчисляване",
-                  "1) Намиране на височината; 2) Свойство на ъглополовящата; 3) Лице"
+                  "1) Лице на &#9651;ABC; 2) Височина към хипотенузата; 3) Изчисляване на BL",
+                  "1) Теорема на Питагор за BL директно; 2) Без други стъпки",
+                  "1) Свойство на медианата; 2) Лице; 3) Подобие на триъгълници"
                 ]
               ),
-              solution: "Хипотенузата е нужна и за свойството <span class='math'>AL : LC = c : a</span>, и за формулата <span class='math'>l_B² = a·c − AL·LC</span>."
+              solution: "<strong>Идея за решението в 9. клас:</strong> точката L разделя AC по свойството на ъглополовящата (AL : LC = AB : BC). За да приложим това, ни трябва AB. След като намерим LC, прилагаме теорема на Питагор в правоъгълния &#9651;BLC, в който катетите са BC = 6 и LC, а хипотенузата е търсената ъглополовяща BL."
             },
             {
-              text: "Отношението <span class='math'>AL : LC</span> и числените стойности на <span class='math'>AL</span> и <span class='math'>LC</span> са:",
-              ...buildOptions("AL : LC = 5 : 3; AL = 5 cm, LC = 3 cm", ["AL : LC = 3 : 5; AL = 3 cm, LC = 5 cm", "AL : LC = 4 : 4; AL = LC = 4 cm", "AL : LC = 6 : 8; AL = 3,4 cm, LC = 4,6 cm"]),
-              solution: "По свойство на ъглополовящата: <span class='math'>AL : LC = AB : BC = c : a = 10 : 6 = 5 : 3</span>. Тъй като <span class='math'>AC = AL + LC = 8</span>, то <strong>AL = 5 cm, LC = 3 cm</strong>."
+              text: "Хипотенузата <span class='math'>AB = c</span>, отношението <span class='math'>AL : LC</span> и стойностите <span class='math'>AL</span>, <span class='math'>LC</span> са:",
+              ...buildOptions(
+                "c = 10 cm; AL : LC = 5 : 3; AL = 5 cm, LC = 3 cm",
+                [
+                  "c = 10 cm; AL : LC = 3 : 5; AL = 3 cm, LC = 5 cm",
+                  "c = 14 cm; AL : LC = 7 : 3; AL = 5,6 cm, LC = 2,4 cm",
+                  "c = 10 cm; AL : LC = 1 : 1; AL = LC = 4 cm"
+                ]
+              ),
+              solution: "По теорема на Питагор: c² = a² + b² = 36 + 64 = 100 → c = 10 cm. По свойство на ъглополовящата (тя дели срещуположната страна в отношението на двете прилежащи към нея страни): AL : LC = AB : BC = c : a = 10 : 6 = 5 : 3. Тъй като AL + LC = AC = 8 cm, следва AL = 5 cm и LC = 3 cm."
             },
             {
-              text: "По формулата <span class='math'>l<sub>B</sub>&sup2; = a·c − AL·LC</span> дължината на ъглополовящата <span class='math'>l<sub>B</sub></span> е:",
-              ...buildOptions("l<sub>B</sub> = 3&radic;5 cm", ["l<sub>B</sub> = 4&radic;5 cm", "l<sub>B</sub> = 5&radic;3 cm", "l<sub>B</sub> = 2&radic;15 cm"]),
-              solution: "l_B² = a·c − AL·LC = 6·10 − 5·3 = 60 − 15 = 45 → <strong>l_B = √45 = 3√5 cm</strong>."
+              text: "По теорема на Питагор в правоъгълния <span class='math'>&#9651;BLC</span> (с прав ъгъл при <span class='math'>C</span>, катети <span class='math'>BC = 6</span> и <span class='math'>LC = 3</span>) дължината на ъглополовящата <span class='math'>l<sub>b</sub> = BL</span> е:",
+              ...buildOptions(
+                "l<sub>b</sub> = 3&radic;5 cm",
+                [
+                  "l<sub>b</sub> = &radic;39 cm",
+                  "l<sub>b</sub> = 9 cm",
+                  "l<sub>b</sub> = &radic;27 cm"
+                ]
+              ),
+              solution: "В правоъгълния &#9651;BLC (с &ang;C = 90°) BC и LC са катети, а BL = l<sub>b</sub> е хипотенузата. По теорема на Питагор: BL² = BC² + LC² = 6² + 3² = 36 + 9 = 45 → <strong>BL = √45 = 3√5 cm</strong>."
             }
           ]
         },
@@ -3225,40 +3280,71 @@
           topic: "Равнобедрен △ · Медиана към бедро",
           context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span>. <span class='math'>M</span> е средата на бедрото <span class='math'>AC</span>.<br><strong>Търси се:</strong> Дължината на медианата <span class='math'>BM</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 280">
-            <polygon points="100,240 300,240 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <circle cx="150" cy="140" r="3" fill="#0f172a"/>
-            <text x="130" y="138" class="point">M</text>
-            <line x1="300" y1="240" x2="150" y2="140" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3"/>
-            <text x="240" y="195" fill="#16a34a" font-size="14" font-style="italic">m</text>
-            <text x="85" y="255" class="point">A</text>
-            <text x="305" y="255" class="point">B</text>
-            <text x="195" y="32" class="point">C</text>
-            <text x="120" y="135">10</text>
-            <text x="265" y="135">10</text>
-            <text x="180" y="265">12</text>
+            <!-- Равнобедрен △ABC: A долу ляво, B долу дясно, C горе.
+                 Мащаб 20 px / cm. AB = 240 px (12 cm), AC = BC = 200 px (10 cm).
+                 Височина CH = √(10²-6²) = 8 cm = 160 px.
+                 Координати: A(80, 230), B(320, 230), H(200, 230), C(200, 70). 
+                 M = средата на AC = ((80+200)/2, (230+70)/2) = (140, 150). -->
+            <polygon points="80,230 320,230 200,70" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Височина CH (пунктирана) — спомагателна -->
+            <line x1="200" y1="70" x2="200" y2="230" stroke="#94a3b8" stroke-width="1.1" stroke-dasharray="4,3"/>
+            <path d="M 188 230 L 188 218 L 200 218" fill="none" stroke="#0f172a" stroke-width="1.1"/>
+            <!-- Среда M на AC -->
+            <circle cx="140" cy="150" r="3.5" fill="#0f172a"/>
+            <!-- Малки тикчета върху AM и MC, показващи равенство -->
+            <line x1="105" y1="183" x2="115" y2="197" stroke="#0f172a" stroke-width="1.4"/>
+            <line x1="165" y1="103" x2="175" y2="117" stroke="#0f172a" stroke-width="1.4"/>
+            <!-- Медиана BM -->
+            <line x1="320" y1="230" x2="140" y2="150" stroke="#16a34a" stroke-width="1.8" stroke-dasharray="6,3"/>
+            <!-- Етикети -->
+            <text x="62" y="247" class="point">A</text>
+            <text x="325" y="247" class="point">B</text>
+            <text x="195" y="62" class="point">C</text>
+            <text x="120" y="148" class="point">M</text>
+            <text x="195" y="247" class="point">H</text>
+            <!-- Стойности -->
+            <text x="110" y="165" font-size="13" font-style="italic">10</text>
+            <text x="255" y="155" font-size="13" font-style="italic">10</text>
+            <text x="190" y="260" font-size="13" font-style="italic">12</text>
+            <!-- Етикет на търсената отсечка -->
+            <text x="225" y="195" fill="#16a34a" font-size="14" font-style="italic" font-weight="600">BM = ?</text>
           </svg>`,
           steps: [
             {
-              text: "Подредете алгоритъма за намиране на медианата <span class='math'>m</span> от <span class='math'>B</span> към средата на <span class='math'>AC</span>:",
+              text: "Подредете алгоритъма за намиране на дължината <span class='math'>BM</span>:",
               ...buildAlgorithmOptions(
-                "1) Идентифициране на върха и страната; 2) Прилагане на формулата m&sup2; = (2·AB&sup2; + 2·BC&sup2; − AC&sup2;)/4; 3) Изчисляване и коренуване",
+                "1) Въвеждане на координати: <span class='math'>A(-6, 0)</span>, <span class='math'>B(6, 0)</span>; 2) Намиране на <span class='math'>C</span> чрез теорема на Питагор за височината от <span class='math'>C</span>; 3) Намиране на <span class='math'>M</span> като среда на <span class='math'>AC</span> и пресмятане на <span class='math'>BM</span> по теорема на Питагор",
                 [
-                  "1) Формула m = (AC + BC)/2; 2) Изчисление",
-                  "1) теорема на Питагор от B към средата директно; 2) Без формула",
-                  "1) Височина на △; 2) Лице; 3) m = S/AC"
+                  "1) Формула за медиана m² = (2a² + 2c² − b²)/4; 2) Заместване; 3) Коренуване",
+                  "1) Свойство на ъглополовящата; 2) Подобие; 3) Лице",
+                  "1) Дължина на BM = (AC + BC)/2; 2) Без други стъпки"
                 ]
               ),
-              solution: "Тъй като M е среда на AC, медианата излиза от противоположния връх B. Формулата за медиана от връх към срещуположна страна е m_b² = (2·a² + 2·c² − b²)/4, където a, c са страните при върха B, а b е страната срещу B."
+              solution: "В 9. клас формулата за медиана не се изучава. Затова използваме координатен метод: поставяме A и B на оста Ox симетрично около центъра; намираме C чрез теорема на Питагор за височината (CH), използваме формулата за среда на отсечка за M, и накрая прилагаме теорема на Питагор (като разстояние между две точки) за BM."
             },
             {
-              text: "Заместването в формулата за медиана от <span class='math'>B</span> към <span class='math'>AC</span> дава:",
-              ...buildOptions("m&sup2; = (2·144 + 2·100 − 100)/4", ["m&sup2; = (2·100 + 2·100 − 144)/4", "m&sup2; = (144 + 100 − 100)/2", "m&sup2; = (2·144 − 2·100 + 100)/4"]),
-              solution: "Страните при върха B са BA = AB = 12 и BC = 10; страната срещу B е AC = 10. Заместваме в m² = (2·AB² + 2·BC² − AC²)/4 = (2·144 + 2·100 − 100)/4."
+              text: "След като поставим <span class='math'>A(-6, 0)</span> и <span class='math'>B(6, 0)</span>, координатите на <span class='math'>C</span> и средата <span class='math'>M</span> на <span class='math'>AC</span> са:",
+              ...buildOptions(
+                "C(0, 8); M(-3, 4)",
+                [
+                  "C(0, 10); M(-3, 5)",
+                  "C(0, 8); M(-6, 4)",
+                  "C(6, 8); M(0, 4)"
+                ]
+              ),
+              solution: "Височината от C пада в средата H(0, 0) на AB. По теорема на Питагор: CH² = AC² − AH² = 100 − 36 = 64 → CH = 8, значи <strong>C(0, 8)</strong>. Средата на отсечката AC: <strong>M</strong> = ((−6 + 0)/2, (0 + 8)/2) = <strong>(−3, 4)</strong>."
             },
             {
-              text: "Дължината на медианата <span class='math'>m</span> е:",
-              ...buildOptions("m = &radic;97 cm", ["m = &radic;73 cm", "m = 9 cm", "m = &radic;113 cm"]),
-              solution: "<strong>Начин 1 (формула):</strong> m² = (288 + 200 − 100)/4 = 388/4 = 97 → <strong>m = √97 cm</strong>.<br><br><strong>Начин 2 (координати):</strong> Поставяме A(−6, 0), B(6, 0). Височината от C: h = √(10² − 6²) = 8, значи C(0, 8). Среда на AC: M = ((−6 + 0)/2, (0 + 8)/2) = (−3, 4). Тогава m = BM = √((6 − (−3))² + (0 − 4)²) = √(81 + 16) = <strong>√97 cm</strong>."
+              text: "Разстоянието <span class='math'>BM</span> (между точките <span class='math'>B(6, 0)</span> и <span class='math'>M(-3, 4)</span>) по теорема на Питагор е:",
+              ...buildOptions(
+                "BM = &radic;97 cm",
+                [
+                  "BM = &radic;113 cm",
+                  "BM = &radic;73 cm",
+                  "BM = 9 cm"
+                ]
+              ),
+              solution: "Разглеждаме правоъгълен триъгълник с катети, успоредни на координатните оси: хоризонтален катет = |6 − (−3)| = 9 и вертикален катет = |0 − 4| = 4. По теорема на Питагор: BM² = 9² + 4² = 81 + 16 = 97 → <strong>BM = √97 cm</strong>."
             }
           ]
         },
