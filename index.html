@@ -354,6 +354,101 @@
     .option.correct { border-color: var(--good); background: var(--good-bg); color: var(--good-ink); font-weight: bold;}
     .option.wrong { border-color: var(--bad); background: var(--bad-bg); color: var(--bad-ink); }
 
+    /* Опция „Друго (предложи свой алгоритъм)" — виолетова, отделена от стандартните */
+    .option.other-option {
+      border-color: #a78bfa;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.06) 0%, rgba(167, 139, 250, 0.12) 100%);
+      color: #6d28d9;
+      font-style: normal;
+      font-weight: 600;
+      font-family: "Segoe UI", sans-serif;
+    }
+    .option.other-option:hover:not(:disabled) {
+      border-color: #7c3aed;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, rgba(167, 139, 250, 0.2) 100%);
+      transform: translateY(-2px);
+    }
+    .option.other-option .prefix { color: #7c3aed; }
+    .option.other-option.accepted {
+      border-color: #7c3aed;
+      background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+      color: #5b21b6;
+    }
+    [data-theme='dark'] .option.other-option {
+      color: #c4b5fd;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.18) 100%);
+    }
+    [data-theme='dark'] .option.other-option.accepted {
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.25) 0%, rgba(124, 58, 237, 0.35) 100%);
+      color: #ede9fe;
+    }
+
+    /* Опция „Друго (свободен режим)" — лек златист акцент */
+    .option.free-mode-option {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(217, 119, 6, 0.10) 100%);
+      border-color: #fbbf24;
+      color: var(--ink);
+      font-style: italic;
+    }
+    .option.free-mode-option:hover {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.18) 100%);
+      border-color: #d97706;
+    }
+    .option.free-mode-option.correct {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-color: #d97706;
+      color: #92400e;
+    }
+    .option.free-mode-option.wrong {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-color: #dc2626;
+      color: #991b1b;
+    }
+    [data-theme='dark'] .option.free-mode-option.correct {
+      background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+      color: #fde68a;
+    }
+    [data-theme='dark'] .option.free-mode-option.wrong {
+      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+      color: #fecaca;
+    }
+
+    /* Показване на отговор от свободен режим */
+    .free-mode-display {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      border-left: 4px solid;
+    }
+    .free-mode-display.correct {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border-left-color: #10b981;
+      color: #065f46;
+    }
+    .free-mode-display.wrong {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-left-color: #ef4444;
+      color: #7f1d1d;
+    }
+    [data-theme='dark'] .free-mode-display.correct {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 95, 70, 0.25) 100%);
+      color: #a7f3d0;
+    }
+    [data-theme='dark'] .free-mode-display.wrong {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(127, 29, 29, 0.25) 100%);
+      color: #fecaca;
+    }
+    .free-mode-display-header {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .free-mode-display-note {
+      font-size: 13px;
+      opacity: 0.95;
+    }
+
     .feedback {
       padding: 14px 18px;
       border-radius: 8px;
@@ -1154,6 +1249,162 @@
       .instructions-card, .credits-card, .start-form { padding: 18px; }
       .start-btn { padding: 16px 32px; font-size: 17px; width: 100%; max-width: 420px; }
       .typed-text { font-size: 15px; min-height: 14em; }
+    }
+
+    /* ===== Свободен режим — модал ===== */
+    .free-mode-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.2s ease;
+      padding: 20px;
+    }
+    [data-theme='dark'] .free-mode-overlay {
+      background: rgba(0, 0, 0, 0.65);
+    }
+    .free-mode-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .free-mode-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .free-mode-icon {
+      font-size: 32px;
+    }
+    .free-mode-header h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 20px;
+    }
+    .free-mode-desc {
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 0 0 14px 0;
+    }
+    .free-mode-hint {
+      background: var(--bg);
+      border-left: 3px solid var(--primary);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+      margin: 0 0 16px 0;
+    }
+    .free-mode-hint code {
+      background: var(--card);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--primary);
+      font-family: monospace;
+    }
+    .free-mode-options {
+      margin-bottom: 14px;
+    }
+    .free-mode-show-options {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      width: 100%;
+    }
+    .free-mode-show-options:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .free-mode-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .free-mode-opt-pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      color: var(--ink);
+      transition: all 0.15s ease;
+    }
+    .free-mode-opt-pill:hover {
+      background: var(--card);
+      border-color: var(--primary);
+    }
+    .free-mode-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--ink);
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.18s ease;
+    }
+    .free-mode-input:focus {
+      border-color: var(--primary);
+    }
+    .free-mode-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      justify-content: flex-end;
+    }
+    .free-mode-btn {
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s ease;
+    }
+    .free-mode-btn.cancel {
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .free-mode-btn.cancel:hover {
+      color: var(--ink);
+    }
+    .free-mode-btn.submit {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: white;
+      box-shadow: 0 3px 10px rgba(217, 119, 6, 0.3);
+    }
+    .free-mode-btn.submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(217, 119, 6, 0.4);
+    }
+    @media (max-width: 480px) {
+      .free-mode-card { padding: 20px; }
+      .free-mode-header h3 { font-size: 17px; }
+      .free-mode-desc { font-size: 14px; }
     }
 
     /* ===== Анимация „ключ" — обратна връзка ===== */
@@ -2026,6 +2277,21 @@
       return { options: opts, answer: opts.indexOf(correct) };
     }
 
+    // За първа стъпка в комплексна задача: 3 алгоритъма + опция „Друго (свободен режим)"
+    // Опцията „Друго" винаги остава 4-та (не се разбърква), за да е лесно разпознаваема.
+    const FREE_MODE_LABEL = '🤔 Друго — свободен режим (въвеждам крайния отговор)';
+    function buildAlgorithmOptions(correct, distractors) {
+      // Само първите три (правилен + 2 разбъркани) се разбъркват
+      const top3 = [correct, ...distractors].slice(0, 3);
+      const shuffled = shuffle(top3);
+      const finalOpts = [...shuffled, FREE_MODE_LABEL];
+      return {
+        options: finalOpts,
+        answer: finalOpts.indexOf(correct),
+        freeMode: finalOpts.length - 1  // индексът на „Друго"
+      };
+    }
+
     // ===== SVG чертежи =====
     const svgs = {
       similarity: `<svg class="svg-visual" viewBox="0 0 400 200">
@@ -2761,7 +3027,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на медианата <span class='math'>m<sub>a</sub></span>:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Намиране на хипотенузата по теорема на Питагор; 2) Прилагане на формула за медиана към катет; 3) Изчисляване",
                 [
                   "1) Формула за медиана директно; 2) теорема на Питагор накрая; 3) Изчисляване",
@@ -2815,7 +3081,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на ъглополовящата <span class='math'>l<sub>B</sub></span>:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Намиране на хипотенузата по теорема на Питагор; 2) Прилагане на свойство на ъглополовящата за <span class='math'>AL : LC</span>; 3) Прилагане на формулата <span class='math'>l<sub>B</sub>&sup2; = a·c − AL·LC</span>",
                 [
                   "1) Формула за ъглополовяща; 2) Свойство; 3) теорема на Питагор",
@@ -2862,7 +3128,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на радиуса <span class='math'>r</span> на вписаната окръжност:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Височина CH чрез теорема на Питагор в △ACH; 2) Лице S = (1/2)·AB·CH; 3) r = S/p, където p е полупериметърът",
                 [
                   "1) r = AB/2 (диаметър); 2) Лице; 3) Височина",
@@ -2909,7 +3175,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на радиуса <span class='math'>R</span> на описаната окръжност:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Височина CH чрез теорема на Питагор; 2) Лице S = (1/2)·AB·CH; 3) R = (AC·BC·AB)/(4S)",
                 [
                   "1) Полупериметър; 2) R = p/2; 3) Лице",
@@ -2952,7 +3218,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на медианата <span class='math'>m</span> от <span class='math'>B</span> към средата на <span class='math'>AC</span>:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Идентифициране на върха и страната; 2) Прилагане на формулата m&sup2; = (2·AB&sup2; + 2·BC&sup2; − AC&sup2;)/4; 3) Изчисляване и коренуване",
                 [
                   "1) Формула m = (AC + BC)/2; 2) Изчисление",
@@ -3001,7 +3267,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на височината, диагонала и лицето на трапеца:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Построяване на височини от C и D към AB; 2) Намиране на проекциите на бедрата; 3) Височина чрез теорема на Питагор; 4) Диагонал чрез теорема на Питагор; (Лице — по формула)",
                 [
                   "1) Построяване на диагонал; 2) теорема на Питагор за диагонала; 3) Височина; 4) Лице",
@@ -3066,7 +3332,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на бедрото <span class='math'>BC</span>, диагонала <span class='math'>BD</span> и лицето <span class='math'>S</span>:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Построяване на височина CH от C към AB; 2) Намиране на проекцията HB; 3) Бедро BC чрез теорема на Питагор в △CHB; 4) Диагонал BD и лице",
                 [
                   "1) Намиране на лицето; 2) Диагонал чрез теорема на Питагор; 3) Бедро; 4) Проекция",
@@ -3117,7 +3383,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намиране на отношението <span class='math'>AC : BC</span> и <span class='math'>LM</span>:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Прилагане на свойството на ъглополовящата: AC/BC = AL/LB; 2) Намиране на AC; 3) Установяване на подобие △AML ~ △ACB чрез LM ∥ BC; 4) Намиране на LM по подобие",
                 [
                   "1) Подобие на △AML ~ △ACB; 2) LM по подобие; 3) Свойство на ъглополовяща; 4) AC",
@@ -3162,7 +3428,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намирането на височината, хипотенузата и катетите:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Височина: h² = AH·BH; 2) Хипотенуза: c = AH + BH; 3) Катет b: b² = c·AH; 4) Катет a: a² = c·BH",
                 [
                   "1) теорема на Питагор за целия △; 2) h = c/2; 3) Проекциите; 4) Катетите",
@@ -3213,7 +3479,7 @@
           steps: [
             {
               text: "Подредете алгоритъма:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Доказване на подобие △CDO ~ △ABO; 2) Намиране на коефициента k от отношението на лицата; 3) Прилагане на k за отсечките DO и OB",
                 [
                   "1) Сбор на лицата на трапеца; 2) Подобие; 3) теорема на Питагор за BD",
@@ -3271,7 +3537,7 @@
           steps: [
             {
               text: "Подредете алгоритъма за намирането на <span class='math'>S<sub>&#9651;MDC</sub></span>:",
-              ...buildOptions(
+              ...buildAlgorithmOptions(
                 "1) Доказване на подобие △MDC ~ △MAB; 2) Коефициент k = DC : AB; 3) Отношение на лицата k²; 4) Свързване с S_ABCD",
                 [
                   "1) теорема на Питагор за △MDC; 2) теорема на Питагор за △MAB; 3) Подобие; 4) Лица",
@@ -3710,9 +3976,186 @@
       }, 2100);
     }
 
+    // ===== Свободен режим за стъпкови задачи =====
+    // Когато ученикът избере „Друго" в подреждане на алгоритъма, отваряме модал,
+    // където може да въведе крайния отговор. Финалният отговор се сверява срещу
+    // отговора на последната стъпка от комплексната задача.
+    window.openFreeModeDialog = function(globalIdx) {
+      const q = allQuestionsFlat[globalIdx];
+      // Намираме комплексната задача, на която принадлежи тази стъпка
+      const scr = screens[q.screenIdx];
+      if (!scr || scr.type !== 'chain') return;
+      const lastStep = scr.steps[scr.steps.length - 1];
+      const expectedAnswer = lastStep.options[lastStep.answer];
+
+      // Премахваме евентуален предишен модал
+      const existing = document.getElementById('freeModeOverlay');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'freeModeOverlay';
+      overlay.className = 'free-mode-overlay';
+      overlay.innerHTML = `
+        <div class="free-mode-card">
+          <div class="free-mode-header">
+            <span class="free-mode-icon">🤔</span>
+            <h3>Свободен режим</h3>
+          </div>
+          <p class="free-mode-desc">
+            Имаш свой подход към задачата? Чудесно! Въведи крайния отговор и аз ще проверя дали си стигнал до правилния резултат. Стъпките се пропускат.
+          </p>
+          <p class="free-mode-hint">
+            <strong>Подсказка:</strong> Очаква се числен или точен (с радикали/дроби) отговор. Например: <code>10</code>, <code>10 cm</code>, <code>√97</code>, <code>3√5</code>, <code>288/7</code>.
+          </p>
+          <div class="free-mode-options">
+            <button class="free-mode-show-options" id="freeModeToggleOptions">Покажи възможните отговори ▾</button>
+            <div class="free-mode-options-list" id="freeModeOptionsList" style="display:none;">
+              ${lastStep.options.map((opt, i) =>
+                `<button class="free-mode-opt-pill" data-value="${escapeHtml(opt)}">${String.fromCharCode(1040 + i)}) ${opt}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <input type="text" id="freeModeInput" class="free-mode-input" placeholder="Напиши твоя краен отговор…" autocomplete="off">
+          <div class="free-mode-buttons">
+            <button id="freeModeCancel" class="free-mode-btn cancel">Отказ</button>
+            <button id="freeModeSubmit" class="free-mode-btn submit">Провери отговора</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const input = document.getElementById('freeModeInput');
+      input.focus();
+
+      // Toggle списък с опции
+      document.getElementById('freeModeToggleOptions').addEventListener('click', () => {
+        const list = document.getElementById('freeModeOptionsList');
+        const isHidden = list.style.display === 'none';
+        list.style.display = isHidden ? 'flex' : 'none';
+        document.getElementById('freeModeToggleOptions').innerHTML = isHidden
+          ? 'Скрий възможните отговори ▴'
+          : 'Покажи възможните отговори ▾';
+      });
+
+      // Клик върху pill попълва полето
+      document.querySelectorAll('.free-mode-opt-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          input.value = btn.getAttribute('data-value');
+          input.focus();
+        });
+      });
+
+      // Submit бутон
+      document.getElementById('freeModeSubmit').addEventListener('click', () => {
+        submitFreeMode(globalIdx, input.value, expectedAnswer);
+      });
+
+      // Enter в полето
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitFreeMode(globalIdx, input.value, expectedAnswer);
+        }
+      });
+
+      // Отказ — затваря модала без действие
+      document.getElementById('freeModeCancel').addEventListener('click', () => {
+        overlay.remove();
+        // Ученикът може отново да избере опция в стъпката (тя не е била маркирана като отговорена)
+      });
+    };
+
+    // Нормализира отговор за сравнение (без интервали, малки букви, унифицирани символи)
+    function normalizeAnswer(s) {
+      if (!s) return '';
+      return String(s)
+        .toLowerCase()
+        .replace(/&radic;/g, '√')
+        .replace(/&sup2;/g, '²')
+        .replace(/&sup3;/g, '³')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&#9651;/g, '△')
+        .replace(/<[^>]+>/g, '')   // премахва HTML тагове
+        .replace(/\s+/g, '')        // премахва всички интервали
+        .replace(/[.,]/g, ',')      // унифицира разделителя на дроби
+        .replace(/[\(\)]/g, '');    // премахва скоби
+    }
+
+    function submitFreeMode(globalIdx, userAnswer, expectedAnswer) {
+      const overlay = document.getElementById('freeModeOverlay');
+      if (!overlay) return;
+
+      const userNorm = normalizeAnswer(userAnswer);
+      const expectedNorm = normalizeAnswer(expectedAnswer);
+
+      if (!userNorm) {
+        // Полето е празно
+        const input = document.getElementById('freeModeInput');
+        input.style.borderColor = '#dc2626';
+        input.placeholder = 'Моля, въведи отговор…';
+        return;
+      }
+
+      // Допускаме съответствие, ако userNorm съдържа expectedNorm или обратното
+      // (защото ученикът може да напише „10" вместо „10 cm" — числото съвпада)
+      const isCorrect = userNorm === expectedNorm
+        || userNorm.includes(expectedNorm)
+        || expectedNorm.includes(userNorm);
+
+      overlay.remove();
+
+      // Маркираме ВСИЧКИ стъпки на тази комплексна задача
+      const q = allQuestionsFlat[globalIdx];
+      const scr = screens[q.screenIdx];
+      if (!scr || scr.type !== 'chain') return;
+
+      scr.steps.forEach((step, i) => {
+        step.answered = true;
+        step.freeModeUsed = true;
+        step.freeModeAnswer = userAnswer;
+        step.freeModeCorrect = isCorrect;
+        // Маркираме userChoice като freeMode индекса (за визуално отбелязване)
+        step.userChoice = (step.freeMode !== undefined) ? step.freeMode : -1;
+
+        // Отваряне на сектор от пъзела САМО при верен отговор в свободен режим
+        const { tileIdx, sectorIdx } = findTileAndSector(step.globalIdx);
+        if (isCorrect) {
+          const sectorEl = document.getElementById(`tile-${tileIdx}-sec-${sectorIdx}`);
+          if (sectorEl) {
+            sectorEl.classList.add('revealed');
+            sectorEl.classList.add('correct');
+          }
+          const meta = tileMeta[tileIdx];
+          if (meta) meta.sectorsRevealed++;
+        }
+
+        // Точкуване
+        if (isCorrect) {
+          score += (100 / allQuestionsFlat.length);
+          correctCount++;
+        }
+        const dot = document.getElementById(`dot-${step.globalIdx}`);
+        if (dot) dot.classList.add(isCorrect ? 'correct' : 'wrong');
+      });
+
+      if (isCorrect) playCorrect(); else playWrong();
+      showKeyFeedback(isCorrect);
+
+      updateUI();
+      saveState();
+      renderScreen();
+    }
+
     window.handleOption = function(globalIdx, optIdx) {
       const q = allQuestionsFlat[globalIdx];
       if (q.answered) return;
+
+      // Проверка дали е избрана опцията „Друго (свободен режим)"
+      // (само за алгоритъмни стъпки, които имат freeMode индекс)
+      if (q.freeMode !== undefined && optIdx === q.freeMode) {
+        openFreeModeDialog(globalIdx);
+        return; // НЕ маркираме като отговорено — изчакваме потвърждение от модала
+      }
 
       q.answered = true;
       q.userChoice = optIdx;
@@ -3844,21 +4287,49 @@
           if (!step.answered) allAnswered = false;
           const isUnlocked = (idx <= firstUnansweredIdx);
 
+          // Открива дали стъпката е „алгоритъм" по началото на текста
+          const isAlgorithmStep = /Подредете алгоритъма/i.test(step.text);
+
           const optionsHTML = step.options.map((opt, oIdx) => {
             let cls = "option";
+            const isFreeModeOption = (step.freeMode !== undefined && oIdx === step.freeMode);
+            if (isFreeModeOption) cls += " free-mode-option";
             if (step.answered) {
-              if (oIdx === step.answer) cls += " correct";
-              else if (oIdx === step.userChoice) cls += " wrong";
+              if (step.freeModeUsed && isFreeModeOption) {
+                cls += step.freeModeCorrect ? " correct" : " wrong";
+              } else if (!step.freeModeUsed) {
+                if (oIdx === step.answer) cls += " correct";
+                else if (oIdx === step.userChoice) cls += " wrong";
+              }
             }
             return `<button class="${cls}" onclick="handleOption(${step.globalIdx}, ${oIdx})" ${step.answered ? 'disabled' : ''}>
                       <span class="prefix">${String.fromCharCode(1040 + oIdx)})</span> ${opt}
                     </button>`;
           }).join('');
 
+          // Показваме информация за свободния режим, ако е използван
+          let freeModeInfoHTML = '';
+          if (step.freeModeUsed) {
+            const correctText = step.options[step.answer];
+            const lastStep = scr.steps[scr.steps.length - 1];
+            const expectedFinal = lastStep.options[lastStep.answer];
+            freeModeInfoHTML = `
+              <div class="free-mode-display ${step.freeModeCorrect ? 'correct' : 'wrong'}">
+                <div class="free-mode-display-header">
+                  ${step.freeModeCorrect ? '✓' : '✗'} Свободен режим: твоят финален отговор беше „<strong>${escapeHtml(step.freeModeAnswer)}</strong>"
+                </div>
+                ${step.freeModeCorrect
+                  ? `<div class="free-mode-display-note">Стигнал си до правилния резултат. Очакваният финален отговор: <strong>${expectedFinal}</strong>.</div>`
+                  : `<div class="free-mode-display-note">Очакваният финален отговор беше: <strong>${expectedFinal}</strong>. Препоръчителен подход: <em>${correctText}</em></div>`
+                }
+              </div>
+            `;
+          }
+
           const stepClass = isUnlocked ? (step.answered ? "step-box unlocked completed" : "step-box unlocked") : "step-box locked";
 
           const statusIcon = step.answered
-            ? (step.userChoice === step.answer ? '✅' : '❌')
+            ? (step.freeModeUsed ? (step.freeModeCorrect ? '🗝️' : '✗') : (step.userChoice === step.answer ? '✅' : '❌'))
             : (isUnlocked ? '🔓' : '🔒');
 
           stepsHTML += `
@@ -3866,6 +4337,7 @@
               <div class="step-label">Стъпка ${idx + 1} <span class="status-icon">${statusIcon}</span></div>
               <div class="question-text">${step.text}</div>
               <div class="options">${optionsHTML}</div>
+              ${freeModeInfoHTML}
               ${renderFeedback(step)}
             </div>
           `;
@@ -3877,7 +4349,7 @@
 
         html = `
           <div class="topic-pill">${scr.topic || 'Задача'} · Комплексна (3 стъпки)</div>
-          <div class="task-context"><strong>Дадено:</strong> ${scr.context}</div>
+          <div class="task-context">${scr.context}</div>
           <div class="visual-box">${scr.visual}</div>
           ${stepsHTML}
           ${actionHTML}
