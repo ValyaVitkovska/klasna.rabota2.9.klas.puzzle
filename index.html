@@ -235,6 +235,19 @@
     }
     .math-normal { font-family: var(--math-font); font-style: normal; }
 
+    /* Индекси (горни и долни) — както в учебник: малки, в позиция спрямо буквата.
+       Прилага се навсякъде в задачите (текст, опции, решения), не само в .math блокове. */
+    sub, sup {
+      font-size: 0.72em;
+      font-style: italic;
+      font-family: var(--math-font);
+      line-height: 0;
+      position: relative;
+    }
+    sub { vertical-align: baseline; bottom: -0.32em; margin-left: 0.5px; }
+    sup { vertical-align: baseline; top:    -0.55em; margin-left: 0.5px; }
+    /* Изключение: в стандартен контекст ² и ³ са символи, не <sup>, така че не пипаме */
+
     /* Хоризонтални дроби — inline, без LaTeX */
     .frac-inline {
       display: inline-flex;
@@ -2962,14 +2975,14 @@
           visual: svgs.rightTrig,
           text: "В правоъгълния <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C=90&deg;</span>), сборът от катетите е <span class='math'>a + b = 34 cm</span>, а хипотенузата е <span class='math'>c = 26 cm</span>. Да се намери лицето на триъгълника <span class='math'>S</span>.",
           ...buildOptions("120 cm&sup2;", ["240 cm&sup2;", "60 cm&sup2;", "480 cm&sup2;"]),
-          solution: "(a+b)² = a² + b² + 2ab = c² + 2ab → 1156 = 676 + 2ab → ab = 240. S = ab/2 = 120 cm²."
+          solution: "(a+b)² = a² + b² + 2ab = c² + 2ab → 1156 = 676 + 2ab → ab = 240. S = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>a·b</span><span class='frac-den'>2</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>240</span><span class='frac-den'>2</span></span></span> = 120 cm²."
         },
         {
           topic: "Метрични зависимости",
           visual: svgs.rightTrig,
           text: "Катетите на правоъгълен <span class='math'>&#9651;ABC</span> са <span class='math'>a = 15 cm</span> и <span class='math'>b = 20 cm</span>. Да се намери сборът от радиусите на вписаната и описаната окръжност (<span class='math'>r + R</span>).",
           ...buildOptions("17,5 cm", ["12,5 cm", "15 cm", "20 cm"]),
-          solution: "c = √(225+400) = 25. R = c/2 = 12,5. r = (a+b−c)/2 = (15+20−25)/2 = 5. Тогава r + R = 17,5 cm."
+          solution: "c = √(225+400) = √625 = 25. R = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>c</span><span class='frac-den'>2</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>25</span><span class='frac-den'>2</span></span></span> = 12,5. r = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>a+b−c</span><span class='frac-den'>2</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>15+20−25</span><span class='frac-den'>2</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>10</span><span class='frac-den'>2</span></span></span> = 5. Тогава r + R = 12,5 + 5 = 17,5 cm."
         },
         {
           topic: "Прав. △ · Ъглополовяща",
@@ -3027,7 +3040,7 @@
           visual: svgs.metric,
           text: "В правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90°</span>) катетите са <span class='math'>a = 5 cm</span> и <span class='math'>b = 12 cm</span>. Да се намери височината <span class='math'>h<sub>c</sub></span> към хипотенузата.",
           ...buildOptions("60/13 cm", ["6 cm", "8,5 cm", "5 cm"]),
-          solution: "По теорема на Питагор: c² = a² + b² = 25 + 144 = 169 → c = 13. Лицето на &#9651;ABC се пресмята по два начина: S = a·b/2 = 5·12/2 = 30 cm² и S = c·h_c/2 = 13·h_c/2. Приравняваме: 13·h_c/2 = 30 → <strong>h_c = 60/13 cm</strong>."
+          solution: "По теорема на Питагор: c² = a² + b² = 25 + 144 = 169 → c = 13. Лицето на &#9651;ABC се пресмята по два начина: <br>S = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>a·b</span><span class='frac-den'>2</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>5·12</span><span class='frac-den'>2</span></span></span> = 30 cm² &nbsp; и &nbsp; S = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>c·h<sub>c</sub></span><span class='frac-den'>2</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>13·h<sub>c</sub></span><span class='frac-den'>2</span></span></span>. <br>Приравняваме: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>13·h<sub>c</sub></span><span class='frac-den'>2</span></span></span> = 30 → 13·h<sub>c</sub> = 60 → <strong>h<sub>c</sub> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>60</span><span class='frac-den'>13</span></span></span> cm</strong>."
         },
 
         // === Трапец ===
