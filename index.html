@@ -550,14 +550,13 @@
     .tile {
       position: relative;
       z-index: 1;
-      overflow: hidden;
     }
 
     /* Single tile — изцяло покрита, отваря се изцяло */
     .tile.single-tile {
       background: linear-gradient(135deg, #475569, #334155);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
-      transition: opacity 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: background 0.7s ease, box-shadow 0.7s ease;
     }
 
     .tile.single-tile::after {
@@ -566,10 +565,33 @@
       inset: 0;
       background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 60%);
       pointer-events: none;
+      transition: opacity 0.7s ease;
     }
 
     .tile.single-tile.revealed {
-      opacity: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    .tile.single-tile.revealed::after { opacity: 0; }
+
+    /* Когато плочката е отворена (revealed), бутонът с номера се смалява и отива в ъгъла,
+       за да не закрива картинката. При hover отново се уголемява. */
+    .tile.single-tile.revealed .tile-num,
+    .tile.chain-tile.fully-revealed .tile-num {
+      top: 6px;
+      left: 6px;
+      transform: none;
+      min-width: 22px;
+      min-height: 22px;
+      font-size: 11px;
+      padding: 2px 4px;
+      opacity: 0.7;
+      transition: all 0.25s ease;
+    }
+    .tile.single-tile.revealed:hover .tile-num,
+    .tile.chain-tile.fully-revealed:hover .tile-num {
+      opacity: 1;
+      transform: scale(1.15);
     }
 
     /* Chain tile — фон е прозрачен; покритието идва от секторите. */
@@ -635,33 +657,85 @@
       font-style: italic;
     }
 
-    .dots {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-    }
-
-    .dot {
-      border: 2px solid var(--border);
-      border-radius: 6px;
-      aspect-ratio: 1;
-      font-weight: 700;
+    /* === Бутон с номер ВЪРХУ плочка (заменя старата навигация) === */
+    .tile-num {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      min-width: 28px;
+      min-height: 28px;
+      padding: 4px 6px;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.78);
+      color: #fff;
+      font-weight: 800;
       font-size: 13px;
-      color: var(--muted);
-      background: var(--card-soft);
       cursor: pointer;
-      transition: all 0.2s;
-      padding: 0;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      line-height: 1;
+      backdrop-filter: blur(2px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+      pointer-events: auto;
+    }
+    .tile-num-number { line-height: 1; }
+    .tile-num-chain {
+      font-size: 10px;
+      opacity: 0.95;
+      margin-left: 1px;
+    }
+    /* Hover */
+    .tile-num:hover {
+      background: var(--primary);
+      border-color: #fff;
+      transform: translate(-50%, -50%) scale(1.08);
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.5);
+    }
+    /* Активна задача — синя */
+    .tile-num.active {
+      background: var(--primary);
+      border-color: #fff;
+      transform: translate(-50%, -50%) scale(1.12);
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.55);
+      animation: tileNumPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes tileNumPulse {
+      0%, 100% { box-shadow: 0 4px 14px rgba(29, 78, 216, 0.55); }
+      50%      { box-shadow: 0 4px 22px rgba(29, 78, 216, 0.85); }
+    }
+    /* Правилен отговор — зелен */
+    .tile-num.correct {
+      background: var(--good);
+      border-color: #fff;
+    }
+    /* Грешен отговор — червен */
+    .tile-num.wrong {
+      background: var(--bad);
+      border-color: #fff;
+    }
+    /* Частично отговорено (само за chain) — оранжев */
+    .tile-num.partial {
+      background: #f59e0b;
+      border-color: #fff;
+    }
+    /* Тъмна тема — съвсем малко по-светъл фон, същата контрастност */
+    [data-theme='dark'] .tile-num {
+      background: rgba(2, 6, 23, 0.82);
+      border-color: rgba(241, 245, 249, 0.85);
     }
 
-    .dot:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
-    .dot.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.1); box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3);}
-    .dot.correct { background: var(--good); color: white; border-color: var(--good); }
-    .dot.wrong { background: var(--bad); color: white; border-color: var(--bad); }
-    .dot.chained { border-bottom: 4px solid #9333ea; border-radius: 6px 6px 3px 3px; }
-
-    .legend { margin-top: 24px; font-size: 13px; color: var(--muted); line-height: 2; }
-    .legend-item { display: flex; align-items: center; gap: 10px; }
+    /* Легенда */
+    .legend { margin-top: 18px; font-size: 13px; color: var(--muted); line-height: 1.8;
+              display: flex; flex-wrap: wrap; gap: 12px 18px; justify-content: center; }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+    .legend-icon { font-size: 14px; }
 
     .btn {
       border: 0;
@@ -791,7 +865,7 @@
       .game-layout { grid-template-columns: 1fr; }
       .sidebar { flex-direction: row; }
       .puzzle-card, .map { flex: 1; }
-      .dots { grid-template-columns: repeat(10, 1fr); }
+      .tile-num { font-size: 12px; min-width: 26px; min-height: 26px; padding: 3px 5px; }
     }
 
     @media (max-width: 768px) {
@@ -808,8 +882,8 @@
       .stat strong { font-size: 18px; }
       .options { grid-template-columns: 1fr; gap: 10px; }
       .option { padding: 14px; font-size: 15px; min-height: 50px; }
-      .dots { grid-template-columns: repeat(6, 1fr); gap: 6px; }
-      .dot { font-size: 11px; }
+      .tile-num { font-size: 11px; min-width: 22px; min-height: 22px; padding: 2px 4px; border-width: 1.5px; }
+      .tile-num-chain { font-size: 9px; }
       .task-container { padding: 16px; min-height: 400px; }
       .task-context { font-size: 15px; padding: 14px; }
       .step-box { padding: 16px; margin-bottom: 14px; }
@@ -1728,22 +1802,16 @@
           <aside class="puzzle-card">
             <h2>Скрита картинка</h2>
             <div class="puzzle-board" id="puzzleBoard"></div>
+            <div class="progress-wrap"><div class="progress" id="progress"></div></div>
             <div class="puzzle-hint" id="puzzleHint">Решавайте, за да откриете изображението</div>
+
+            <div class="legend">
+              <div class="legend-item"><span class="legend-swatch" style="background:var(--primary);"></span> Текущ въпрос</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:var(--good);"></span> Верен отговор</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:var(--bad);"></span> Грешен отговор</div>
+              <div class="legend-item"><span class="legend-icon">⛓</span> Комплексна (стъпки)</div>
+            </div>
           </aside>
-
-
-        <aside class="map">
-          <h2>Навигация</h2>
-          <div class="progress-wrap"><div class="progress" id="progress"></div></div>
-          <div class="dots" id="dots"></div>
-
-          <div class="legend">
-            <div class="legend-item"><span style="display:inline-block; width:14px; height:14px; background:var(--primary); border-radius:4px;"></span> Текущ въпрос</div>
-            <div class="legend-item"><span style="display:inline-block; width:14px; height:14px; background:var(--good); border-radius:4px;"></span> Верен отговор</div>
-            <div class="legend-item"><span style="display:inline-block; width:14px; height:14px; background:var(--bad); border-radius:4px;"></span> Грешен отговор</div>
-            <div class="legend-item"><span style="display:inline-block; width:14px; height:6px; background:#9333ea; border-radius:3px;"></span> Комплексна задача (стъпки)</div>
-          </div>
-        </aside>
       </div>
     </section>
     </div><!-- /#gameArea -->
@@ -2383,25 +2451,27 @@
 
     // ===== SVG чертежи =====
     const svgs = {
-      similarity: `<svg class="svg-visual" viewBox="0 0 400 200">
-        <!-- △ABC: A долу ляво, B долу дясно, C горе. MN ∥ AB, M на AC, N на BC. -->
-        <!-- A(60,170), B(340,170), C(200,30). Среда на AC ≈ (130,100), точка M на 40% от C: -->
-        <!-- M = C + 0.6·(A-C) = (200 + 0.6·(-140), 30 + 0.6·140) = (116, 114) -->
-        <!-- N = C + 0.6·(B-C) = (200 + 0.6·140, 30 + 0.6·140) = (284, 114) -->
-        <polygon points="60,170 340,170 200,30" fill="none" stroke="#0f172a" stroke-width="1.6"/>
-        <line x1="116" y1="114" x2="284" y2="114" stroke="#1d4ed8" stroke-width="1.6"/>
-        <circle cx="116" cy="114" r="2.5" fill="#0f172a"/>
-        <circle cx="284" cy="114" r="2.5" fill="#0f172a"/>
-        <!-- Знаци за успоредност (двойни малки чертички в средата на MN и AB) -->
-        <line x1="196" y1="108" x2="200" y2="120" stroke="#1d4ed8" stroke-width="1.4"/>
-        <line x1="202" y1="108" x2="206" y2="120" stroke="#1d4ed8" stroke-width="1.4"/>
-        <line x1="196" y1="164" x2="200" y2="176" stroke="#0f172a" stroke-width="1.4"/>
-        <line x1="202" y1="164" x2="206" y2="176" stroke="#0f172a" stroke-width="1.4"/>
-        <text x="45" y="185" class="point">A</text>
-        <text x="345" y="185" class="point">B</text>
-        <text x="195" y="22" class="point">C</text>
-        <text x="100" y="120" class="point">M</text>
-        <text x="290" y="120" class="point">N</text>
+      similarity: `<svg class="svg-visual" viewBox="0 0 400 220">
+        <!-- Чист чертеж: △ABC с M на CA, N на CB и MN ∥ AB.
+             A(60,180), B(340,180), C(200,40).
+             M = C + 0.55·(A-C) = (200 - 77, 40 + 77) = (123, 117)
+             N = C + 0.55·(B-C) = (200 + 77, 40 + 77) = (277, 117)
+             — MN е по-широка от средата за по-добра видимост. -->
+        <polygon points="60,180 340,180 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <line x1="123" y1="117" x2="277" y2="117" stroke="#1d4ed8" stroke-width="2"/>
+        <circle cx="123" cy="117" r="3.5" fill="#0f172a"/>
+        <circle cx="277" cy="117" r="3.5" fill="#0f172a"/>
+        <!-- Знаци за успоредност (двойни малки чертички на MN и AB) -->
+        <line x1="196" y1="111" x2="200" y2="123" stroke="#1d4ed8" stroke-width="1.5"/>
+        <line x1="204" y1="111" x2="208" y2="123" stroke="#1d4ed8" stroke-width="1.5"/>
+        <line x1="196" y1="174" x2="200" y2="186" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="204" y1="174" x2="208" y2="186" stroke="#0f172a" stroke-width="1.5"/>
+        <!-- Етикети на върховете -->
+        <text x="42" y="197" class="point">A</text>
+        <text x="346" y="197" class="point">B</text>
+        <text x="195" y="32" class="point">C</text>
+        <text x="105" y="115" class="point">M</text>
+        <text x="284" y="115" class="point">N</text>
       </svg>`,
 
       twoSimilarTriangles: `<svg class="svg-visual" viewBox="0 0 460 200">
@@ -2673,47 +2743,52 @@
         <text x="222" y="118" class="point">M</text>
       </svg>`,
 
-      circumCircle: `<svg class="svg-visual" viewBox="0 0 300 250">
-        <!-- Равнобедрен △ с основа AB=140, височина=130 (за стилизация съответства на AB:h = 10:12 ≈ 5:6 — близо до зад. AB=10, h=12).
-             Поставяме A(50,180), B(190,180), C(120,50). За точка C, центърът O трябва е на перпендикулярна ос x = 120,
-             равноотдалечен от A и C. Нека OC = R. Тогава от средата на AC и перпендикулярна:
-             Среда AC = (85, 115), AC вектор = (70, -130), дължина = √(4900+16900) = √21800.
-             Перпендикуляр: (130, 70)/√21800. Точка O на x=120: (85,115) + t·(130,70)/√21800 = (120, y).
-             85 + t·130/√21800 = 120 → t = 35·√21800/130. Тогава y = 115 + t·70/√21800 = 115 + 35·70/130 = 115 + 18.85 ≈ 133.85.
-             R² = (120-50)² + (133.85-180)² = 4900 + 2130 ≈ 7030 → R ≈ 83.8 -->
-        <circle cx="120" cy="134" r="84" fill="none" stroke="#1d4ed8" stroke-width="1.6"/>
-        <polygon points="50,180 190,180 120,50" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-        <circle cx="120" cy="134" r="2.5" fill="#1d4ed8"/>
-        <text x="128" y="132" fill="#1d4ed8" font-size="13" font-style="italic">O</text>
+      circumCircle: `<svg class="svg-visual" viewBox="0 0 300 260">
+        <!-- Равнобедрен △ABC с AC=BC=13, AB=10. Мащаб: 1 cm = 12 px.
+             AB = 120 px, h = 12 cm = 144 px (защото h = √(13² − 5²) = 12).
+             Координати: A(50, 200), B(170, 200), C(110, 56).
+             Описана окръжност: центърът O лежи на перпендикулярната ос на симетрия x=110.
+             Радиус R = 169/24 cm = 84.5 px. y_O = 200 - (119/24)·12 = 200 - 59.5 = 140.5.
+             Проверка: OA = √((110-50)² + (140.5-200)²) = √(3600 + 3540.25) = √7140.25 ≈ 84.5 ✓
+                       OC = |140.5 - 56| = 84.5 ✓ -->
+        <circle cx="110" cy="140.5" r="84.5" fill="none" stroke="#1d4ed8" stroke-width="1.6"/>
+        <polygon points="50,200 170,200 110,56" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <!-- Център O — със стилизирана точка -->
+        <circle cx="110" cy="140.5" r="3" fill="#1d4ed8"/>
+        <text x="118" y="138" fill="#1d4ed8" font-size="13" font-style="italic" font-weight="600">O</text>
         <!-- Радиус R от O към B -->
-        <line x1="120" y1="134" x2="190" y2="180" stroke="#1d4ed8" stroke-width="1.2" stroke-dasharray="3,3"/>
-        <text x="155" y="165" fill="#1d4ed8" font-size="13" font-style="italic">R</text>
-        <text x="35" y="195" class="point">A</text>
-        <text x="195" y="195" class="point">B</text>
-        <text x="115" y="42" class="point">C</text>
+        <line x1="110" y1="140.5" x2="170" y2="200" stroke="#1d4ed8" stroke-width="1.3" stroke-dasharray="4,3"/>
+        <text x="143" y="180" fill="#1d4ed8" font-size="13" font-style="italic">R</text>
+        <!-- Етикети на върховете (далеч от страните) -->
+        <text x="34" y="215" class="point">A</text>
+        <text x="175" y="215" class="point">B</text>
+        <text x="105" y="48" class="point">C</text>
       </svg>`,
 
       inscribedTrapezoid: `<svg class="svg-visual" viewBox="0 0 400 200">
-        <!-- Равнобедрен трапец с вписана окръжност. Условие: AB+CD = AD+BC = 2·бедро; h = 2r.
-             Избор: AB = 200, CD = 80, бедро = 140 (AB+CD=280, 2·140=280 ✓), h = √(140²-60²) = √(19600-3600) = √16000 ≈ 126.5
-             Мащаб за viewBox 400x200: трапецът центриран, h ≈ 130.
-             Координати: y_долна = 165, y_горна = 165 - 130 = 35. AB/2 = 100, CD/2 = 40.
-             A = (100, 165), B = (300, 165), C = (240, 35), D = (160, 35).
-             Окръжност: център = (200, 100), r = 65 (= h/2). Допирателна към y=165 ✓, y=35 ✓.
-             До бедро AD (от (100,165) до (160,35)): вектор (60,-130), дължина √(3600+16900)=√20500≈143.2.
-             Уравнение: 130x + 60y = 130·100 + 60·165 = 13000 + 9900 = 22900.
-             Разстояние от (200,100): |130·200 + 60·100 - 22900|/143.2 = |26000+6000-22900|/143.2 = 9100/143.2 ≈ 63.6.
-             Не точно 65 — близо. Мащаб за по-точна стойност:
-             AB=200, CD=80, бедро=140 — реално: h² = 140²-60² = 19600-3600 = 16000, h = √16000=40√10≈126.49.
-             А радиусът r = h/2 ≈ 63.25, не 65. Поправям: -->
-        <polygon points="100,165 300,165 240,38 160,38" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-        <circle cx="200" cy="101.5" r="63.5" fill="none" stroke="#dc2626" stroke-width="1.5"/>
-        <circle cx="200" cy="101.5" r="2" fill="#dc2626"/>
-        <text x="208" y="100" fill="#dc2626" font-size="13" font-style="italic">O</text>
-        <text x="84" y="180" class="point">A</text>
-        <text x="305" y="180" class="point">B</text>
-        <text x="245" y="31" class="point">C</text>
-        <text x="146" y="31" class="point">D</text>
+        <!-- Равнобедрен трапец с вписана окръжност, изчислен точно.
+             Параметри: AB:CD:бедро = 180:20:100 (или 9:1:5 в умален вид).
+             h² = 100² - 80² = 3600 → h = 60. r = h/2 = 30.
+             В SVG: мащаб 1.5 px/единица.
+             AB по y=160, CD по y=70 → h = 90 px = 60 единици · 1.5 ✓.
+             Симетрия → ос x = 195.
+             A(60, 160), B(330, 160), D(180, 70), C(210, 70).
+             Център O = (195, 115) = (средата по x, средата по y между основите).
+             r_SVG = 45 px = 30 · 1.5 ✓. -->
+        <polygon points="60,160 330,160 210,70 180,70" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <!-- Вписаната окръжност (червена) -->
+        <circle cx="195" cy="115" r="45" fill="none" stroke="#dc2626" stroke-width="1.6"/>
+        <!-- Радиус r (пунктиран) от центъра към допирателна точка на AB -->
+        <line x1="195" y1="115" x2="195" y2="160" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <text x="200" y="142" fill="#dc2626" font-size="13" font-style="italic">r</text>
+        <!-- Център O — голяма ясна точка -->
+        <circle cx="195" cy="115" r="3.5" fill="#dc2626"/>
+        <text x="204" y="113" fill="#dc2626" font-size="14" font-style="italic" font-weight="700">O</text>
+        <!-- Етикети на върховете (далеч от линиите) -->
+        <text x="42" y="178" class="point">A</text>
+        <text x="335" y="178" class="point">B</text>
+        <text x="216" y="64" class="point">C</text>
+        <text x="166" y="64" class="point">D</text>
       </svg>`,
 
       rightTrigBisector: `<svg class="svg-visual" viewBox="0 0 400 220">
@@ -2743,7 +2818,7 @@
         {
           topic: "Подобни триъгълници",
           visual: svgs.twoSimilarTriangles,
-          text: "Дадени са подобните <span class='math'>&#9651;ABC</span> и <span class='math'>&#9651;A&#8321;B&#8321;C&#8321;</span>. Периметрите им са съответно <span class='math'>P = 30 cm</span> и <span class='math'>P&#8321; = 10 cm</span>. Ако разликата от лицата им е <span class='math'>S - S&#8321; = 32 cm&sup2;</span>, да се намери лицето <span class='math'>S</span> на <span class='math'>&#9651;ABC</span>.",
+          text: "Дадени са подобните <span class='math'>&#9651;ABC</span> и <span class='math'>&#9651;A&#8321;B&#8321;C&#8321;</span>. Периметрите им са съответно <span class='math'>P = 30 cm</span> и <span class='math'>P&#8321; = 10 cm</span>. Ако разликата от лицата им е <span class='math'>S − S&#8321; = 32 cm&sup2;</span>, да се намери лицето <span class='math'>S</span> на <span class='math'>&#9651;ABC</span>.",
           ...buildOptions("36 cm&sup2;", ["18 cm&sup2;", "4 cm&sup2;", "40 cm&sup2;"]),
           solution: "k = P/P₁ = 3, S/S₁ = k² = 9. Значи S = 9·S₁, а S − S₁ = 8·S₁ = 32, откъдето S₁ = 4 и S = 36 cm²."
         },
@@ -2756,135 +2831,83 @@
         },
         {
           topic: "Подобни триъгълници",
-          visual: `<svg class="svg-visual" viewBox="0 0 540 280">
-            <!-- Задача 1: ME = 12, EP = 3, PF = 6. PM = 15. Подобието △PEF ~ △PMN с
-                 k = PF/PM = 6/15 = 2/5 → EF/MN = 2/5.
-                 
-                 Същата стандартна геометрия като за втората задача:
-                 M(60, 230), N(380, 230), P(440, 80).
-                 MP вектор = (380, -150), дължина ≈ 408.5 px.
-                 E на MP при ME/MP = 12/15 = 4/5:
-                   E = M + (4/5)·(P-M) = (60 + 0.8·380, 230 + 0.8·(-150)) = (364, 110)
-                 F на MN: за визуална яснота поставяме F ≈ средата = (240, 230). -->
-            <!-- Основен триъгълник MNP -->
-            <polygon points="60,230 380,230 440,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <!-- Точки E и F -->
-            <circle cx="364" cy="110" r="4" fill="#0f172a"/>
-            <circle cx="240" cy="230" r="4" fill="#0f172a"/>
-            <!-- Отсечки EF и PF -->
-            <line x1="364" y1="110" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
-            <line x1="440" y1="80" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
-            <!-- Дъгички за равни ъгли (радиус 26):
-                 При M: между MN (надясно) и MP (към P).
-                 MN_единичен = (1, 0); MP_единичен = (380, -150)/408.5 ≈ (0.930, -0.367).
-                 Точки на дъгата:
-                   на MN: M + 26·(1, 0) = (86, 230)
-                   на MP: M + 26·(0.930, -0.367) = (84.2, 220.5)
-                 Дъгата започва от точката на MN и стига до точката на MP, нагоре (sweep=0). 
-                 При F: между FE и FP.
-                 F(240,230). FE = (364-240, 110-230) = (124, -120). |FE| ≈ 172.5. ед.: (0.719, -0.696).
-                 FP = (440-240, 80-230) = (200, -150). |FP| = 250. ед.: (0.8, -0.6).
-                 Точки на дъга радиус 26:
-                   на FE: F + 26·(0.719, -0.696) = (258.7, 211.9)
-                   на FP: F + 26·(0.8, -0.6)    = (260.8, 214.4)
-                 Между тях е по-малък ъгъл — дъгата ще е едва видима. Удвоявам радиуса на дъгата при F до 40:
-                   на FE: F + 40·(0.719, -0.696) = (268.8, 202.2)
-                   на FP: F + 40·(0.8, -0.6)    = (272, 206) -->
-            <path d="M 86 230 A 26 26 0 0 0 84.2 220.5" fill="none" stroke="#dc2626" stroke-width="1.5"/>
-            <path d="M 268.8 202.2 A 40 40 0 0 1 272 206" fill="none" stroke="#dc2626" stroke-width="1.5"/>
-            <!-- Етикети на върхове -->
-            <text x="42" y="248" class="point">M</text>
-            <text x="383" y="248" class="point">N</text>
-            <text x="447" y="76" class="point">P</text>
-            <text x="368" y="103" class="point">E</text>
-            <text x="234" y="252" class="point">F</text>
+          visual: `<svg class="svg-visual" viewBox="0 0 480 260">
+            <!-- Класическа 9-класова задача: △ABC с M ∈ CA, N ∈ CB, MN ∥ AB.
+                 Построена е САМО ОТСЕЧКАТА MN.
+                 Координати: C(240, 30), A(80, 230), B(400, 230).
+                 CA = √(160² + 200²) = √(25600 + 40000) = √65600 ≈ 256.1
+                 CB = √(160² + 200²) = √65600 ≈ 256.1 (симетричен по конструкция)
+                 Дадени за тази задача: CM = 6, MA = 9 → CM/CA = 6/15 = 2/5
+                 M на CA при CM/CA = 2/5: M = C + 0.4·(A-C) = (240 - 64, 30 + 80) = (176, 110)
+                 N на CB при CN/CB = 2/5: N = C + 0.4·(B-C) = (240 + 64, 110) = (304, 110)
+                 MN от (176,110) до (304,110), дължина 128 px. AB = 320 px → mащаб 16 px/cm (AB = 20 cm).
+                 MN = 128 px → 8 cm ✓ -->
+            <polygon points="80,230 400,230 240,30" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Допълнително построената отсечка MN (синя) -->
+            <line x1="176" y1="110" x2="304" y2="110" stroke="#1d4ed8" stroke-width="2"/>
+            <!-- Точки M и N -->
+            <circle cx="176" cy="110" r="4" fill="#0f172a"/>
+            <circle cx="304" cy="110" r="4" fill="#0f172a"/>
+            <!-- Знаци за успоредност (двойни малки чертички) на MN и на AB -->
+            <line x1="236" y1="103" x2="240" y2="117" stroke="#1d4ed8" stroke-width="1.5"/>
+            <line x1="242" y1="103" x2="246" y2="117" stroke="#1d4ed8" stroke-width="1.5"/>
+            <line x1="236" y1="223" x2="240" y2="237" stroke="#0f172a" stroke-width="1.5"/>
+            <line x1="242" y1="223" x2="246" y2="237" stroke="#0f172a" stroke-width="1.5"/>
+            <!-- Етикети на върховете и точките -->
+            <text x="58" y="248" class="point">A</text>
+            <text x="405" y="248" class="point">B</text>
+            <text x="234" y="22" class="point">C</text>
+            <text x="156" y="108" class="point">M</text>
+            <text x="312" y="108" class="point">N</text>
             <!-- Стойности (далеч от линиите) -->
-            <text x="170" y="172" font-size="13" font-style="italic">12</text>
-            <text x="415" y="98" font-size="13" font-style="italic">3</text>
-            <text x="408" y="160" font-size="13" font-style="italic">6</text>
+            <text x="178" y="80" font-size="13" font-style="italic">6</text>
+            <text x="115" y="195" font-size="13" font-style="italic">9</text>
+            <text x="226" y="100" font-size="13" font-style="italic" fill="#1d4ed8">8</text>
             <!-- Маркиране на търсеното -->
-            <text x="295" y="200" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">EF : MN = ?</text>
+            <text x="230" y="260" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">AB = ?</text>
           </svg>`,
-          text: "На чертежа са дадени два триъгълника със споделен връх <span class='math'>P</span>. Известно е, че <span class='math'>&ang;PMN = &ang;EFP</span>, <span class='math'>ME = 12 cm</span>, <span class='math'>EP = 3 cm</span> и <span class='math'>PF = 6 cm</span>. Да се намери отношението <span class='math'>EF : MN</span>.",
-          ...buildOptions("2 : 5", ["1 : 5", "1 : 3", "3 : 5"]),
-          solution: "<strong>Идея:</strong> Триъгълниците &#9651;PEF и &#9651;PMN имат общ ъгъл при P. Освен това &ang;PFE = &ang;PMN (дадено). Следователно &#9651;PEF ~ &#9651;PMN (по два равни ъгъла). <strong>Съответствие на върховете:</strong> общият &ang;P → P↔P; равните &ang;F и &ang;M → F↔M; останалите → E↔N.<br>Коефициент на подобие (отношението на съответни страни): k = PF/PM = EF/MN. Тук PM = ME + EP = 12 + 3 = 15 cm. Тогава k = 6/15 = 2/5. Следователно <strong>EF : MN = 2 : 5</strong>."
+          text: "В <span class='math'>&#9651;ABC</span> точките <span class='math'>M</span> и <span class='math'>N</span> лежат върху страните <span class='math'>CA</span> и <span class='math'>CB</span> съответно, така че <span class='math'>MN &parallel; AB</span>. Дадени са <span class='math'>CM = 6 cm</span>, <span class='math'>MA = 9 cm</span> и <span class='math'>MN = 8 cm</span>. Да се намери дължината на страната <span class='math'>AB</span>.",
+          ...buildOptions("20 cm", ["12 cm", "15 cm", "24 cm"]),
+          solution: "Тъй като <span class='math'>MN &parallel; AB</span>, при пресичането им с правите <span class='math'>CA</span> и <span class='math'>CB</span> се получават равни съответни ъгли: <span class='math'>&ang;CMN = &ang;CAB</span> и <span class='math'>&ang;CNM = &ang;CBA</span>. Заедно с общия <span class='math'>&ang;C</span> това дава <strong>&#9651;CMN ~ &#9651;CAB</strong> (по два равни ъгъла). <br>Коефициент на подобие: k = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CM</span><span class='frac-den'>CA</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>6</span><span class='frac-den'>15</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2</span><span class='frac-den'>5</span></span></span>. <br>От подобието: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>MN</span><span class='frac-den'>AB</span></span></span> = k → <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>8</span><span class='frac-den'>AB</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2</span><span class='frac-den'>5</span></span></span> → <strong>AB = 20 cm</strong>."
         },
         {
           topic: "Подобни триъгълници",
-          visual: `<svg class="svg-visual" viewBox="0 0 540 280">
-            <!-- Задача: ME = 10, EP = 4, PF = 7. PM = 14. От подобието △PEF ~ △PMN
-                 (общ ∠P, ∠PFE = ∠PMN) с k = PF/PM = 7/14 = 1/2 следва PN = 2·PE = 8.
-                 
-                 Геометрична конструкция (пропорциите трябва да са в съответствие с числата):
-                 - △MNP с M ляво долу, N дясно долу, P горе дясно.
-                 - E ∈ MP с ME:EP = 10:4 = 5:2
-                 - F ∈ MN. Точното положение на F трябва да изпълнява ∠EFP = ∠PMN.
-                 
-                 Избор на координати:
-                 M(60, 230), N(380, 230) → MN = 320 px.
-                 P(440, 80). Тогава MP = √((440-60)² + (80-230)²) = √(144400 + 22500) = √166900 ≈ 408.5 px.
-                 Скала ≈ 29.2 px на cm.
-                 E = M + (10/14)·(P-M) = M + (5/7)·(P-M):
-                   E_x = 60 + (5/7)·380 = 60 + 271.4 = 331.4
-                   E_y = 230 + (5/7)·(-150) = 230 - 107.1 = 122.9
-                 → E ≈ (331, 123).
-                 
-                 Положение на F: трябва ∠EFP = ∠PMN. Чрез подобието △PEF ~ △PMN със k = PF/PM = 7/14 = 1/2:
-                   PE/PN = 1/2 → PN = 2·PE. PE = √((440-331)² + (80-123)²) = √(11881 + 1849) = √13730 ≈ 117.2 px.
-                   Реална PE = 4 cm, мащаб = 117.2/4 = 29.3 px/cm. ✓
-                   PN_real = 8 cm = 8 · 29.3 = 234.4 px.
-                   Намираме F на отсечката MN така, че PN = 234.4 px.
-                   От P(440, 80), N(380, 230). Дистанция = √(60² + 150²) = √(3600+22500) = √26100 ≈ 161.6 px.
-                   Реална PN = 161.6/29.3 ≈ 5.5 cm — НЕ съответства на 8 cm.
-                   
-                 Проблем: пропорциите на моя чертеж не отговарят. Ще преоразмеря.
-                 
-                 Алтернативна конструкция: запазвам M, N, P, но НЕ настоявам точно на пропорциите.
-                 Чертежът ще е „схематичен" — F ще е там, където визуално подобието работи.
-                 
-                 Опитвам: F на MN, така че MF:FN = ?. От подобие △MFE може да изведем (но условията дават подобие на △PEF и △PMN, не на тези).
-                 
-                 По-прост подход: задавам F = (240, 230) (приблизително 1/2 от MN от M).
-                 Тогава MF = 180 px. -->
-            <!-- Основен триъгълник MNP -->
-            <polygon points="60,230 380,230 440,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <!-- Точки E (на MP) и F (на MN) -->
-            <circle cx="331" cy="123" r="4" fill="#0f172a"/>
-            <circle cx="240" cy="230" r="4" fill="#0f172a"/>
-            <!-- Отсечки EF и PF (синьо — те са „вътрешните" обекти) -->
-            <line x1="331" y1="123" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
-            <line x1="440" y1="80" x2="240" y2="230" stroke="#1d4ed8" stroke-width="1.7"/>
-            <!-- Дъгички за равни ъгли. Радиус 26, символично:
-                 При M: ъгълът ∠PMN е между лъчите MP (към горе-дясно) и MN (към дясно).
-                 MP единичен вектор: (380, -150)/408.5 ≈ (0.930, -0.367)
-                 MN единичен вектор: (1, 0)
-                 Точки на дъгата при M (радиус 26):
-                   на MP: M + 26·(0.930, -0.367) = (84.2, 220.5)
-                   на MN: M + 26·(1, 0) = (86, 230)
-                 При F: ъгълът ∠EFP е между лъчите FE и FP.
-                 F(240, 230). FE вектор: (331-240, 123-230) = (91, -107), дължина ≈ 140.4. Единичен: (0.648, -0.762)
-                 FP вектор: (440-240, 80-230) = (200, -150), дължина = 250. Единичен: (0.8, -0.6)
-                 Точки на дъгата при F (радиус 26):
-                   на FE: F + 26·(0.648, -0.762) = (256.85, 210.18)
-                   на FP: F + 26·(0.8, -0.6) = (260.8, 214.4) -->
-            <path d="M 84.2 220.5 A 26 26 0 0 0 86 230" fill="none" stroke="#dc2626" stroke-width="1.5"/>
-            <path d="M 256.85 210.18 A 26 26 0 0 1 260.8 214.4" fill="none" stroke="#dc2626" stroke-width="1.5"/>
-            <!-- Етикети на върхове -->
-            <text x="42" y="248" class="point">M</text>
-            <text x="383" y="248" class="point">N</text>
-            <text x="447" y="76" class="point">P</text>
-            <text x="335" y="115" class="point">E</text>
-            <text x="234" y="252" class="point">F</text>
-            <!-- Стойности на страните (с разстояние от линиите за четливост) -->
-            <text x="170" y="172" font-size="13" font-style="italic">10</text>
-            <text x="390" y="105" font-size="13" font-style="italic">4</text>
-            <text x="400" y="170" font-size="13" font-style="italic">7</text>
-            <!-- Маркиране на търсеното — НА ОТДЕЛНО МЯСТО, далеч от F и от страните -->
-            <text x="295" y="200" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">PN = ?</text>
+          visual: `<svg class="svg-visual" viewBox="0 0 480 260">
+            <!-- Същата геометрия като предходната задача, но с други числа.
+                 Дадени за тази задача: CM = 8, MA = 4 → CM/CA = 8/12 = 2/3.
+                 BN е известно = 5, и трябва да се намери CN.
+                 Тъй като △CMN ~ △CAB: CN/CB = 2/3 → 2/3 · CB = CN. 
+                 Също CB = CN + NB. Така CN = 2/3·(CN + 5) → CN/3 = 10/3 → CN = 10.
+                 За SVG: M на CA с CM/CA = 2/3, тоест по-близо до A.
+                 Координати: C(240,30), A(80,230), B(400,230).
+                 M = C + (2/3)·(A-C) = (240 - 320/3, 30 + 400/3) ≈ (133.3, 163.3)
+                 N = C + (2/3)·(B-C) = (240 + 320/3, 163.3) ≈ (346.7, 163.3) -->
+            <polygon points="80,230 400,230 240,30" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Допълнително построената отсечка MN (синя) -->
+            <line x1="133" y1="163" x2="347" y2="163" stroke="#1d4ed8" stroke-width="2"/>
+            <circle cx="133" cy="163" r="4" fill="#0f172a"/>
+            <circle cx="347" cy="163" r="4" fill="#0f172a"/>
+            <!-- Знаци за успоредност -->
+            <line x1="236" y1="156" x2="240" y2="170" stroke="#1d4ed8" stroke-width="1.5"/>
+            <line x1="242" y1="156" x2="246" y2="170" stroke="#1d4ed8" stroke-width="1.5"/>
+            <line x1="236" y1="223" x2="240" y2="237" stroke="#0f172a" stroke-width="1.5"/>
+            <line x1="242" y1="223" x2="246" y2="237" stroke="#0f172a" stroke-width="1.5"/>
+            <!-- Етикети -->
+            <text x="58" y="248" class="point">A</text>
+            <text x="405" y="248" class="point">B</text>
+            <text x="234" y="22" class="point">C</text>
+            <text x="113" y="158" class="point">M</text>
+            <text x="355" y="158" class="point">N</text>
+            <!-- Стойности -->
+            <text x="160" y="105" font-size="13" font-style="italic">8</text>
+            <text x="95" y="210" font-size="13" font-style="italic">4</text>
+            <text x="370" y="210" font-size="13" font-style="italic">5</text>
+            <!-- Маркиране на търсеното -->
+            <text x="280" y="105" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">CN = ?</text>
           </svg>`,
-          text: "На чертежа <span class='math'>&ang;PMN = &ang;EFP</span>, <span class='math'>ME = 10 cm</span>, <span class='math'>EP = 4 cm</span> и <span class='math'>PF = 7 cm</span>. Да се намери дължината на <span class='math'>PN</span>.",
-          ...buildOptions("8 cm", ["7 cm", "10 cm", "12 cm"]),
-          solution: "&#9651;PEF ~ &#9651;PMN, защото имат общ &ang;P и &ang;PFE = &ang;PMN (дадено). <strong>Съответствие на върховете:</strong> P↔P (общ ъгъл); F↔M (равни ъгли); E↔N. <br>Коефициент на подобие: k = PF/PM = EF/MN = PE/PN. <br>PM = ME + EP = 10 + 4 = 14 cm. Тогава k = PF/PM = 7/14 = 1/2. <br>От PE/PN = 1/2 → <strong>PN = 2·PE = 2·4 = 8 cm</strong>."
+          text: "В <span class='math'>&#9651;ABC</span> точките <span class='math'>M</span> и <span class='math'>N</span> лежат върху <span class='math'>CA</span> и <span class='math'>CB</span> съответно, така че <span class='math'>MN &parallel; AB</span>. Дадени са <span class='math'>CM = 8 cm</span>, <span class='math'>MA = 4 cm</span> и <span class='math'>NB = 5 cm</span>. Да се намери дължината на <span class='math'>CN</span>.",
+          ...buildOptions("10 cm", ["7,5 cm", "12 cm", "6 cm"]),
+          solution: "От <span class='math'>MN &parallel; AB</span> следва, че <strong>&#9651;CMN ~ &#9651;CAB</strong> (общ <span class='math'>&ang;C</span> и равни съответни ъгли). По свойство на подобни триъгълници, MN дели страните в едно и също отношение: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CM</span><span class='frac-den'>MA</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CN</span><span class='frac-den'>NB</span></span></span> (или еквивалентно: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CM</span><span class='frac-den'>CA</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CN</span><span class='frac-den'>CB</span></span></span>). <br>Заместваме: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>8</span><span class='frac-den'>4</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CN</span><span class='frac-den'>5</span></span></span> → CN = 2·5 = <strong>10 cm</strong>."
         },
         {
           topic: "Подобни триъгълници",
@@ -3057,27 +3080,17 @@
         {
           topic: "Трапец",
           visual: `<svg class="svg-visual" viewBox="0 0 400 220">
-            <!-- Правоъгълен трапец ABCD с диагонал AC, перпендикулярен на BC.
-                 Условие: AC ⊥ BC, AD = 12, CD = 9, ∠A = 90° → AB = 25.
-                 Мащаб 8 px/cm: AD=96, CD=72, AB=200.
-                 Координати: A(50,180), D(50,84), C(122,84), B(250,180).
-                 Тогава AC от (50,180) до (122,84). |AC|² = 72² + 96² = 5184 + 9216 = 14400 → |AC| = 120.
-                 BC от (122,84) до (250,180). |BC|² = 128² + 96² = 16384 + 9216 = 25600 → |BC| = 160.
-                 Проверка AC ⊥ BC: вектори AC = (72,-96), BC = (128,96). Скаларно: 72·128 + (-96)·96 = 9216 - 9216 = 0 ✓ -->
+            <!-- Правоъгълен трапец ABCD: ∠A = ∠D = 90°. AD = 12, CD = 9.
+                 Диагоналът AC се изчислява само от правоъгълния △ACD.
+                 Мащаб 8 px/cm: AD = 96, CD = 72. AB е произволно по-дълго (за визуална яснота AB = 200 px = 25 cm).
+                 Координати: A(50,180), D(50,84), C(122,84), B(250,180). -->
             <polygon points="50,180 250,180 122,84 50,84" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <!-- Диагонал AC (червен) -->
-            <line x1="50" y1="180" x2="122" y2="84" stroke="#dc2626" stroke-width="1.6"/>
+            <!-- Диагонал AC (червен — търсен) -->
+            <line x1="50" y1="180" x2="122" y2="84" stroke="#dc2626" stroke-width="2"/>
             <!-- Прав ъгъл при A -->
             <path d="M 50 168 L 62 168 L 62 180" fill="none" stroke="#0f172a" stroke-width="1.3"/>
             <!-- Прав ъгъл при D -->
             <path d="M 50 96 L 62 96 L 62 84" fill="none" stroke="#0f172a" stroke-width="1.3"/>
-            <!-- Прав ъгъл при C между AC и CB (важно — централната конструкция!) -->
-            <!-- Вектори от C: към A (-72,96), към B (128,96). Перпендикулярни ✓
-                 Малък правоъгълник: 12 px от C по двата вектора.
-                 На AC от C: C + 12·(-72,96)/120 = C + (-7.2, 9.6) = (114.8, 93.6)
-                 На CB от C: C + 12·(128,96)/160 = C + (9.6, 7.2) = (131.6, 91.2)
-                 Точка във вътрешността: C + двата вектора = (114.8 + 9.6 - 122, 93.6 + 7.2 - 84) + C = (124.4, 100.8) -->
-            <path d="M 114.8 93.6 L 124.4 100.8 L 131.6 91.2" fill="none" stroke="#dc2626" stroke-width="1.3"/>
             <!-- Етикети на върховете -->
             <text x="35" y="195" class="point">A</text>
             <text x="255" y="195" class="point">B</text>
@@ -3086,12 +3099,12 @@
             <!-- Дадените стойности (раздалечени от етикетите на върховете) -->
             <text x="20" y="135" font-size="13" font-style="italic">AD = 12</text>
             <text x="70" y="76" font-size="13" font-style="italic">CD = 9</text>
-            <!-- Търсеното (с акцент) -->
-            <text x="135" y="200" font-size="13" font-style="italic" fill="#dc2626" font-weight="600">AB = ?</text>
+            <!-- Търсеното (с акцент) — близо до диагонала AC -->
+            <text x="75" y="135" fill="#dc2626" font-size="13" font-style="italic" font-weight="600">AC = ?</text>
           </svg>`,
-          text: "В правоъгълния трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD, &ang;A = 90&deg;</span>), диагоналът <span class='math'>AC &perp; BC</span>. Ако <span class='math'>AD = 12 cm</span> и <span class='math'>CD = 9 cm</span>, да се намери голямата основа <span class='math'>AB</span>.",
-          ...buildOptions("25 cm", ["20 cm", "15 cm", "16 cm"]),
-          solution: "<strong>Начин 1 (метрични зависимости — най-кратък):</strong> Построяваме височината от C към AB; нейното пето е H. Тогава AHCD е правоъгълник → AH = CD = 9 и CH = AD = 12. В правоъгълния △ABC височината CH е средно геометрична на проекциите на катетите: <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CH²</span><span class='frac-den'>AH</span></span></span> = HB → HB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>144</span><span class='frac-den'>9</span></span></span> = 16. Тогава AB = AH + HB = 9 + 16 = 25 cm.<br><br><strong>Начин 2 (подобие):</strong> △ACD ~ △BCA (общ остър ъгъл и прав ъгъл) → <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC</span><span class='frac-den'>AB</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>CD</span><span class='frac-den'>AC</span></span></span>. От теорема на Питагор в △ACD: AC² = 144 + 81 = 225. Тогава AB = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>AC²</span><span class='frac-den'>CD</span></span></span> = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>225</span><span class='frac-den'>9</span></span></span> = 25 cm."
+          text: "В правоъгълен трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>, <span class='math'>&ang;A = &ang;D = 90&deg;</span>) са дадени <span class='math'>AD = 12 cm</span> и <span class='math'>CD = 9 cm</span>. Да се намери дължината на диагонала <span class='math'>AC</span> на трапеца.",
+          ...buildOptions("15 cm", ["20 cm", "16 cm", "21 cm"]),
+          solution: "Спускаме перпендикуляр от <span class='math'>C</span> към <span class='math'>AB</span>; нека неговото пето е <span class='math'>H</span>. Тогава <span class='math'>AHCD</span> е правоъгълник, защото има три прави ъгъла: при <span class='math'>A</span> (дадено), при <span class='math'>D</span> (дадено) и при <span class='math'>H</span> (по построение). Следователно <span class='math'>AH = CD = 9 cm</span> и <span class='math'>CH = AD = 12 cm</span>. <br>В правоъгълния <span class='math'>&#9651;ACD</span> (с прав ъгъл при <span class='math'>D</span>): по теорема на Питагор <span class='math'>AC&sup2; = AD&sup2; + CD&sup2; = 144 + 81 = 225</span>. Следователно <strong>AC = 15 cm</strong>."
         },
         {
           topic: "Трапец · Вписан в окр.",
@@ -3147,42 +3160,42 @@
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
-          text: "Да се намери множеството от решенията на неравенството <span class='math'>(x&sup2; - 4x + 3) / (x&sup2; - 5x + 6) &ge; 0</span>.",
+          text: "Да се намери множеството от решенията на неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x&sup2; − 4x + 3</span><span class='frac-den'>x&sup2; − 5x + 6</span></span></span> &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; 1] &cup; (2; 3) &cup; (3; +&infin;)", ["x &isin; (-&infin;; 1] &cup; (2; +&infin;)", "x &isin; [1; 2)", "x &isin; (-&infin;; 1] &cup; [2; +&infin;)"]),
           solution: "<strong>Внимание — уловка!</strong> Разлагаме: (x−1)(x−3) / [(x−2)(x−3)] ≥ 0. <strong>ОДЗ: x ≠ 2 и x ≠ 3</strong>. След съкращение (за x ≠ 3): (x−1)/(x−2) ≥ 0, при x ≠ 3. Метод на интервалите: x ≤ 1 или x > 2. Но <strong>x = 3 трябва да изключим</strong> (защото при x = 3 оригиналният израз е 0/0 — недефиниран!). Решение: x ∈ (−∞; 1] ∪ (2; 3) ∪ (3; +∞)."
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
-          text: "Да се намери множеството от решенията на неравенството <span class='math'>(x&sup2; + 4)(x&sup2; - 7x - 8) &ge; 0</span>.",
+          text: "Да се намери множеството от решенията на неравенството <span class='math'>(x&sup2; + 4)(x&sup2; − 7x − 8) &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1] &cup; [8; +&infin;)", ["x &isin; [-1; 8]", "x &isin; [-8; 1]", "x &isin; (-&infin;; -8] &cup; [1; +&infin;)"]),
           solution: "<strong>Внимание — уловка!</strong> Първият множител: x² + 4 ≥ 4 > 0 за всяко x ∈ ℝ (квадрат + положително число → винаги положително). Това означава, че няма реални нули и не променя знака. Делим двете страни на x² + 4 > 0 (знакът се запазва): x² − 7x − 8 ≥ 0 → (x + 1)(x − 8) ≥ 0 → <strong>x ∈ (−∞; −1] ∪ [8; +∞)</strong>."
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
-          text: "Да се реши рационалното неравенство <span class='math'>(x - 1)(x&sup2; - 7x + 6) &le; 0</span>.",
+          text: "Да се реши рационалното неравенство <span class='math'>(x − 1)(x&sup2; − 7x + 6) &le; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; 6]", ["x &isin; (-&infin;; 1] &cup; [6; +&infin;)", "x &isin; [1; 6]", "x &isin; (-&infin;; 1] &cup; {6}"]),
           solution: "<strong>Внимание — уловка!</strong> Разлагаме x² − 7x + 6 = (x − 1)(x − 6). Тогава (x − 1)(x − 1)(x − 6) = (x − 1)²(x − 6) ≤ 0. (x − 1)² ≥ 0 винаги. Анализ: <br>• Ако x = 1: произведението = 0 ≤ 0 ✓ <br>• Ако x ≠ 1: (x − 1)² > 0, тогава трябва (x − 6) ≤ 0 → x ≤ 6 (без x = 1, но x = 1 е вече включено отделно) <br>Двете обединено: <strong>x ∈ (−∞; 6]</strong>."
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
-          text: "Да се намерят целите числа от решенията на неравенството <span class='math'>(2x - 6) / (x + 1) &gt; 0</span>.",
+          text: "Да се намерят целите числа от решенията на неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2x − 6</span><span class='frac-den'>x + 1</span></span></span> &gt; 0</span>.",
           ...buildOptions("Безкрайно много", ["{0; 1; 2}", "{2; 3}", "{ -1; 0; 1; 2 }"]),
           solution: "ОДЗ: x ≠ -1. Нули: числител = 0 при x = 3; знаменател = 0 при x = -1. Метод на интервалите: на (3; +∞) знакът е (+)/(+) = +; на (-1; 3) знакът е (-)/(+) = -; на (-∞; -1) знакът е (-)/(-) = +. Решение: x ∈ (-∞; -1) ∪ (3; +∞) — безкрайно много цели числа (всички цели x ≤ -2 и x ≥ 4)."
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
-          text: "Да се намери множеството от решенията на неравенството <span class='math'>(x - 1) / (x - 2) &lt; 1</span>.",
+          text: "Да се намери множеството от решенията на неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x − 1</span><span class='frac-den'>x − 2</span></span></span> &lt; 1</span>.",
           ...buildOptions("x &isin; (-&infin;; 2)", ["x &isin; (2; +&infin;)", "x &isin; (1; 2)", "x &isin; (-&infin;; 1) &cup; (2; +&infin;)"]),
           solution: "(x − 1)/(x − 2) − 1 < 0 → [(x − 1) − (x − 2)] / (x − 2) < 0 → 1/(x − 2) < 0. Дробта е отрицателна, когато знаменателят е отрицателен (числителят 1 > 0): x − 2 < 0 → <strong>x ∈ (−∞; 2)</strong>."
         },
         {
           topic: "Неравенства",
           visual: svgs.rational,
-          text: "Да се реши дробното неравенство <span class='math'>(2x - 3) / (x + 1) &le; 1</span>.",
+          text: "Да се реши дробното неравенство <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2x − 3</span><span class='frac-den'>x + 1</span></span></span> &le; 1</span>.",
           ...buildOptions("x &isin; (-1; 4]", ["x &isin; [-1; 4]", "x &isin; (-&infin;; -1) &cup; [4; +&infin;)", "x &isin; (-1; 4)"]),
           solution: "(2x−3)/(x+1) − 1 ≤ 0 → (x−4)/(x+1) ≤ 0. Метод на интервалите: x ∈ (−1; 4]."
         },
@@ -3196,14 +3209,14 @@
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x + 1) / (x - 2) &ge; 0</span>.",
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x + 1</span><span class='frac-den'>x − 2</span></span></span> &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1] &cup; (2; +&infin;)", ["x &isin; [-1; 2]", "x &isin; (-1; 2)", "x &isin; [-1; 2)"]),
           solution: "ОДЗ: x ≠ 2. Нули: числител 0 при x = −1; знаменател 0 при x = 2. Метод на интервалите: на (2; +∞) знакът е (+)/(+) = +; на (−1; 2) знакът е (+)/(−) = −; на (−∞; −1) знакът е (−)/(−) = +. Включваме x = −1 (числителят е 0), изключваме x = 2 (знаменателят е 0). Решение: <strong>x ∈ (−∞; −1] ∪ (2; +∞)</strong>."
         },
         {
           topic: "Неравенства",
           visual: svgs.rational,
-          text: "Да се реши <span class='math'>(x - 2)/(3 - x) > 0</span>.",
+          text: "Да се реши <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x − 2</span><span class='frac-den'>3 − x</span></span></span> > 0</span>.",
           ...buildOptions("x &isin; (2; 3)", ["x &isin; (-&infin;; 2) &cup; (3; +&infin;)", "x &isin; [2; 3]", "x &isin; (-&infin;; 3)"]),
           solution: "Дробта > 0 когато числителят и знаменателят са с еднакъв знак. x − 2 > 0 и 3 − x > 0 → 2 < x < 3. (Другият случай е празен.)"
         },
@@ -3217,7 +3230,7 @@
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
-          text: "Да се реши <span class='math'>(x + 2)&sup2;(x - 5) &ge; 0</span>.",
+          text: "Да се реши <span class='math'>(x + 2)&sup2;(x − 5) &ge; 0</span>.",
           ...buildOptions("x &isin; {-2} &cup; [5; +&infin;)", ["x &isin; [-2; 5]", "x &isin; [5; +&infin;)", "x &isin; (-&infin;; -2] &cup; [5; +&infin;)"]),
           solution: "<strong>Внимание — уловка!</strong> (x+2)² ≥ 0 винаги (квадрат на реално число). Има три случая: <br>• Ако x = −2: произведението = 0 · (−7) = 0 ≥ 0 ✓<br>• Ако x − 5 ≥ 0 (т.е. x ≥ 5): и двата множителя ≥ 0, произведението ≥ 0 ✓<br>• Ако x < 5 и x ≠ −2: (x+2)² > 0, а (x − 5) < 0 → произведението < 0 ✗<br>Следователно <strong>x ∈ {−2} ∪ [5; +∞)</strong> — изолирана точка плюс непрекъснат интервал."
         },
@@ -3226,35 +3239,35 @@
         {
           topic: "Неравенства · Метод на интервалите",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x + 3)(x - 1)(x - 4) > 0</span>.",
+          text: "Да се реши неравенството <span class='math'>(x + 3)(x − 1)(x − 4) > 0</span>.",
           ...buildOptions("x &isin; (-3; 1) &cup; (4; +&infin;)", ["x &isin; (-&infin;; -3) &cup; (1; 4)", "x &isin; (-3; 4)", "x &isin; (-&infin;; 1) &cup; (4; +&infin;)"]),
           solution: "Нули: x = −3, x = 1, x = 4. Метод на интервалите — знаци: за x > 4 знакът е (+)(+)(+) = +. Редувайки през всяка нула: на (1; 4) знакът е −, на (−3; 1) знакът е +, на (−∞; −3) знакът е −. Решение: x ∈ (−3; 1) ∪ (4; +∞)."
         },
         {
           topic: "Неравенства · Метод на интервалите",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x - 2) / [(x + 1)(x - 5)] &ge; 0</span>.",
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x − 2</span><span class='frac-den'>(x + 1)(x − 5)</span></span></span> &ge; 0</span>.",
           ...buildOptions("x &isin; (-1; 2] &cup; (5; +&infin;)", ["x &isin; [2; 5)", "x &isin; (-1; 5)", "x &isin; (-&infin;; -1) &cup; [2; 5)"]),
           solution: "ОДЗ: x ≠ −1, x ≠ 5. Нули и забранени точки: −1, 2, 5. На (5; +∞): (+)/[(+)(+)] = +. Редувайки: (2; 5) знак (−), (−1; 2) знак (+), (−∞; −1) знак (−). При x = 2 числителят е 0 → включваме (≥). Решение: x ∈ (−1; 2] ∪ (5; +∞)."
         },
         {
           topic: "Неравенства · Метод на интервалите",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x&sup2; - 4) / (x + 3) &lt; 0</span>.",
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x&sup2; − 4</span><span class='frac-den'>x + 3</span></span></span> &lt; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -3) &cup; (-2; 2)", ["x &isin; (-3; -2) &cup; (2; +&infin;)", "x &isin; (-2; 2)", "x &isin; (-&infin;; -3) &cup; (2; +&infin;)"]),
           solution: "Разлагаме: (x−2)(x+2)/(x+3) < 0. ОДЗ: x ≠ −3. Нули: −3, −2, 2. На (2; +∞): (+)(+)/(+) = +. Редувайки: (−2; 2) знак (−), (−3; −2) знак (+), (−∞; −3) знак (−). Строго неравенство → не включваме граничните точки. Решение: x ∈ (−∞; −3) ∪ (−2; 2)."
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>3/(x - 1) &le; 1</span>.",
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>3</span><span class='frac-den'>x − 1</span></span></span> &le; 1</span>.",
           ...buildOptions("x &isin; (-&infin;; 1) &cup; [4; +&infin;)", ["x &isin; (1; 4]", "x &isin; [4; +&infin;)", "x &isin; (-&infin;; 4]"]),
           solution: "ОДЗ: x ≠ 1. Прехвърляме всичко вляво: 3/(x − 1) − 1 ≤ 0 → (3 − (x − 1))/(x − 1) ≤ 0 → (4 − x)/(x − 1) ≤ 0 → (x − 4)/(x − 1) ≥ 0. Метод на интервалите: нули x = 1, x = 4. На (4; +∞): + / +; на (1; 4): − / +; на (−∞; 1): − / −. x = 4 включваме, x = 1 — не. Решение: x ∈ (−∞; 1) ∪ [4; +∞)."
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>1/(x - 2) + 1/(x - 4) &gt; 0</span>.",
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>1</span><span class='frac-den'>x − 2</span></span></span> + <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>1</span><span class='frac-den'>x − 4</span></span></span> &gt; 0</span>.",
           ...buildOptions("x &isin; (2; 3) &cup; (4; +&infin;)", ["x &isin; (2; 4)", "x &isin; (3; 4)", "x &isin; (-&infin;; 2) &cup; (4; +&infin;)"]),
           solution: "Привеждаме под общ знаменател: [(x − 4) + (x − 2)] / [(x − 2)(x − 4)] = (2x − 6) / [(x − 2)(x − 4)] > 0 → 2(x − 3) / [(x − 2)(x − 4)] > 0. Нули: 2, 3, 4. Метод на интервалите: знаците от дясно наляво: (4; +∞): +; (3; 4): −; (2; 3): +; (−∞; 2): −. Решение: x ∈ (2; 3) ∪ (4; +∞)."
         },
@@ -3262,21 +3275,21 @@
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x - 3)&sup2;(x + 1)(x - 5) &ge; 0</span>.",
+          text: "Да се реши неравенството <span class='math'>(x − 3)&sup2;(x + 1)(x − 5) &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1] &cup; {3} &cup; [5; +&infin;)", ["x &isin; [-1; 5]", "x &isin; (-&infin;; -1] &cup; [5; +&infin;)", "x &isin; (-&infin;; -1] &cup; [3; 5]"]),
           solution: "<strong>Внимание — уловка с двойна нула!</strong> (x − 3)² ≥ 0 винаги. Анализ: <br>• При x = 3: произведението = 0 ≥ 0 ✓ <br>• При x ≠ 3: (x − 3)² > 0, значи знакът е като на (x + 1)(x − 5). Това е ≥ 0 за x ≤ −1 или x ≥ 5. <br>Обединено: <strong>x ∈ (−∞; −1] ∪ {3} ∪ [5; +∞)</strong>. Учениците често забравят изолираната точка x = 3!"
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x&sup2; + 1)(x - 2)&sup2;(x - 1) &le; 0</span>.",
+          text: "Да се реши неравенството <span class='math'>(x&sup2; + 1)(x − 2)&sup2;(x − 1) &le; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; 1] &cup; {2}", ["x &isin; [1; 2]", "x &isin; (-&infin;; 1]", "x &isin; (-&infin;; 1] &cup; [2; +&infin;)"]),
           solution: "<strong>Внимание — двойна уловка!</strong> Първи множител: x² + 1 ≥ 1 > 0 винаги. Втори множител: (x − 2)² ≥ 0 винаги. <br>• При x = 2: (x − 2)² = 0 → произведението = 0 ≤ 0 ✓ <br>• При x ≠ 2: (x² + 1)(x − 2)² > 0, значи знакът е като на (x − 1). Това е ≤ 0 за x ≤ 1. <br>Обединено: <strong>x ∈ (−∞; 1] ∪ {2}</strong>."
         },
         {
           topic: "Неравенства · Дробно · Уловка",
           visual: svgs.rational,
-          text: "Да се реши неравенството <span class='math'>(x - 4)&sup2; / (x + 1) &le; 0</span>.",
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>(x − 4)&sup2;</span><span class='frac-den'>x + 1</span></span></span> &le; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1) &cup; {4}", ["x &isin; (-&infin;; -1)", "x &isin; (-1; 4]", "x &isin; {4}"]),
           solution: "<strong>Внимание — уловка!</strong> Числителят (x − 4)² ≥ 0 винаги; знаменателят определя знака. ОДЗ: x ≠ −1. <br>• При x = 4: числителят = 0, знаменателят = 5 ≠ 0 → дробта = 0 ≤ 0 ✓ <br>• При x ≠ 4 и x ≠ −1: (x − 4)² > 0, така че знакът е като на 1/(x + 1). Това е ≤ 0 (всъщност < 0) за x + 1 < 0, т.е. x < −1. <br>Обединено: <strong>x ∈ (−∞; −1) ∪ {4}</strong>."
         },
@@ -3285,9 +3298,9 @@
         {
           topic: "Подобни триъгълници",
           visual: svgs.twoSimilarTriangles,
-          text: "Височините на два подобни триъгълника, спуснати към съответни страни, се отнасят <span class='math'>3 : 7</span>. Ако лицето на големия е <span class='math'>147 cm&sup2;</span>, намерете лицето на малкия.",
+          text: "Височините на два подобни триъгълника, спуснати към съответните страни, се отнасят <span class='math'>3 : 7</span>. Ако лицето на големия е <span class='math'>147 cm&sup2;</span>, да се намери лицето на малкия.",
           ...buildOptions("27 cm&sup2;", ["63 cm&sup2;", "49 cm&sup2;", "21 cm&sup2;"]),
-          solution: "k = 3/7, k² = 9/49. S_малък = 147 · 9/49 = 27 cm²."
+          solution: "k = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>3</span><span class='frac-den'>7</span></span></span>, k² = <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>9</span><span class='frac-den'>49</span></span></span>. S<sub>малък</sub> = 147 · <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>9</span><span class='frac-den'>49</span></span></span> = 27 cm²."
         },
         {
           topic: "Правоъгълен триъгълник",
@@ -3334,7 +3347,7 @@
         {
           topic: "Подобни триъгълници",
           visual: svgs.twoSimilarTriangles,
-          text: "Страните на триъгълник са <span class='math'>5, 6, 7</span>. Намерете най-голямата страна на подобен на него триъгълник с периметър <span class='math'>54</span>.",
+          text: "Страните на триъгълник са <span class='math'>5, 6, 7</span>. Да се намери най-голямата страна на подобен на него триъгълник с периметър <span class='math'>54</span>.",
           ...buildOptions("21", ["18", "15", "14"]),
           solution: "P_малък = 5+6+7 = 18. k = 54/18 = 3. Най-голяма страна = 7 · 3 = 21."
         }
@@ -3347,7 +3360,7 @@
         // ===== ЗАДАЧА 1: Рационално неравенство (5 стъпки) =====
         {
           topic: "Рационално неравенство",
-          context: "<strong>Дадено:</strong> Неравенството <span class='math'>(x&sup2; - 9)(x&sup2; - x - 6)(-x&sup2; - 2) &ge; 0</span>.<br><strong>Търси се:</strong> Множеството от решенията.",
+          context: "<strong>Дадено:</strong> Неравенството <span class='math'>(x&sup2; − 9)(x&sup2; − x − 6)(−x&sup2; − 2) &ge; 0</span>.<br><strong>Намерете</strong> множеството от решенията.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 130">
             <line x1="20" y1="65" x2="380" y2="65" stroke="#0f172a" stroke-width="1.5"/>
             <polygon points="380,65 370,60 370,70" fill="#0f172a"/>
@@ -3374,7 +3387,7 @@
               solution: "Преди разлагане и метод на интервалите трябва да се анализира знакът на (−x²−2). Само след като се установи, че този множител е строго отрицателен за всяко x, може да се раздели и да се обърне знакът."
             },
             {
-              text: "Множителят <span class='math'>-x&sup2; - 2</span> е:",
+              text: "Множителят <span class='math'>−x&sup2; − 2</span> е:",
               ...buildOptions("строго отрицателен за всяко реално x", ["положителен за x > 0, отрицателен за x < 0", "равен на нула при x = &radic;2", "не може да се определи знакът без допълнителна информация"]),
               solution: "−x² − 2 = −(x² + 2). Тъй като x² ≥ 0 за всяко реално x, имаме x² + 2 ≥ 2 > 0, значи −x² − 2 ≤ −2 < 0 за всяко реално x."
             },
@@ -3389,7 +3402,7 @@
               solution: "x² − 9 = (x−3)(x+3); x² − x − 6 = (x−3)(x+2) (корени x = 3 и x = −2). Произведението: (x−3)(x+3)(x−3)(x+2) = (x−3)²(x+3)(x+2)."
             },
             {
-              text: "Прилагайки метода на интервалите за <span class='math'>(x - 3)&sup2;(x + 3)(x + 2) &le; 0</span>, множеството от решения е:",
+              text: "Прилагайки метода на интервалите за <span class='math'>(x − 3)&sup2;(x + 3)(x + 2) &le; 0</span>, множеството от решения е:",
               ...buildOptions("x &isin; [-3; -2] &cup; {3}", ["x &isin; [-3; -2]", "x &isin; (-&infin;; -3] &cup; [-2; 3]", "x &isin; [-3; -2] &cup; [3; +&infin;)"]),
               solution: "Множителят (x−3)² ≥ 0 винаги (с равенство при x = 3). За (x+3)(x+2) ≤ 0 получаваме x ∈ [−3; −2]. Допълнително x = 3 е решение, защото (x−3)² = 0 прави цялото произведение 0. Окончателно: x ∈ [−3; −2] ∪ {3}."
             }
@@ -3400,7 +3413,7 @@
         // ===== ЗАДАЧА 2А: Медиана към катет в правоъгълен △ (3 стъпки) =====
         {
           topic: "Прав. △ · Медиана към катет",
-          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Търси се:</strong> Медианата <span class='math'>m<sub>a</sub> = AM</span> от върха <span class='math'>A</span> към средата <span class='math'>M</span> на срещуположния катет <span class='math'>BC</span>.",
+          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Намерете</strong> медианата <span class='math'>m<sub>a</sub> = AM</span> от върха <span class='math'>A</span> към средата <span class='math'>M</span> на срещуположния катет <span class='math'>BC</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 250">
             <!-- Правоъгълен △: A(50,210), C(290,210), B(290,30). AC = 240 px (b=8), BC = 180 px (a=6).
                  Среда M на BC: (290, 120). -->
@@ -3469,7 +3482,7 @@
         // ===== ЗАДАЧА 2Б: Ъглополовяща в правоъгълен △ (3 стъпки) =====
         {
           topic: "Прав. △ · Ъглополовяща",
-          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Търси се:</strong> Ъглополовящата <span class='math'>l<sub>b</sub></span> от върха <span class='math'>B</span>, която пресича срещуположната страна <span class='math'>AC</span> в точка <span class='math'>L</span>.",
+          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>) с катети <span class='math'>a = BC = 6 cm</span> и <span class='math'>b = AC = 8 cm</span>.<br><strong>Намерете</strong> ъглополовящата <span class='math'>l<sub>b</sub></span> от върха <span class='math'>B</span>, която пресича срещуположната страна <span class='math'>AC</span> в точка <span class='math'>L</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 250">
             <!-- Геометрия: A(50,210), C(290,210), B(290,30). AC = 240 px (b=8, мащаб 30/cm). BC = 180 px (a=6).
                  AB (хипотенуза) = √(240² + 180²) = √(57600 + 32400) = √90000 = 300 px (c=10). ✓
@@ -3552,7 +3565,7 @@
         // ===== ЗАДАЧА 3А: Вписана окръжност в равнобедрен △ (3 стъпки) =====
         {
           topic: "Равнобедрен △ · Вписана окр.",
-          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span>.<br><strong>Търси се:</strong> Радиусът <span class='math'>r</span> на вписаната окръжност.",
+          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span>.<br><strong>Намерете</strong> радиуса <span class='math'>r</span> на вписаната окръжност.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 280">
             <polygon points="100,240 300,240 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <line x1="200" y1="40" x2="200" y2="240" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
@@ -3599,7 +3612,7 @@
         // ===== ЗАДАЧА 3Б: Описана окръжност около равнобедрен △ (3 стъпки) =====
         {
           topic: "Равнобедрен △ · Описана окр.",
-          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 13 cm</span> и основа <span class='math'>AB = 10 cm</span>.<br><strong>Търси се:</strong> Радиусът <span class='math'>R</span> на описаната окръжност.",
+          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 13 cm</span> и основа <span class='math'>AB = 10 cm</span>.<br><strong>Намерете</strong> радиуса <span class='math'>R</span> на описаната окръжност.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 360">
             <!-- Мащаб 12 px / cm. AB = 120 px, AC = 156 px, CH = 144 px (=12 cm).
                  Координати: A(140,260), B(260,260), H(200,260) — средата на AB.
@@ -3687,7 +3700,7 @@
         // ===== ЗАДАЧА 3В: Медиана към бедро на равнобедрен △ (3 стъпки) =====
         {
           topic: "Равнобедрен △ · Медиана към бедро",
-          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span>. <span class='math'>M</span> е средата на бедрото <span class='math'>AC</span>.<br><strong>Търси се:</strong> Дължината на медианата <span class='math'>BM</span>.",
+          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> с <span class='math'>AC = BC = 10 cm</span> и основа <span class='math'>AB = 12 cm</span>. <span class='math'>M</span> е средата на бедрото <span class='math'>AC</span>.<br><strong>Намерете</strong> дължината на медианата <span class='math'>BM</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 280">
             <!-- Равнобедрен △ABC с предначертана медиана BM. Включваме и спомагателните MK ⊥ AB.
                  Мащаб 20 px/cm. A(80, 230), B(320, 230), C(200, 70).
@@ -3765,7 +3778,7 @@
         // ===== ЗАДАЧА 4: Елементи на равнобедрен трапец (4 стъпки) =====
         {
           topic: "Елементи на равнобедрен трапец",
-          context: "<strong>Дадено:</strong> Равнобедрен трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>, <span class='math'>AD = BC</span>, основи <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, бедро <span class='math'>AD = 10 cm</span>.<br><strong>Търси се:</strong> Височината, диагоналът и лицето на трапеца.",
+          context: "<strong>Дадено:</strong> Равнобедрен трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>, <span class='math'>AD = BC</span>, основи <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, бедро <span class='math'>AD = 10 cm</span>.<br><strong>Намерете</strong> височината, диагонала и лицето на трапеца.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 220">
             <polygon points="40,180 360,180 280,60 120,60" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <line x1="120" y1="60" x2="120" y2="180" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
@@ -3787,7 +3800,7 @@
           </svg>`,
           steps: [
             {
-              text: "Подредете алгоритъма за намиране на височината, диагонала и лицето на трапеца:",
+              text: "Подредете алгоритъма за намирането на височината, диагонала и лицето на трапеца:",
               ...buildAlgorithmOptions(
                 "1) Построяване на височини от C и D към AB; 2) Намиране на проекциите на бедрата; 3) Височина чрез теорема на Питагор; 4) Диагонал чрез теорема на Питагор; (Лице — по формула)",
                 [
@@ -3819,7 +3832,7 @@
         // ===== ЗАДАЧА 5: Елементи на правоъгълен трапец (4 стъпки) =====
         {
           topic: "Елементи на правоъгълен трапец",
-          context: "<strong>Дадено:</strong> Правоъгълен трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>, <span class='math'>&ang;A = &ang;D = 90&deg;</span>, <span class='math'>AB = 16 cm</span>, <span class='math'>CD = 10 cm</span> и височина <span class='math'>AD = 8 cm</span>.<br><strong>Търси се:</strong> Бедрото <span class='math'>BC</span>, диагоналът <span class='math'>BD</span> и лицето <span class='math'>S</span>.",
+          context: "<strong>Дадено:</strong> Правоъгълен трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>, <span class='math'>&ang;A = &ang;D = 90&deg;</span>, <span class='math'>AB = 16 cm</span>, <span class='math'>CD = 10 cm</span> и височина <span class='math'>AD = 8 cm</span>.<br><strong>Намерете</strong> бедрото <span class='math'>BC</span>, диагонала <span class='math'>BD</span> и лицето <span class='math'>S</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 420 240">
             <!-- Правоъгълен трапец: A долу ляво, B долу дясно, C горе дясно (горе от H), D горе ляво.
                  Мащаб 18 px/cm. AD = 8·18 = 144, AB = 16·18 = 288, CD = 10·18 = 180.
@@ -3884,7 +3897,7 @@
         // ===== ЗАДАЧА 6: Подобие на △ (ъглополовяща + успоредна права) (3 стъпки) =====
         {
           topic: "Подобие на △ — ъглополовяща и успоредна права",
-          context: "<strong>Дадено:</strong> В <span class='math'>&#9651;ABC</span> ъглополовящата <span class='math'>CL</span> (<span class='math'>L &isin; AB</span>) разделя <span class='math'>AB</span> на <span class='math'>AL = 6 cm</span> и <span class='math'>LB = 4 cm</span>. През <span class='math'>L</span> е построена права, успоредна на <span class='math'>BC</span>, която пресича <span class='math'>AC</span> в точка <span class='math'>M</span>. <span class='math'>BC = 6 cm</span>.<br><strong>Търси се:</strong> Отношението <span class='math'>AC : BC</span>, дължината на <span class='math'>LM</span> и сегментите <span class='math'>AM</span> и <span class='math'>MC</span>.",
+          context: "<strong>Дадено:</strong> В <span class='math'>&#9651;ABC</span> ъглополовящата <span class='math'>CL</span> (<span class='math'>L &isin; AB</span>) разделя <span class='math'>AB</span> на <span class='math'>AL = 6 cm</span> и <span class='math'>LB = 4 cm</span>. През <span class='math'>L</span> е построена права, успоредна на <span class='math'>BC</span>, която пресича <span class='math'>AC</span> в точка <span class='math'>M</span>. <span class='math'>BC = 6 cm</span>.<br><strong>Намерете</strong> отношението <span class='math'>AC : BC</span>, дължината на <span class='math'>LM</span> и сегментите <span class='math'>AM</span> и <span class='math'>MC</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 240">
             <polygon points="40,200 360,200 200,40" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <line x1="232" y1="200" x2="136" y2="104" stroke="#0f172a" stroke-width="1.5"/>
@@ -3920,7 +3933,7 @@
               solution: "По свойство на ъглополовящата: AC/BC = AL/LB = 6/4 = 3/2. От BC = 6 следва AC = (3/2)·6 = 9 cm."
             },
             {
-              text: "Тъй като <span class='math'>LM &parallel; BC</span>, имаме <span class='math'>&#9651;AML ~ &#9651;ACB</span>. Намерете <span class='math'>LM</span>.",
+              text: "Тъй като <span class='math'>LM &parallel; BC</span>, имаме <span class='math'>&#9651;AML ~ &#9651;ACB</span>. Да се намери <span class='math'>LM</span>.",
               ...buildOptions("LM = 3,6 cm", ["LM = 2,4 cm", "LM = 4 cm", "LM = 6 cm"]),
               solution: "△AML ~ △ACB с коефициент k = AL/AB = 6/10 = 3/5. Тогава LM = k·BC = (3/5)·6 = 3,6 cm."
             }
@@ -3930,7 +3943,7 @@
         // ===== ЗАДАЧА 7: Метрични зависимости — проекции на катетите (4 стъпки) =====
         {
           topic: "Метрични зависимости в правоъгълен △",
-          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;ACB = 90&deg;</span>). Височината <span class='math'>CH</span> към хипотенузата <span class='math'>AB</span> разделя хипотенузата на отсечки <span class='math'>AH = 9 cm</span> и <span class='math'>BH = 16 cm</span>.<br><strong>Търси се:</strong> Височината <span class='math'>CH</span>, катетите <span class='math'>AC</span> и <span class='math'>BC</span>, лицето <span class='math'>S</span>.",
+          context: "<strong>Дадено:</strong> Правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;ACB = 90&deg;</span>). Височината <span class='math'>CH</span> към хипотенузата <span class='math'>AB</span> разделя хипотенузата на отсечки <span class='math'>AH = 9 cm</span> и <span class='math'>BH = 16 cm</span>.<br><strong>Намерете</strong> височината <span class='math'>CH</span>, катетите <span class='math'>AC</span> и <span class='math'>BC</span>, лицето <span class='math'>S</span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 220">
             <polygon points="40,180 360,180 167,42" fill="none" stroke="#0f172a" stroke-width="1.8"/>
             <line x1="167" y1="42" x2="167" y2="180" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="5,3"/>
@@ -3980,22 +3993,33 @@
         // ===== ЗАДАЧА 8: Трапец — диагонали и подобие на △CDO и △ABO (3 стъпки) =====
         {
           topic: "Подобие на △CDO и △ABO в трапец",
-          context: "<strong>Дадено:</strong> Диагоналите на трапеца <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>) се пресичат в <span class='math'>O</span>. <span class='math'>S<sub>&#9651;CDO</sub> : S<sub>&#9651;ABO</sub> = 1 : 9</span>, диагоналът <span class='math'>BD = 16 cm</span>.<br><strong>Търси се:</strong> Коефициентът на подобие <span class='math'>k = CD : AB</span> и отсечката <span class='math'>OB</span>.",
-          visual: `<svg class="svg-visual" viewBox="0 0 400 220">
-            <polygon points="50,180 350,180 270,60 130,60" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <line x1="50" y1="180" x2="270" y2="60" stroke="#0f172a" stroke-width="1.3"/>
-            <line x1="350" y1="180" x2="130" y2="60" stroke="#1d4ed8" stroke-width="1.5"/>
-            <circle cx="200" cy="113" r="3.5" fill="#0f172a"/>
-            <text x="35" y="195" class="point">A</text>
-            <text x="360" y="195" class="point">B</text>
-            <text x="275" y="52" class="point">C</text>
-            <text x="120" y="52" class="point">D</text>
-            <text x="207" y="118" class="point">O</text>
-            <!-- BD надпис — преместен далеч от O, между D и точка O в горната част на диагонала -->
-            <text x="98" y="85" fill="#1d4ed8" font-size="13" font-style="italic">BD = 16</text>
-            <!-- Лицата на двата подобни △ — на нови места -->
-            <text x="225" y="85" font-size="12" font-style="italic">S = 1</text>
-            <text x="155" y="160" font-size="12" font-style="italic">S = 9</text>
+          context: "<strong>Дадено:</strong> Диагоналите на трапеца <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>) се пресичат в <span class='math'>O</span>. <span class='math'>S<sub>&#9651;CDO</sub> : S<sub>&#9651;ABO</sub> = 1 : 9</span>, диагоналът <span class='math'>BD = 16 cm</span>.<br><strong>Намерете</strong> коефициента на подобие <span class='math'>k = CD : AB</span> и отсечката <span class='math'>OB</span>.",
+          visual: `<svg class="svg-visual" viewBox="0 0 400 240">
+            <!-- Трапец ABCD с диагоналите AC и BD, които се пресичат в O.
+                 Координати: A(50, 200), B(350, 200), C(270, 80), D(130, 80).
+                 Геометрично O = пресечната точка:
+                 AC параметризиране: A + t·(C-A) = (50 + 220t, 200 - 120t)
+                 BD параметризиране: B + s·(D-B) = (350 - 220s, 200 - 120s)
+                 От равенство по y: t = s. Тогава 50 + 220t = 350 - 220t → 440t = 300 → t = 15/22 ≈ 0.682
+                 O = (50 + 220·15/22, 200 - 120·15/22) = (200, 118.2) -->
+            <polygon points="50,200 350,200 270,80 130,80" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Диагонал AC (черен) -->
+            <line x1="50" y1="200" x2="270" y2="80" stroke="#0f172a" stroke-width="1.5"/>
+            <!-- Диагонал BD (син — за подчертаване, тъй като се търси) -->
+            <line x1="350" y1="200" x2="130" y2="80" stroke="#1d4ed8" stroke-width="1.7"/>
+            <!-- Пресечна точка O — точно на пресичането на диагоналите -->
+            <circle cx="200" cy="118.2" r="4" fill="#dc2626"/>
+            <!-- Етикети на върховете (далеч от линиите) -->
+            <text x="35" y="215" class="point">A</text>
+            <text x="360" y="215" class="point">B</text>
+            <text x="275" y="72" class="point">C</text>
+            <text x="118" y="72" class="point">D</text>
+            <text x="208" y="123" class="point" fill="#dc2626">O</text>
+            <!-- BD = 16 — на самия диагонал в долната свободна част (близо до B) -->
+            <text x="265" y="175" fill="#1d4ed8" font-size="13" font-style="italic" font-weight="600">BD = 16</text>
+            <!-- Лицата S = 1 (в горната малка част на трапеца) и S = 9 (в долната голяма) -->
+            <text x="180" y="105" font-size="13" font-style="italic">S = 1</text>
+            <text x="180" y="178" font-size="13" font-style="italic">S = 9</text>
           </svg>`,
           steps: [
             {
@@ -4016,7 +4040,7 @@
               solution: "Отношението на лицата при подобни триъгълници е равно на квадрата на коефициента: k² = 1/9, откъдето k = 1/3."
             },
             {
-              text: "Тъй като при подобни триъгълници всички съответни отсечки са в отношение <span class='math'>k</span>, то <span class='math'>DO : OB = 1 : 3</span>. Намерете <span class='math'>OB</span>.",
+              text: "Тъй като при подобни триъгълници всички съответни отсечки са в отношение <span class='math'>k</span>, то <span class='math'>DO : OB = 1 : 3</span>. Да се намери <span class='math'>OB</span>.",
               ...buildOptions("OB = 12 cm", ["OB = 4 cm", "OB = 8 cm", "OB = 16/3 cm"]),
               solution: "DO + OB = BD = 16 и DO = OB/3. Тогава OB/3 + OB = 16, т.е. 4·OB/3 = 16, OB = 12 cm."
             }
@@ -4026,7 +4050,7 @@
         // ===== ЗАДАЧА 9: Подобие — продължения на бедрата на трапец до точка M (3 стъпки) =====
         {
           topic: "Продължения на бедрата на трапец",
-          context: "<strong>Дадено:</strong> Трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>. Продълженията на бедрата <span class='math'>AD</span> и <span class='math'>BC</span> се пресичат в точка <span class='math'>M</span>. <span class='math'>CD = 6 cm</span>, <span class='math'>AB = 10 cm</span>, <span class='math'>S<sub>ABCD</sub> = 64 cm&sup2;</span>.<br><strong>Търси се:</strong> Лицето <span class='math'>S<sub>&#9651;MDC</sub></span>.",
+          context: "<strong>Дадено:</strong> Трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>. Продълженията на бедрата <span class='math'>AD</span> и <span class='math'>BC</span> се пресичат в точка <span class='math'>M</span>. <span class='math'>CD = 6 cm</span>, <span class='math'>AB = 10 cm</span>, <span class='math'>S<sub>ABCD</sub> = 64 cm&sup2;</span>.<br><strong>Намерете</strong> лицето <span class='math'>S<sub>&#9651;MDC</sub></span>.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 260">
             <!-- M на върха, бедрата надолу към основата AB. CD/AB = 6/10 = 3/5, значи MD/MA = 3/5.
                  Поставяме M(200, 30), A(50, 230), B(350, 230). От M към A: вектор (-150, 200), дължина 250.
@@ -4092,7 +4116,6 @@
     let selectedPuzzle = null;
 
     const screenEl = document.getElementById("screen");
-    const dotsEl = document.getElementById("dots");
     const puzzleBoard = document.getElementById("puzzleBoard");
     const puzzleHintEl = document.getElementById("puzzleHint");
 
@@ -4175,6 +4198,34 @@
           // Single tile — въпросителна
           tile.classList.add('single-tile');
         }
+
+        // Бутон с номер ВЪРХУ плочката (нова навигация)
+        const scr = screens[meta.screenIdx];
+        const firstGlobalIdx = (scr.type === 'single')
+          ? scr.q.globalIdx
+          : scr.steps[0].globalIdx;
+        const tileNum = document.createElement('button');
+        tileNum.className = 'tile-num';
+        tileNum.id = `tile-num-${tileIdx}`;
+        tileNum.setAttribute('data-screen-idx', meta.screenIdx);
+        tileNum.setAttribute('data-global-idx', firstGlobalIdx);
+        tileNum.onclick = (e) => {
+          e.stopPropagation();
+          jumpToScreen(meta.screenIdx, firstGlobalIdx);
+        };
+        // Съдържание: номер + (за chain) малка верижна икона
+        const numSpan = document.createElement('span');
+        numSpan.className = 'tile-num-number';
+        numSpan.textContent = firstGlobalIdx + 1;
+        tileNum.appendChild(numSpan);
+        if (meta.type === 'chain') {
+          const chainIcon = document.createElement('span');
+          chainIcon.className = 'tile-num-chain';
+          chainIcon.textContent = '⛓';  // верижна икона
+          chainIcon.title = `Верижна задача (${meta.totalSectors} стъпки)`;
+          tileNum.appendChild(chainIcon);
+        }
+        tile.appendChild(tileNum);
 
         puzzleBoard.appendChild(tile);
       });
@@ -4353,20 +4404,44 @@
       saveState();
     }
 
+    // Преди функцията строеше отделни „точки" в навигационна карта (.dots).
+    // Сега номерата са върху плочките на пъзела; обновяваме само техния статус.
     function buildMap() {
-      dotsEl.innerHTML = '';
-      allQuestionsFlat.forEach((q, i) => {
-        const btn = document.createElement('button');
-        const isChained = screens[q.screenIdx].type === 'chain';
-        btn.className = 'dot' + (isChained ? ' chained' : '');
-        btn.textContent = i + 1;
-        btn.onclick = () => jumpToScreen(q.screenIdx, i);
-        btn.id = `dot-${i}`;
-        if (q.answered) {
-          const isCorrect = q.freeModeUsed ? !!q.freeModeCorrect : (q.userChoice === q.answer);
-          btn.classList.add(isCorrect ? 'correct' : 'wrong');
+      // Iterate за всяка плочка и обновяваме статуса на номера върху нея
+      tileMeta.forEach((meta, tileIdx) => {
+        const tileNumEl = document.getElementById(`tile-num-${tileIdx}`);
+        const tileEl = document.getElementById(`tile-${tileIdx}`);
+        if (!tileNumEl) return;
+        // Премахваме старите статусни класове
+        tileNumEl.classList.remove('correct', 'wrong', 'partial', 'active');
+        if (tileEl) tileEl.classList.remove('fully-revealed');
+        // Определяме общия статус на тази плочка (на базата на първата стъпка/въпроса)
+        const scr = screens[meta.screenIdx];
+        let firstQ;
+        if (scr.type === 'single') {
+          firstQ = scr.q;
+        } else {
+          firstQ = scr.steps[0];
         }
-        dotsEl.appendChild(btn);
+        if (!firstQ.answered) return;
+        // Ако е отговорено: определяме верността на цялата плочка
+        if (scr.type === 'single') {
+          const isCorrect = firstQ.freeModeUsed ? !!firstQ.freeModeCorrect : (firstQ.userChoice === firstQ.answer);
+          tileNumEl.classList.add(isCorrect ? 'correct' : 'wrong');
+        } else {
+          // chain: проверка на всички стъпки
+          const allAnswered = scr.steps.every(s => s.answered);
+          const allCorrect = scr.steps.every(s => s.freeModeUsed ? !!s.freeModeCorrect : (s.userChoice === s.answer));
+          if (allAnswered && allCorrect) {
+            tileNumEl.classList.add('correct');
+            if (tileEl) tileEl.classList.add('fully-revealed');
+          } else if (allAnswered) {
+            tileNumEl.classList.add('wrong');
+          } else {
+            // Поне една стъпка е отговорена, но не всички — частично
+            tileNumEl.classList.add('partial');
+          }
+        }
       });
     }
 
@@ -4386,11 +4461,12 @@
         document.getElementById('statLevel').textContent = "Активна";
       }
 
-      allQuestionsFlat.forEach((q, i) => {
-        const dot = document.getElementById(`dot-${i}`);
-        if (dot) {
-          dot.classList.remove('active');
-          if (q.screenIdx === currentScreenIdx) dot.classList.add('active');
+      // Маркираме активната плочка
+      tileMeta.forEach((meta, tileIdx) => {
+        const tileNumEl = document.getElementById(`tile-num-${tileIdx}`);
+        if (tileNumEl) {
+          tileNumEl.classList.remove('active');
+          if (meta.screenIdx === currentScreenIdx) tileNumEl.classList.add('active');
         }
       });
     }
@@ -4669,14 +4745,14 @@
           score += (100 / allQuestionsFlat.length);
           correctCount++;
         }
-        const dot = document.getElementById(`dot-${step.globalIdx}`);
-        if (dot) dot.classList.add(isCorrect ? 'correct' : 'wrong');
+        // (Статусът на плочката се обновява от buildMap при следващия updateUI.)
       });
 
       if (isCorrect) playCorrect(); else playWrong();
       showKeyFeedback(isCorrect);
 
       updateUI();
+      buildMap();
       saveState();
       renderScreen();
     }
@@ -4728,16 +4804,14 @@
       // Анимация „ключ" (визуална обратна връзка)
       showKeyFeedback(isCorrect);
 
-      const dot = document.getElementById(`dot-${globalIdx}`);
       if (isCorrect) {
         score += (100 / allQuestionsFlat.length);
         correctCount++;
-        if (dot) dot.classList.add('correct');
-      } else {
-        if (dot) dot.classList.add('wrong');
       }
+      // Статусът на плочката се обновява от buildMap.
 
       updateUI();
+      buildMap();
       saveState();
       renderScreen();
 
