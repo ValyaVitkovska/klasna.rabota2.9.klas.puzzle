@@ -3118,33 +3118,43 @@
 
         // === Трапец ===
         {
-          topic: "Трапец",
-          visual: `<svg class="svg-visual" viewBox="0 0 400 220">
-            <!-- Правоъгълен трапец ABCD: ∠A = ∠D = 90°. AD = 12, CD = 9.
-                 Диагоналът AC се изчислява само от правоъгълния △ACD.
-                 Мащаб 8 px/cm: AD = 96, CD = 72. AB е произволно по-дълго (за визуална яснота AB = 200 px = 25 cm).
-                 Координати: A(50,180), D(50,84), C(122,84), B(250,180). -->
-            <polygon points="50,180 250,180 122,84 50,84" fill="none" stroke="#0f172a" stroke-width="1.8"/>
-            <!-- Диагонал AC (червен — търсен) -->
-            <line x1="50" y1="180" x2="122" y2="84" stroke="#dc2626" stroke-width="2"/>
+          topic: "Правоъгълен трапец",
+          visual: `<svg class="svg-visual" viewBox="0 0 400 240">
+            <!-- Правоъгълен трапец ABCD: ∠A = ∠D = 90°. AB = 20, CD = 8, AD = 9.
+                 H — петата на перпендикуляра от C към AB. AHCD е правоъгълник:
+                   AH = CD = 8, CH = AD = 9. Тогава HB = AB − AH = 20 − 8 = 12.
+                 В △BHC: BC² = CH² + HB² = 81 + 144 = 225 → BC = 15.
+                 
+                 Мащаб 11 px/cm: AB = 220, CD = 88, AD = 99.
+                 Координати: A(50, 200), B(50+220, 200) = (270, 200), D(50, 200-99) = (50, 101),
+                             C(50+88, 101) = (138, 101), H(138, 200). -->
+            <polygon points="50,200 270,200 138,101 50,101" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Височина CH (помощна, сива пунктирана) -->
+            <line x1="138" y1="101" x2="138" y2="200" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
             <!-- Прав ъгъл при A -->
-            <path d="M 50 168 L 62 168 L 62 180" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <path d="M 50 188 L 62 188 L 62 200" fill="none" stroke="#0f172a" stroke-width="1.3"/>
             <!-- Прав ъгъл при D -->
-            <path d="M 50 96 L 62 96 L 62 84" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <path d="M 50 113 L 62 113 L 62 101" fill="none" stroke="#0f172a" stroke-width="1.3"/>
+            <!-- Прав ъгъл при H -->
+            <path d="M 126 200 L 126 188 L 138 188" fill="none" stroke="#0f172a" stroke-width="1.1"/>
+            <!-- Бедрото BC (търсено, червено) -->
+            <line x1="138" y1="101" x2="270" y2="200" stroke="#dc2626" stroke-width="2"/>
             <!-- Етикети на върховете -->
-            <text x="35" y="195" class="point">A</text>
-            <text x="255" y="195" class="point">B</text>
-            <text x="127" y="78" class="point">C</text>
-            <text x="35" y="78" class="point">D</text>
-            <!-- Дадените стойности (раздалечени от етикетите на върховете) -->
-            <text x="20" y="135" font-size="13" font-style="italic">AD = 12</text>
-            <text x="70" y="76" font-size="13" font-style="italic">CD = 9</text>
-            <!-- Търсеното (с акцент) — близо до диагонала AC -->
-            <text x="75" y="135" fill="#dc2626" font-size="13" font-style="italic" font-weight="600">AC = ?</text>
+            <text x="35" y="215" class="point">A</text>
+            <text x="275" y="215" class="point">B</text>
+            <text x="143" y="93" class="point">C</text>
+            <text x="35" y="93" class="point">D</text>
+            <text x="131" y="218" class="point">H</text>
+            <!-- Дадените стойности -->
+            <text x="148" y="223" font-size="13" font-style="italic">AB = 20</text>
+            <text x="76" y="91" font-size="13" font-style="italic">CD = 8</text>
+            <text x="20" y="158" font-size="13" font-style="italic">AD = 9</text>
+            <!-- Търсеното (с акцент) -->
+            <text x="200" y="160" fill="#dc2626" font-size="13" font-style="italic" font-weight="600">BC = ?</text>
           </svg>`,
-          text: "В правоъгълен трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>, <span class='math'>&ang;A = &ang;D = 90&deg;</span>) са дадени <span class='math'>AD = 12 cm</span> и <span class='math'>CD = 9 cm</span>. Да се намери дължината на диагонала <span class='math'>AC</span> на трапеца.",
-          ...buildOptions("15 cm", ["20 cm", "16 cm", "21 cm"]),
-          solution: "Спускаме перпендикуляр от <span class='math'>C</span> към <span class='math'>AB</span>; нека неговото пето е <span class='math'>H</span>. Тогава <span class='math'>AHCD</span> е правоъгълник, защото има три прави ъгъла: при <span class='math'>A</span> (дадено), при <span class='math'>D</span> (дадено) и при <span class='math'>H</span> (по построение). Следователно <span class='math'>AH = CD = 9 cm</span> и <span class='math'>CH = AD = 12 cm</span>. <br>В правоъгълния <span class='math'>&#9651;ACD</span> (с прав ъгъл при <span class='math'>D</span>): по теорема на Питагор <span class='math'>AC&sup2; = AD&sup2; + CD&sup2; = 144 + 81 = 225</span>. Следователно <strong>AC = 15 cm</strong>."
+          text: "В правоъгълен трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>, <span class='math'>&ang;A = &ang;D = 90&deg;</span>) са дадени основите <span class='math'>AB = 20 cm</span> и <span class='math'>CD = 8 cm</span> и височината <span class='math'>AD = 9 cm</span>. Да се намери дължината на наклоненото бедро <span class='math'>BC</span>.",
+          ...buildOptions("15 cm", ["12 cm", "17 cm", "&radic;145 cm"]),
+          solution: "Спускаме перпендикуляр от <span class='math'>C</span> към <span class='math'>AB</span>; нека неговото пето е <span class='math'>H</span>. Тогава <span class='math'>AHCD</span> е правоъгълник, защото има три прави ъгъла: при <span class='math'>A</span> (дадено), при <span class='math'>D</span> (дадено) и при <span class='math'>H</span> (по построение). Следователно <span class='math'>AH = CD = 8 cm</span> и <span class='math'>CH = AD = 9 cm</span>. <br>Тогава проекцията на наклоненото бедро върху основата AB е <span class='math'>HB = AB − AH = 20 − 8 = 12 cm</span>. <br>В правоъгълния <span class='math'>&#9651;BHC</span> (с прав ъгъл при <span class='math'>H</span>) по теорема на Питагор: <span class='math'>BC&sup2; = CH&sup2; + HB&sup2; = 81 + 144 = 225</span>. Следователно <strong>BC = 15 cm</strong>."
         },
         {
           topic: "Трапец · Вписан в окр.",
