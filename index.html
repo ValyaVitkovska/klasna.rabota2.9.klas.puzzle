@@ -574,10 +574,19 @@
     }
     .tile.single-tile.revealed::after { opacity: 0; }
 
-    /* Когато плочката е отворена (revealed), бутонът с номера се смалява и отива в ъгъла,
-       за да не закрива картинката. При hover отново се уголемява. */
+    /* Когато плочката е отворена (revealed), бутонът с номера се скрива,
+       за да не закрива картинката. При hover пак се появява (плавно), 
+       за да може ученикът да навигира назад към задачата за преглед. */
     .tile.single-tile.revealed .tile-num,
     .tile.chain-tile.fully-revealed .tile-num {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.25s ease;
+    }
+    .tile.single-tile.revealed:hover .tile-num,
+    .tile.chain-tile.fully-revealed:hover .tile-num {
+      opacity: 0.95;
+      pointer-events: auto;
       top: 6px;
       left: 6px;
       transform: none;
@@ -585,13 +594,16 @@
       min-height: 22px;
       font-size: 11px;
       padding: 2px 4px;
-      opacity: 0.7;
-      transition: all 0.25s ease;
     }
-    .tile.single-tile.revealed:hover .tile-num,
-    .tile.chain-tile.fully-revealed:hover .tile-num {
+
+    /* Частично отворена chain плочка — номерът е леко прозрачен (не закрива видимата част
+       на картинката), но остава ясно видим и кликабилен, защото има още незавършени стъпки. */
+    .tile.chain-tile.partially-revealed .tile-num {
+      opacity: 0.55;
+      transition: opacity 0.3s ease;
+    }
+    .tile.chain-tile.partially-revealed:hover .tile-num {
       opacity: 1;
-      transform: scale(1.15);
     }
 
     /* Chain tile — фон е прозрачен; покритието идва от секторите. */
@@ -2005,6 +2017,8 @@
                 "• <strong>21 кратки задачи</strong> — всяка отваря по едно цяло квадратче от пъзела.\n" +
                 "• <strong>9 комплексни задачи</strong> — с 3 до 5 стъпки. Всяка стъпка отваря по един <em>триъгълен сектор</em> от квадратчето.\n\n" +
                 "Първата стъпка на комплексните задачи винаги е „<em>подреди алгоритъма за решение</em>“.\n\n" +
+                "<strong>Навигация по пъзела:</strong> върху всяко квадратче има номер на задачата (а иконката ⛓ означава комплексна верижна задача). Кликни върху номера, за да отидеш директно на задачата.\n\n" +
+                "Когато отговориш правилно, частта от картинката се отваря и номерът избледнява, за да не закрива изображението. <strong>Прокарай мишката върху отворено квадратче и номерът ще се появи в горния ляв ъгъл</strong> — така винаги можеш да се върнеш към задачата за преглед на решението.\n\n" +
                 "След всеки отговор виждаш кратко решение. На финала — <strong>преглед на грешките</strong> и възможност да <em>копираш резултата за предаване</em>.\n\n" +
                 "Готов ли си? Въведи името си отдолу.";
               // Малко закъснение — за да тръгне след анимацията на отварянето
@@ -4440,8 +4454,8 @@
         if (!tileNumEl) return;
         // Премахваме старите статусни класове
         tileNumEl.classList.remove('correct', 'wrong', 'partial', 'active');
-        if (tileEl) tileEl.classList.remove('fully-revealed');
-        // Определяме общия статус на тази плочка (на базата на първата стъпка/въпроса)
+        if (tileEl) tileEl.classList.remove('fully-revealed', 'partially-revealed');
+        // Определяме общия статус на тази плочка
         const scr = screens[meta.screenIdx];
         let firstQ;
         if (scr.type === 'single') {
@@ -4458,14 +4472,23 @@
           // chain: проверка на всички стъпки
           const allAnswered = scr.steps.every(s => s.answered);
           const allCorrect = scr.steps.every(s => s.freeModeUsed ? !!s.freeModeCorrect : (s.userChoice === s.answer));
+          // Брой сектори, които са били отворени (правилни отговори)
+          const correctCount = scr.steps.filter(s => 
+            s.answered && (s.freeModeUsed ? !!s.freeModeCorrect : (s.userChoice === s.answer))
+          ).length;
+
           if (allAnswered && allCorrect) {
             tileNumEl.classList.add('correct');
             if (tileEl) tileEl.classList.add('fully-revealed');
           } else if (allAnswered) {
             tileNumEl.classList.add('wrong');
+            // Ако ВСИЧКИ са правилни → fully-revealed; иначе ако ИМА правилни → частично
+            if (correctCount > 0 && tileEl) tileEl.classList.add('partially-revealed');
           } else {
             // Поне една стъпка е отговорена, но не всички — частично
             tileNumEl.classList.add('partial');
+            // Ако ИМА поне един правилно отворен сектор — частично разкрита картинка
+            if (correctCount > 0 && tileEl) tileEl.classList.add('partially-revealed');
           }
         }
       });
