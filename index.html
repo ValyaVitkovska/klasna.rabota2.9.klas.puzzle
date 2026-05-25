@@ -1673,6 +1673,23 @@
       .key-svg-wrap, .key-correct-svg, .key-wrong-svg { width: 80px; height: 80px; }
       .key-text { font-size: 15px; }
     }
+  
+    /* ===== END MODE: след приключване плочките са кликабилни за преглед ===== */
+    body.end-mode .tile-num,
+    body.end-mode .tile.single-tile.revealed .tile-num,
+    body.end-mode .tile.chain-tile.fully-revealed .tile-num,
+    body.end-mode .tile.chain-tile.partially-revealed .tile-num {
+      opacity: 0.95 !important;
+      pointer-events: auto !important;
+      top: 6px !important;
+      left: 6px !important;
+      transform: none !important;
+      min-width: 22px !important;
+      min-height: 22px !important;
+      font-size: 11px !important;
+      padding: 2px 4px !important;
+    }
+
   </style>
 </head>
 <body>
@@ -1779,7 +1796,7 @@
         </div>
         <div class="credits-text">
           <div><strong>Идея и педагогически решения:</strong> Валя Витковска</div>
-          <div><strong>Реализация:</strong> Claude</div>
+          <div><strong>Реализация:</strong> Claude, ChatGPT</div>
         </div>
       </div>
 
@@ -2574,6 +2591,21 @@
         <text x="195" y="10" class="point">C</text><text x="100" y="140" class="point">A</text>
         <text x="290" y="140" class="point">B</text><text x="195" y="150" class="point">H</text>
       </svg>`,
+      isoTriangleAltAH: `<svg class="svg-visual" viewBox="0 0 400 180">
+        <!-- Равнобедрен △ABC (AC = BC). Височина AH към бедрото BC (H ∈ BC), AH ⟂ BC -->
+        <polygon points="90,140 310,140 200,30" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+        <!-- височина от A към BC -->
+        <line x1="90" y1="140" x2="248" y2="76" stroke="#0f172a" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- точка H върху BC -->
+        <circle cx="248" cy="76" r="3.5" fill="#0f172a"/>
+        <!-- маркер за прав ъгъл при H -->
+        <path d="M 242 78 L 246 84 L 252 82" fill="none" stroke="#0f172a" stroke-width="1"/>
+        <text x="195" y="24" class="point">C</text>
+        <text x="74" y="152" class="point">A</text>
+        <text x="320" y="152" class="point">B</text>
+        <text x="256" y="72" class="point">H</text>
+      </svg>`,
+
 
       isoTriangleMedianBM: `<svg class="svg-visual" viewBox="0 0 400 230">
         <!-- Равнобедрен △ABC с предначертана медиана BM (M = средата на бедрото AC).
@@ -3075,7 +3107,7 @@
         // === Равнобедрен триъгълник / височини / медиани ===
         {
           topic: "Равнобедрен триъгълник",
-          visual: svgs.isoTriangle,
+          visual: svgs.isoTriangleAltAH,
           text: "В <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC</span>) височината <span class='math'>AH</span> разделя бедрото <span class='math'>BC</span> на отсечки <span class='math'>CH = 7 cm</span> и <span class='math'>BH = 18 cm</span>. Да се намери дължината на основата <span class='math'>AB</span>.",
           ...buildOptions("30 cm", ["24 cm", "25 cm", "14 cm"]),
           solution: "BC = AC = 25. В △AHB: AB² = AH² + BH². В △AHC: AH² = AC² − CH² = 625 − 49 = 576. AB² = 576 + 324 = 900, AB = 30 cm."
@@ -3251,7 +3283,7 @@
           visual: svgs.inscribedTrapezoid,
           text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери сборът на основите му.",
           ...buildOptions("34 cm", ["30 cm", "17 cm", "60 cm"]),
-          solution: "В описан четириъгълник: AB + CD = AD + BC (сборът на срещуположни страни е равен). За равнобедрен трапец AD = BC = 17, значи AB + CD = 17 + 17 = 34 cm. Височината на трапеца е 2r = 15 cm — проверка: проекция на бедрото = √(17² − 15²) = 8, тоест (AB − CD)/2 = 8 → AB − CD = 16. С AB + CD = 34: AB = 25, CD = 9."
+          solution: "В описан четириъгълник: AB + CD = AD + BC (сборът на срещуположни страни е равен). За трапец, вписан в окръжност AD = BC = 17, значи AB + CD = 17 + 17 = 34 cm. Височината на трапеца е 2r = 15 cm — проверка: проекция на бедрото = √(17² − 15²) = 8, тоест (AB − CD)/2 = 8 → AB − CD = 16. С AB + CD = 34: AB = 25, CD = 9."
         },
         {
           topic: "Трапец · Вписана окр.",
@@ -3553,7 +3585,7 @@
             {
               text: "Прилагайки метода на интервалите за <span class='math'>(x − 3)&sup2;(x + 3)(x + 2) &le; 0</span>, множеството от решения е:",
               ...buildOptions("x &isin; [-3; -2] &cup; {3}", ["x &isin; [-3; -2]", "x &isin; (-&infin;; -3] &cup; [-2; 3]", "x &isin; [-3; -2] &cup; [3; +&infin;)"]),
-              solution: "Множителят (x−3)² ≥ 0 винаги (с равенство при x = 3). За (x+3)(x+2) ≤ 0 получаваме x ∈ [−3; −2]. Допълнително x = 3 е решение, защото (x−3)² = 0 прави цялото произведение 0. Окончателно: x ∈ [−3; −2] ∪ {3}."
+              solution: "Критични точки (корени) на произведението: x = −3, x = −2 и x = 3 (двойна кратност, защото (x−3)²). Подреждаме ги на числовата ос: −3 < −2 < 3. В най‑десния интервал (3; +∞) знакът е „+“. При преминаване през корен с нечетна кратност знакът се сменя (−3, −2), а при четна кратност не се променя (3). Знакова схема: (+) |_{−3} (−) |_{−2} (+) |_{3} (+). Търсим ≤ 0 ⇒ отрицателните интервали и точките, където произведението е 0: x ∈ [−3; −2] ∪ {3}."
             }
           ]
         },
@@ -4096,9 +4128,9 @@
           ]
         },
 
-        // ===== ЗАДАЧА 4: Елементи на равнобедрен трапец (4 стъпки) =====
+        // ===== ЗАДАЧА 4: Елементи на трапец, вписан в окръжност (4 стъпки) =====
         {
-          topic: "Елементи на равнобедрен трапец",
+          topic: "Елементи на трапец, вписан в окръжност",
           context: "<strong>Дадено:</strong> Равнобедрен трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>, <span class='math'>AD = BC</span>, основи <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, бедро <span class='math'>AD = 10 cm</span>.<br><strong>Намерете</strong> височината, диагонала и лицето на трапеца.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 220">
             <polygon points="40,180 360,180 280,60 120,60" fill="none" stroke="#0f172a" stroke-width="1.8"/>
@@ -4130,12 +4162,12 @@
                   "1) Намиране на средната отсечка; 2) Лице; 3) Височина; 4) Диагонал"
                 ]
               ),
-              solution: "Стандартният алгоритъм за равнобедрен трапец: височините отделят правоъгълни триъгълници, чиито катети дават всички търсени елементи."
+              solution: "Стандартният алгоритъм за трапец, вписан в окръжност: височините отделят правоъгълни триъгълници, чиито катети дават всички търсени елементи."
             },
             {
               text: "Проекцията <span class='math'>AH&#8321;</span> на бедрото и височината <span class='math'>h</span> на трапеца са:",
               ...buildOptions("AH&#8321; = 6 cm, h = 8 cm", ["AH&#8321; = 12 cm, h = 8 cm", "AH&#8321; = 6 cm, h = 2&radic;19 cm", "AH&#8321; = 15 cm, h = 5 cm"]),
-              solution: "В равнобедрен трапец двете проекции на бедрата са равни: AH₁ = (AB − CD)/2 = (21 − 9)/2 = 6 cm. От правоъгълния △ADH₁: h² = AD² − AH₁² = 100 − 36 = 64, h = 8 cm."
+              solution: "В трапец, вписан в окръжност двете проекции на бедрата са равни: AH₁ = (AB − CD)/2 = (21 − 9)/2 = 6 cm. От правоъгълния △ADH₁: h² = AD² − AH₁² = 100 − 36 = 64, h = 8 cm."
             },
             {
               text: "Дължината на диагонала <span class='math'>BD</span> е:",
@@ -4679,7 +4711,9 @@
     }
 
     function generateMission() {
-      clearState();
+      
+      document.body.classList.remove("end-mode");
+clearState();
       selectedPuzzle = puzzleImages[Math.floor(Math.random() * puzzleImages.length)];
 
       // Връща нормализиран „корен" на топика — за да блокираме сходни теми.
@@ -4726,11 +4760,42 @@
 
       // ВАЖНО: избираме първо chains (комплексни), за да им гарантираме разнообразие.
       // После short задачите се филтрират спрямо вече избраните chain топик-корени.
-      const allChains = pickUniqueByTopic(getChainTasks(), 9, []);
-      const chainRoots = allChains.map(c => topicRoot(c.topic));
-      const allShorts = pickUniqueByTopic(getShortQuestions(), 21, chainRoots);
+      const chainPool = getChainTasks().map((c,i) => ({ ...c, __uid: 'C' + i }));
+      const shortPool = getShortQuestions().map((q,i) => ({ ...q, __uid: 'S' + i }));
 
-      let mixedItems = [];
+      const allChains = pickUniqueByTopic(chainPool, 9, []);
+      const chainRoots = allChains.map(c => topicRoot(c.topic));
+      const allShorts = pickUniqueByTopic(shortPool, 21, chainRoots);
+
+      // Абсолютна защита: без повторение на една и съща задача в рамките на една мисия (по __uid)
+      (function enforceUniqueMission() {
+        const used = new Set();
+        const uniqueShorts = [];
+        for (const q of allShorts) {
+          if (!used.has(q.__uid)) { used.add(q.__uid); uniqueShorts.push(q); }
+        }
+        const uniqueChains = [];
+        for (const ch of allChains) {
+          if (!used.has(ch.__uid)) { used.add(ch.__uid); uniqueChains.push(ch); }
+        }
+        // Ако сме загубили елементи (теоретично), попълваме от остатъка без повторения.
+        if (uniqueChains.length < 9) {
+          for (const ch of chainPool) {
+            if (uniqueChains.length === 9) break;
+            if (!used.has(ch.__uid)) { used.add(ch.__uid); uniqueChains.push(ch); }
+          }
+        }
+        if (uniqueShorts.length < 21) {
+          for (const q of shortPool) {
+            if (uniqueShorts.length === 21) break;
+            if (!used.has(q.__uid)) { used.add(q.__uid); uniqueShorts.push(q); }
+          }
+        }
+        allChains.length = 0; allChains.push(...uniqueChains);
+        allShorts.length = 0; allShorts.push(...uniqueShorts);
+      })();
+
+let mixedItems = [];
       allShorts.forEach(q => mixedItems.push({ type: 'single', data: q }));
       allChains.forEach(ch => mixedItems.push({ type: 'chain', data: ch }));
       mixedItems = shuffle(mixedItems);
@@ -5372,7 +5437,9 @@
     let reviewMode = false;
 
     function renderEndScreen() {
-      document.getElementById('progress').style.width = `100%`;
+      
+      document.body.classList.add("end-mode");
+document.getElementById('progress').style.width = `100%`;
       document.getElementById('statLevel').textContent = "Завършена";
       // Покажи името на картинката
       if (selectedPuzzle) {
@@ -5567,7 +5634,7 @@
       ctx.fillStyle = '#94a3b8';
       ctx.fillText(date, W / 2, H - 80);
       ctx.font = 'italic 16px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText('Идея: Валя Витковска  ·  Реализация: Claude', W / 2, H - 55);
+      ctx.fillText('Идея: Валя Витковска  ·  Реализация: Claude, ChatGPT', W / 2, H - 55);
 
       return canvas;
     }
