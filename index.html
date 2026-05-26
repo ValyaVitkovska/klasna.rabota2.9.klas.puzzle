@@ -1673,23 +1673,6 @@
       .key-svg-wrap, .key-correct-svg, .key-wrong-svg { width: 80px; height: 80px; }
       .key-text { font-size: 15px; }
     }
-  
-    /* ===== END MODE: след приключване плочките са кликабилни за преглед ===== */
-    body.end-mode .tile-num,
-    body.end-mode .tile.single-tile.revealed .tile-num,
-    body.end-mode .tile.chain-tile.fully-revealed .tile-num,
-    body.end-mode .tile.chain-tile.partially-revealed .tile-num {
-      opacity: 0.95 !important;
-      pointer-events: auto !important;
-      top: 6px !important;
-      left: 6px !important;
-      transform: none !important;
-      min-width: 22px !important;
-      min-height: 22px !important;
-      font-size: 11px !important;
-      padding: 2px 4px !important;
-    }
-
   </style>
 </head>
 <body>
@@ -1796,7 +1779,7 @@
         </div>
         <div class="credits-text">
           <div><strong>Идея и педагогически решения:</strong> Валя Витковска</div>
-          <div><strong>Реализация:</strong> Claude, ChatGPT</div>
+          <div><strong>Реализация:</strong> Claude</div>
         </div>
       </div>
 
@@ -2124,6 +2107,8 @@
     };
 
     function escapeHtml(s) {
+      // Стандартен HTML-escape, обхваща основните мета-символи. За контекст
+      // на JS низов литерал (template strings) виж escapeForJs.
       return String(s).replace(/[&<>"']/g, c => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[c]));
@@ -2302,7 +2287,7 @@
         });
       }
 
-      bgState = { canvas, ctx, items, mouseX: -1000, mouseY: -1000, w, h, reduced };
+      bgState = { canvas, ctx, items, mouseX: -1000, mouseY: -1000, w, h, reduced, stopped: false };
 
       // Listener за курсор/допир
       function onMove(ev) {
@@ -2480,6 +2465,104 @@
       };
     }
 
+    // ===== Helper за числова ос с метод на интервалите (вълновидна крива) =====
+    //
+    // Конвенция: вълновидна крива над числовата ос, която минава през всеки корен.
+    //   • Арка нагоре над интервал → f(x) > 0 на този интервал (знак +)
+    //   • Арка надолу над интервал → f(x) < 0 на този интервал (знак −)
+    //   • При корен с НЕЧЕТНА кратност арката сменя посока (горна → долна или обратно)
+    //   • При корен с ЧЕТНА кратност арката се "целува" с оста и остава от същата страна
+    //
+    // Параметри:
+    //   points: масив от {pos, label, type, mult?}
+    //     pos — x координата в SVG (px); label — текст под точката;
+    //     type ∈ "closed" (плътна, ≥/≤) | "open" (празна, >/<) | "excluded" (×, забранена точка от ДМ);
+    //     mult — кратност (1 по подразбиране). Четните кратности означават "целуване" на оста.
+    //   rightmostSign: знакът в най-десния интервал ("+" или "-"); съответства на знака
+    //     на старшия коефициент на f(x).
+    //   solutionSegs: масив от [xStart, xEnd] двойки — интервалите от решението
+    //     (оцветяват се със зелена дебела линия под оста).
+    function numberLine(points, rightmostSign, solutionSegs) {
+      const W = 360, H = 120;
+      const yAxis = 70;
+      const peakUp = 36;     // върха на горната арка (по-горе)
+      const peakDown = 104;  // върха на долната арка (по-долу)
+      const xLeft = 14, xRight = W - 14;
+
+      // Гарантираме сортирани точки отляво надясно
+      const pts = [...points].map(p => ({ mult: 1, ...p }))
+                              .sort((a, b) => a.pos - b.pos);
+
+      // Изчисляваме знаците по интервалите от ДЯСНО на ЛЯВО:
+      // Започваме с rightmostSign и преминавайки през всеки корен решаваме дали се сменя.
+      // НЕЧЕТНА кратност → смяна; ЧЕТНА → същият знак.
+      const signsRtoL = [rightmostSign];
+      for (let i = pts.length - 1; i >= 0; i--) {
+        const last = signsRtoL[signsRtoL.length - 1];
+        const flip = (pts[i].mult % 2 === 1);
+        signsRtoL.push(flip ? (last === '+' ? '-' : '+') : last);
+      }
+      const signs = signsRtoL.reverse();  // отляво надясно
+      // signs[i] — знакът на i-тия интервал (общо pts.length + 1 интервала)
+
+      // Граници на интервалите (по x в SVG)
+      const xs = [xLeft + 10, ...pts.map(p => p.pos), xRight - 10];
+
+      let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;max-width:100%;width:${W}px;margin:10px auto;color:currentColor;">`;
+
+      // Вълновидна крива — една арка над всеки интервал
+      let path = '';
+      for (let i = 0; i < signs.length; i++) {
+        const xa = xs[i], xb = xs[i + 1];
+        const yp = signs[i] === '+' ? peakUp : peakDown;
+        const cp1x = xa + (xb - xa) / 3;
+        const cp2x = xa + 2 * (xb - xa) / 3;
+        path += `M ${xa} ${yAxis} C ${cp1x} ${yp} ${cp2x} ${yp} ${xb} ${yAxis} `;
+      }
+      svg += `<path d="${path.trim()}" fill="none" stroke="#64748b" stroke-width="1.4" stroke-linecap="round"/>`;
+
+      // Знаци + / − над/под арките (в центъра на всяка арка)
+      for (let i = 0; i < signs.length; i++) {
+        const cx = (xs[i] + xs[i + 1]) / 2;
+        const sign = signs[i];
+        const color = sign === '+' ? '#16a34a' : '#dc2626';
+        const ch = sign === '+' ? '+' : '−';
+        // Знакът се поставя малко след върха на арката
+        const cy = sign === '+' ? peakUp - 5 : peakDown + 12;
+        svg += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="15" font-weight="700" fill="${color}">${ch}</text>`;
+      }
+
+      // Подчертаване на решението (зелена дебела линия под оста)
+      (solutionSegs || []).forEach(([xs1, xe1]) => {
+        svg += `<line x1="${xs1}" y1="${yAxis + 9}" x2="${xe1}" y2="${yAxis + 9}" stroke="#16a34a" stroke-width="3.5" stroke-linecap="round"/>`;
+      });
+
+      // Основна линия (числова ос) — рисуваме НАД кривата, за да изглежда оста плътна
+      svg += `<line x1="${xLeft}" y1="${yAxis}" x2="${xRight}" y2="${yAxis}" stroke="currentColor" stroke-width="1.5"/>`;
+      // Стрелки
+      svg += `<polygon points="${xLeft},${yAxis} ${xLeft + 10},${yAxis - 4} ${xLeft + 10},${yAxis + 4}" fill="currentColor"/>`;
+      svg += `<polygon points="${xRight},${yAxis} ${xRight - 10},${yAxis - 4} ${xRight - 10},${yAxis + 4}" fill="currentColor"/>`;
+
+      // Точки (върху оста, отгоре на всичко)
+      pts.forEach(p => {
+        if (p.type === 'closed') {
+          svg += `<circle cx="${p.pos}" cy="${yAxis}" r="5" fill="currentColor"/>`;
+        } else if (p.type === 'open') {
+          svg += `<circle cx="${p.pos}" cy="${yAxis}" r="5" fill="var(--card,#ffffff)" stroke="currentColor" stroke-width="1.6"/>`;
+        } else if (p.type === 'excluded') {
+          svg += `<line x1="${p.pos - 5}" y1="${yAxis - 5}" x2="${p.pos + 5}" y2="${yAxis + 5}" stroke="#dc2626" stroke-width="2"/>`;
+          svg += `<line x1="${p.pos - 5}" y1="${yAxis + 5}" x2="${p.pos + 5}" y2="${yAxis - 5}" stroke="#dc2626" stroke-width="2"/>`;
+        }
+        // Етикет (с маркер за четна кратност при mult>=2)
+        svg += `<text x="${p.pos}" y="${yAxis + 24}" text-anchor="middle" font-size="13" font-style="italic" fill="currentColor">${p.label}</text>`;
+        if (p.mult && p.mult >= 2) {
+          svg += `<text x="${p.pos}" y="${yAxis + 38}" text-anchor="middle" font-size="10" fill="#dc2626" font-style="italic">четна кр.</text>`;
+        }
+      });
+      svg += `</svg>`;
+      return svg;
+    }
+
     // ===== SVG чертежи =====
     const svgs = {
       similarity: `<svg class="svg-visual" viewBox="0 0 400 220">
@@ -2548,6 +2631,72 @@
         <text x="205" y="80">h<tspan dy="4" font-size="12">c</tspan></text>
       </svg>`,
 
+      // Произволен △ABC с точка D на страната BC — за задачи за подобни △ с общ ъгъл при C.
+      // Общия ъгъл за двата подобни △ (△BAC и △ADC) е при върха C — затова дъгата е при C.
+      similarCommonAngle: `<svg class="svg-visual" viewBox="0 0 400 170">
+        <polygon points="50,130 360,130 180,30" fill="none" stroke="#0f172a" stroke-width="1.7"/>
+        <!-- Отсечка AD: от A(50,130) до D(288,90) -->
+        <line x1="50" y1="130" x2="288" y2="90" stroke="#0f172a" stroke-width="1.4"/>
+        <!-- Точка D на BC -->
+        <circle cx="288" cy="90" r="3" fill="#0f172a"/>
+        <!-- Малка дъга при върха C (между CA и CB) — означава общ ъгъл за △BAC и △ADC -->
+        <path d="M 167 49 A 18 18 0 0 1 198 47" fill="none" stroke="#dc2626" stroke-width="1.6"/>
+        <!-- Етикети на върховете -->
+        <text x="35" y="145" class="point">A</text>
+        <text x="368" y="145" class="point">B</text>
+        <text x="175" y="22" class="point">C</text>
+        <text x="295" y="85" class="point">D</text>
+      </svg>`,
+
+      // △ABC с точка D на страната BC — за задачи където общият ъгъл е при върха B.
+      // Тук дъгата е при B (∠ABD = ∠ABC за △BAD и △BCA), а равните ъгли са:
+      //   ∠BAD при A (малка дъга вътре в △ при A до AD)
+      //   ∠ACB при C (дъга при C)
+      // A(50,130), B(360,130), C(180,30). D на BC между B и C:
+      // BC: от B(360,130) към C(180,30); D близо до B: D = B + 0.45·(C-B) = (360-81, 130-45) = (279, 85)
+      similarCommonAngleAtB: `<svg class="svg-visual" viewBox="0 0 400 180">
+        <polygon points="50,140 360,140 180,40" fill="none" stroke="#0f172a" stroke-width="1.7"/>
+        <!-- Отсечка AD: от A(50,140) до D(279,95) -->
+        <line x1="50" y1="140" x2="279" y2="95" stroke="#0f172a" stroke-width="1.4"/>
+        <!-- Точка D на BC -->
+        <circle cx="279" cy="95" r="3" fill="#0f172a"/>
+        <!-- Дъга при върха B (между BA и BC) — общия ъгъл за двата подобни △BAD и △BCA -->
+        <path d="M 339 140 A 22 22 0 0 0 348 124" fill="none" stroke="#dc2626" stroke-width="1.6"/>
+        <!-- Малка единична дъга при A: ∠BAD (между AB и AD) — една отметка -->
+        <path d="M 79 140 A 30 30 0 0 0 79 132" fill="none" stroke="#1d4ed8" stroke-width="1.4"/>
+        <!-- Малка единична дъга при C: ∠ACB (между CA и CB) — една отметка (равен на ∠BAD) -->
+        <path d="M 169 64 A 14 14 0 0 1 191 64" fill="none" stroke="#1d4ed8" stroke-width="1.4"/>
+        <!-- Точки за равенство на ъгли (малки отметки) -->
+        <circle cx="92" cy="132" r="1.5" fill="#1d4ed8"/>
+        <circle cx="180" cy="58" r="1.5" fill="#1d4ed8"/>
+        <!-- Етикети на върховете -->
+        <text x="35" y="155" class="point">A</text>
+        <text x="368" y="155" class="point">B</text>
+        <text x="175" y="32" class="point">C</text>
+        <text x="286" y="90" class="point">D</text>
+      </svg>`,
+
+      // Правоъгълен △ABC (∠C=90°) с медиана AM от A към средата M на катета BC.
+      rightTrigMedian: `<svg class="svg-visual" viewBox="0 0 400 180">
+        <!-- C(80, 140), A(80, 30) — катет AC отляво вертикален, B(340, 140) — хипотенуза AB.
+             M е средата на BC = ((80+340)/2, 140) = (210, 140). -->
+        <polygon points="80,140 340,140 80,30" fill="none" stroke="#0f172a" stroke-width="1.7"/>
+        <!-- Медиана AM (пунктирана синя) -->
+        <line x1="80" y1="30" x2="210" y2="140" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="5,3"/>
+        <!-- Прав ъгъл при C -->
+        <path d="M 80 128 L 92 128 L 92 140" fill="none" stroke="#0f172a" stroke-width="1.2"/>
+        <!-- Тикчета на BM и CM за равенство (M е средата) -->
+        <line x1="140" y1="135" x2="140" y2="145" stroke="#0f172a" stroke-width="1.4"/>
+        <line x1="280" y1="135" x2="280" y2="145" stroke="#0f172a" stroke-width="1.4"/>
+        <!-- Точка M -->
+        <circle cx="210" cy="140" r="3" fill="#0f172a"/>
+        <!-- Етикети -->
+        <text x="65" y="22" class="point">A</text>
+        <text x="65" y="155" class="point">C</text>
+        <text x="348" y="155" class="point">B</text>
+        <text x="205" y="160" class="point">M</text>
+      </svg>`,
+
       trapezoidDiagonals: `<svg class="svg-visual" viewBox="0 0 400 160">
         <polygon points="80,130 320,130 260,30 140,30" fill="none" stroke="#0f172a" stroke-width="1.5"/>
         <line x1="80" y1="130" x2="260" y2="30" stroke="#0f172a" stroke-width="1"/>
@@ -2591,21 +2740,57 @@
         <text x="195" y="10" class="point">C</text><text x="100" y="140" class="point">A</text>
         <text x="290" y="140" class="point">B</text><text x="195" y="150" class="point">H</text>
       </svg>`,
-      isoTriangleAltAH: `<svg class="svg-visual" viewBox="0 0 400 180">
-        <!-- Равнобедрен △ABC (AC = BC). Височина AH към бедрото BC (H ∈ BC), AH ⟂ BC -->
-        <polygon points="90,140 310,140 200,30" fill="none" stroke="#0f172a" stroke-width="1.5"/>
-        <!-- височина от A към BC -->
-        <line x1="90" y1="140" x2="248" y2="76" stroke="#0f172a" stroke-width="1" stroke-dasharray="4,4"/>
-        <!-- точка H върху BC -->
-        <circle cx="248" cy="76" r="3.5" fill="#0f172a"/>
-        <!-- маркер за прав ъгъл при H -->
-        <path d="M 242 78 L 246 84 L 252 82" fill="none" stroke="#0f172a" stroke-width="1"/>
-        <text x="195" y="24" class="point">C</text>
-        <text x="74" y="152" class="point">A</text>
-        <text x="320" y="152" class="point">B</text>
-        <text x="256" y="72" class="point">H</text>
+
+      // Равнобедрен △ABC (AC=BC=25, AB=30) с височина AH, спусната от A
+      // към бедрото BC (с пето H на BC). H разделя BC на CH=7, BH=18.
+      // Мащаб 8 px/cm: A(80,180), B(320,180), C(200,20), H(233.6,64.8).
+      isoTriangleAltToLeg: `<svg class="svg-visual" viewBox="0 0 400 220">
+        <!-- △ABC -->
+        <polygon points="80,180 320,180 200,20" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <!-- Височина AH от A към BC (пунктирана синя, тя е "главната" в задачата) -->
+        <line x1="80" y1="180" x2="233.6" y2="64.8" stroke="#1d4ed8" stroke-width="1.6" stroke-dasharray="5,3"/>
+        <!-- Прав ъгъл при H върху BC: рисуваме малък квадрат, ориентиран по бедрото BC -->
+        <!-- Единичен вектор по BC (от B към C): (-15,20)/25 = (-0.6, 0.8). Перпендикулярен (към A): (-0.8, -0.6).
+             От H(233.6,64.8) тръгваме по -BC_unit на 10 px: H1 = H + 10*(0.6,-0.8) = (239.6, 56.8)
+             и по перп.(-0.8,-0.6) на 10 px: H2 = H1 + 10*(-0.8,-0.6) = (231.6, 50.8)
+             и пак H3 = H + 10*(-0.8,-0.6) = (225.6, 58.8). -->
+        <path d="M 239.6 56.8 L 231.6 50.8 L 225.6 58.8" fill="none" stroke="#0f172a" stroke-width="1"/>
+        <!-- Тикчета за равенство на бедрата AC и BC -->
+        <line x1="135" y1="92" x2="145" y2="106" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="255" y1="92" x2="265" y2="106" stroke="#0f172a" stroke-width="1.5"/>
+        <!-- Етикети -->
+        <text x="65" y="195" class="point">A</text>
+        <text x="328" y="195" class="point">B</text>
+        <text x="195" y="14" class="point">C</text>
+        <text x="240" y="60" class="point">H</text>
       </svg>`,
 
+      // Равнобедрен △ABC (AC = BC) с височина AH от A към бедрото BC.
+      // Геометрически точен: AC = BC = 25, AB = 30, CH = 7, BH = 18, AH = 24.
+      // Мащаб 8 px/cm. A(80,180), B(320,180), C(200,20), H(233.6, 64.8).
+      isoTriangleAltToLeg: `<svg class="svg-visual" viewBox="0 0 400 220">
+        <polygon points="80,180 320,180 200,20" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+        <!-- Височина AH от A към BC (пунктирана) -->
+        <line x1="80" y1="180" x2="233.6" y2="64.8" stroke="#1d4ed8" stroke-width="1.4" stroke-dasharray="5,3"/>
+        <!-- Точка H върху BC -->
+        <circle cx="233.6" cy="64.8" r="3" fill="#0f172a"/>
+        <!-- Прав ъгъл при H (между AH и BC) -->
+        <!-- AH посока единичен: ((233.6-80)/192, (64.8-180)/192) = (0.8, -0.6)
+             BC посока единичен (от B към C): ((200-320)/200, (20-180)/200) = (-0.6, -0.8)
+             Квадратчето от H по -AH и +CB: 
+             P1 = H + 10·(-0.8, 0.6) = (225.6, 70.8)
+             P2 = P1 + 10·(-0.6, -0.8) = (219.6, 62.8)
+             P3 = H + 10·(-0.6, -0.8) = (227.6, 56.8) -->
+        <path d="M 225.6 70.8 L 219.6 62.8 L 227.6 56.8" fill="none" stroke="#0f172a" stroke-width="1.2"/>
+        <!-- Етикети на върховете -->
+        <text x="62" y="195" class="point">A</text>
+        <text x="328" y="195" class="point">B</text>
+        <text x="195" y="14" class="point">C</text>
+        <text x="244" y="60" class="point">H</text>
+        <!-- Тикчета за равенство AC = BC -->
+        <line x1="135" y1="95" x2="143" y2="105" stroke="#0f172a" stroke-width="1.3"/>
+        <line x1="265" y1="95" x2="257" y2="105" stroke="#0f172a" stroke-width="1.3"/>
+      </svg>`,
 
       isoTriangleMedianBM: `<svg class="svg-visual" viewBox="0 0 400 230">
         <!-- Равнобедрен △ABC с предначертана медиана BM (M = средата на бедрото AC).
@@ -3107,7 +3292,7 @@
         // === Равнобедрен триъгълник / височини / медиани ===
         {
           topic: "Равнобедрен триъгълник",
-          visual: svgs.isoTriangleAltAH,
+          visual: svgs.isoTriangleAltToLeg,
           text: "В <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC</span>) височината <span class='math'>AH</span> разделя бедрото <span class='math'>BC</span> на отсечки <span class='math'>CH = 7 cm</span> и <span class='math'>BH = 18 cm</span>. Да се намери дължината на основата <span class='math'>AB</span>.",
           ...buildOptions("30 cm", ["24 cm", "25 cm", "14 cm"]),
           solution: "BC = AC = 25. В △AHB: AB² = AH² + BH². В △AHC: AH² = AC² − CH² = 625 − 49 = 576. AB² = 576 + 324 = 900, AB = 30 cm."
@@ -3262,7 +3447,7 @@
           visual: svgs.trapezoidInCircle,
           text: "Трапец <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>) е <strong>вписан в окръжност</strong>. Основите са <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, а едното бедро е <span class='math'>AD = 10 cm</span>. Да се намери височината на трапеца.",
           ...buildOptions("8 cm", ["6 cm", "10 cm", "12 cm"]),
-          solution: "Тъй като трапецът е вписан в окръжност, той е <strong>равнобедрен</strong> (за всеки вписан четириъгълник срещуположните ъгли са допълнителни — а в трапец това принуждава ъглите при основата да са равни, тоест AD = BC). Проекцията на бедрото върху AB: (AB − CD)/2 = (21 − 9)/2 = 6 cm. По теорема на Питагор в правоъгълния триъгълник с катети h и 6 и хипотенуза AD = 10: h² = 100 − 36 = 64 → <strong>h = 8 cm</strong>."
+          solution: "Тъй като трапецът е вписан в окръжност, той е <strong>равнобедрен</strong> (свойство: за вписан четириъгълник срещуположните ъгли са допълнителни до 180°; в трапец това принуждава ъглите при основата да са равни, следователно бедрата са равни: AD = BC). Проекцията на бедрото върху AB: (AB − CD)/2 = (21 − 9)/2 = 6 cm. По теорема на Питагор в правоъгълния триъгълник с катети h и 6 и хипотенуза AD = 10: h² = 100 − 36 = 64 → <strong>h = 8 cm</strong>."
         },
         {
           topic: "Трапец · Вписан в окр.",
@@ -3279,18 +3464,18 @@
           solution: "△CDO ~ △ABO. Отношението на лицата е равно на k², значи k = CD/AB = √(4/25) = 2/5."
         },
         {
-          topic: "Трапец · Вписана окр.",
+          topic: "Трапец · Вписан и описан",
           visual: svgs.inscribedTrapezoid,
-          text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери сборът на основите му.",
+          text: "Трапец е едновременно <strong>вписан в една окръжност</strong> и <strong>описан около друга</strong> окръжност с радиус <span class='math'>r = 7,5 cm</span>. Бедрото на трапеца е <span class='math'>17 cm</span>. Да се намери сборът на основите му.",
           ...buildOptions("34 cm", ["30 cm", "17 cm", "60 cm"]),
-          solution: "В описан четириъгълник: AB + CD = AD + BC (сборът на срещуположни страни е равен). За трапец, вписан в окръжност AD = BC = 17, значи AB + CD = 17 + 17 = 34 cm. Височината на трапеца е 2r = 15 cm — проверка: проекция на бедрото = √(17² − 15²) = 8, тоест (AB − CD)/2 = 8 → AB − CD = 16. С AB + CD = 34: AB = 25, CD = 9."
+          solution: "Вписан в окръжност трапец ⟹ <strong>равнобедрен</strong> (срещуположните ъгли на вписан четириъгълник са допълнителни до 180°; в трапец това дава равни бедра): AD = BC = 17 cm. <br>За описан четириъгълник: AB + CD = AD + BC (сборът на срещуположните страни е равен). Значи <strong>AB + CD = 17 + 17 = 34 cm</strong>. <br>Проверка чрез височината: h = 2r = 15 cm (диаметърът на вписаната окръжност), проекция на бедрото = √(17² − 15²) = 8, тоест (AB − CD)/2 = 8 → AB − CD = 16. Заедно с AB + CD = 34: AB = 25, CD = 9 ✓."
         },
         {
-          topic: "Трапец · Вписана окр.",
+          topic: "Трапец · Вписан и описан",
           visual: svgs.inscribedTrapezoid,
-          text: "Около окръжност с радиус <span class='math'>r = 7,5 cm</span> е описан равнобедрен трапец с бедро <span class='math'>17 cm</span>. Да се намери дължината на диагонала на трапеца.",
+          text: "Трапец е едновременно <strong>вписан в една окръжност</strong> и <strong>описан около друга</strong> окръжност с радиус <span class='math'>r = 7,5 cm</span>. Бедрото на трапеца е <span class='math'>17 cm</span>. Да се намери дължината на диагонала на трапеца.",
           ...buildOptions("<span class='math'>&radic;514 cm</span>", ["<span class='math'>&radic;706 cm</span>", "<span class='math'>17 cm</span>", "<span class='math'>25 cm</span>"]),
-          solution: "Височината на трапеца: h = 2r = 15 cm (защото в описан трапец диаметърът = височината). От описан четириъгълник: AB + CD = AD + BC = 2·17 = 34 cm. Спускаме перпендикуляри от C и D към AB; нека K е петата на перпендикуляра от C. От правоъгълния триъгълник, образуван от бедрото BC, височината и проекцията: проекцията (AB − CD)/2 = √(17² − 15²) = √64 = 8, значи AB − CD = 16. Сборът AB + CD = 34 и разликата AB − CD = 16 дават AB = 25 cm и CD = 9 cm. <br>Диагоналът AC: точка C се намира над точка K от AB, където AK = (AB − CD)/2 + CD = 8 + 9 = 17 cm (т.е. C е на хоризонтално разстояние 17 от A и на височина 15). В правоъгълния <span class='math'>&#9651;ACK</span> (с прав ъгъл при K): AC² = AK² + CK² = 17² + 15² = 289 + 225 = 514. Следователно <strong>AC = √514 cm</strong>."
+          solution: "Вписан в окръжност трапец ⟹ <strong>равнобедрен</strong>, значи AD = BC = 17 cm. Височината на трапеца: h = 2r = 15 cm (защото в описан трапец диаметърът на вписаната окръжност = височината). От описан четириъгълник: AB + CD = AD + BC = 2·17 = 34 cm. Спускаме перпендикуляри от C и D към AB; нека K е петата на перпендикуляра от C. От правоъгълния триъгълник, образуван от бедрото BC, височината и проекцията: проекцията (AB − CD)/2 = √(17² − 15²) = √64 = 8, значи AB − CD = 16. Сборът AB + CD = 34 и разликата AB − CD = 16 дават AB = 25 cm и CD = 9 cm. <br>Диагоналът AC: точка C се намира над точка K от AB, където AK = (AB − CD)/2 + CD = 8 + 9 = 17 cm (т.е. C е на хоризонтално разстояние 17 от A и на височина 15). В правоъгълния <span class='math'>&#9651;ACK</span> (с прав ъгъл при K): AC² = AK² + CK² = 17² + 15² = 289 + 225 = 514. Следователно <strong>AC = √514 cm</strong>."
         },
         {
           topic: "Правоъг. трапец · Вписана окр.",
@@ -3307,83 +3492,162 @@
           solution: "AD = 2r = 8 cm (диаметърът, понеже AD ⊥ AB и AD ⊥ CD). За описан четириъгълник: AB + CD = AD + BC. Спускаме перпендикуляр от C към AB с пето E: тогава CE = AD = 8 и AE = CD = 6, значи EB = AB − 6. От правоъгълния △BEC: BC² = EB² + 8². Освен това AB = AD + BC − CD = 8 + BC − 6 = BC + 2, т.е. EB = BC − 4. Заместване: BC² = (BC − 4)² + 64 → BC² = BC² − 8·BC + 16 + 64 → 8·BC = 80 → <strong>BC = 10 cm</strong>."
         },
 
-        // === Неравенства ===
+        // === Нови задачи от трите варианта на класна работа (2025/2026) ===
+        {
+          topic: "Подобни △ · Общ ъгъл",
+          visual: svgs.similarCommonAngle,
+          text: "Върху страната <span class='math'>BC = 9 cm</span> на <span class='math'>&#9651;ABC</span> е взета точка <span class='math'>D</span> така, че <span class='math'>&ang;ADC = &ang;BAC</span>. Ако <span class='math'>BD = 5 cm</span>, да се намери дължината на <span class='math'>AC</span>.",
+          ...buildOptions("6 cm", ["<span class='math'>3&radic;5 cm</span>", "<span class='math'>2&radic;10 cm</span>", "<span class='math'>&radic;45 cm</span>"]),
+          solution: "△BAC ~ △ADC (общ ъгъл при C; ∠BAC = ∠ADC от условието). Съответствие на върховете: B↔A, A↔D, C↔C. От подобието: AC/DC = BC/AC, тоест <strong>AC² = BC · DC</strong>. Имаме DC = BC − BD = 9 − 5 = 4. Значи AC² = 9 · 4 = 36, <strong>AC = 6 cm</strong>."
+        },
+        {
+          topic: "Подобни △ · Общ ъгъл",
+          visual: svgs.similarCommonAngleAtB,
+          text: "В <span class='math'>&#9651;ABC</span> са дадени <span class='math'>AB = 6 cm</span>, <span class='math'>BC = 8 cm</span>. Точка <span class='math'>D</span> лежи на страната <span class='math'>BC</span> и е изпълнено <span class='math'>&ang;BAD = &ang;ACB</span>. Да се намери дължината на отсечката <span class='math'>BD</span>.",
+          ...buildOptions("4,5 cm", ["3 cm", "<span class='math'>4&radic;2 cm</span>", "5 cm"]),
+          solution: "Разглеждаме △BAD и △BCA. Общ ъгъл при B (∠ABD = ∠CBA), и от условието ∠BAD = ∠BCA. Следователно <strong>△BAD ~ △BCA</strong> (по два ъгъла). Съответствие: B↔B, A↔C, D↔A. От подобието: BD/BA = BA/BC, тоест <strong>BA² = BD · BC</strong>. Значи 36 = BD · 8 → <strong>BD = 4,5 cm</strong>."
+        },
+        {
+          topic: "Трапец · Лица",
+          visual: svgs.trapezoidDiagonals,
+          text: "За трапеца <span class='math'>ABCD</span> (<span class='math'>AB &parallel; CD</span>) е дадено, че <span class='math'>OC : AC = 1 : 3</span>, където <span class='math'>O</span> е пресечната точка на диагоналите. Ако <span class='math'>S<sub>&#9651;AOB</sub> = 36 cm&sup2;</span>, да се намери лицето на <span class='math'>&#9651;DOC</span>.",
+          ...buildOptions("9 cm&sup2;", ["12 cm&sup2;", "4 cm&sup2;", "18 cm&sup2;"]),
+          solution: "От OC : AC = 1 : 3 следва OC : OA = 1 : 2 (понеже AC = AO + OC и OC = AC/3 → AO = 2·AC/3, значи OA/OC = 2). △AOB ~ △COD (връхни ъгли при O и AB ∥ CD дават равни ъгли по съответни прави). Коефициентът на подобие е k = OA/OC = 2/1 = 2 (или еквивалентно AB/CD = 2). Отношението на лицата: S<sub>△AOB</sub>/S<sub>△COD</sub> = k² = 4. Значи S<sub>△DOC</sub> = 36/4 = <strong>9 cm²</strong>."
+        },
+        {
+          topic: "Метрични зависимости",
+          visual: svgs.metric,
+          text: "Даден е правоъгълен триъгълник с хипотенуза <span class='math'>8 cm</span> и височина към хипотенузата <span class='math'>2&radic;3 cm</span>. Да се намерят дължините на катетите.",
+          ...buildOptions("<span class='math'>2&radic;6 cm</span> и <span class='math'>2&radic;10 cm</span>", ["<span class='math'>4 cm</span> и <span class='math'>4&radic;3 cm</span>", "<span class='math'>2&radic;3 cm</span> и <span class='math'>2&radic;13 cm</span>", "<span class='math'>3 cm</span> и <span class='math'>&radic;55 cm</span>"]),
+          solution: "Нека проекциите на катетите върху хипотенузата са p и q, p + q = 8. По метричната зависимост за височината: h² = p · q → 12 = p · q. От p + q = 8 и p·q = 12: p, q са корените на t² − 8t + 12 = 0 → t = 2 или t = 6. Значи p = 2, q = 6. Катетите: a² = p · c = 2·8 = 16 → a = 4? Не — нека провери: a² = p·c означава катетът срещу проекция p; ако p = 2, q = 6, то a² = 2·8 = 16 → a = 4 и b² = 6·8 = 48 → b = 4√3. <br>Проверка: a² + b² = 16 + 48 = 64 = c² ✓; ab/c = 4·4√3/8 = 2√3 = h ✓. <br>Следователно <strong>катетите са 4 cm и 4√3 cm</strong>."
+        },
+        {
+          topic: "Правоъгълен △ · Медиана",
+          visual: svgs.rightTrigMedian,
+          text: "Даден е правоъгълен <span class='math'>&#9651;ABC</span> (<span class='math'>&ang;C = 90&deg;</span>). Дължината на <span class='math'>BC</span> е <span class='math'>9 cm</span>, а на хипотенузата <span class='math'>AB</span> е <span class='math'>15 cm</span>. Да се намери дължината на медианата <span class='math'>AM</span> (<span class='math'>M &isin; BC</span>).",
+          ...buildOptions("<span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>3&radic;73</span><span class='frac-den'>2</span></span></span> cm</span>", ["<span class='math'>12 cm</span>", "<span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>15</span><span class='frac-den'>2</span></span></span> cm</span>", "<span class='math'>&radic;160 cm</span>"]),
+          solution: "Намираме AC: AC² = AB² − BC² = 225 − 81 = 144 → AC = 12 cm. M е средата на BC, значи CM = 9/2 cm. В правоъгълния △ACM (с прав ъгъл при C): AM² = AC² + CM² = 144 + 81/4 = 576/4 + 81/4 = 657/4. <br>Тъй като 657 = 9 · 73, имаме <strong>AM = √657/2 = 3√73/2 cm</strong>."
+        },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
           text: "Да се намери множеството от решенията на неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x&sup2; − 4x + 3</span><span class='frac-den'>x&sup2; − 5x + 6</span></span></span> &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; 1] &cup; (2; 3) &cup; (3; +&infin;)", ["x &isin; (-&infin;; 1] &cup; (2; +&infin;)", "x &isin; [1; 2)", "x &isin; (-&infin;; 1] &cup; [2; +&infin;)"]),
-          solution: "<strong>Внимание — уловка!</strong> Разлагаме: (x−1)(x−3) / [(x−2)(x−3)] ≥ 0. <strong>ОДЗ: x ≠ 2 и x ≠ 3</strong>. След съкращение (за x ≠ 3): (x−1)/(x−2) ≥ 0, при x ≠ 3. Метод на интервалите: x ≤ 1 или x > 2. Но <strong>x = 3 трябва да изключим</strong> (защото при x = 3 оригиналният израз е 0/0 — недефиниран!). Решение: x ∈ (−∞; 1] ∪ (2; 3) ∪ (3; +∞)."
+          solution: `<strong>Внимание — уловка!</strong> Разлагаме: (x−1)(x−3) / [(x−2)(x−3)] ≥ 0. <strong>ДМ: x ≠ 2 и x ≠ 3</strong>. След съкращение (за x ≠ 3): (x−1)/(x−2) ≥ 0, при x ≠ 3. Метод на интервалите: x ≤ 1 или x > 2. Но <strong>x = 3 трябва да изключим</strong> (защото при x = 3 оригиналният израз е 0/0 — недефиниран!). Решение: x ∈ (−∞; 1] ∪ (2; 3) ∪ (3; +∞).` + numberLine(
+          [{pos:100,label:"1",type:"closed"},{pos:200,label:"2",type:"open"},{pos:280,label:"3",type:"excluded",mult:2}],
+          "+",
+          [[24,100],[200,280],[280,336]]
+        )
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
           text: "Да се намери множеството от решенията на неравенството <span class='math'>(x&sup2; + 4)(x&sup2; − 7x − 8) &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1] &cup; [8; +&infin;)", ["x &isin; [-1; 8]", "x &isin; [-8; 1]", "x &isin; (-&infin;; -8] &cup; [1; +&infin;)"]),
-          solution: "<strong>Внимание — уловка!</strong> Първият множител: x² + 4 ≥ 4 > 0 за всяко x ∈ ℝ (квадрат + положително число → винаги положително). Това означава, че няма реални нули и не променя знака. Делим двете страни на x² + 4 > 0 (знакът се запазва): x² − 7x − 8 ≥ 0 → (x + 1)(x − 8) ≥ 0 → <strong>x ∈ (−∞; −1] ∪ [8; +∞)</strong>."
+          solution: `<strong>Внимание — уловка!</strong> Първият множител: x² + 4 ≥ 4 > 0 за всяко x ∈ ℝ (квадрат + положително число → винаги положително). Това означава, че няма реални нули и не променя знака. Делим двете страни на x² + 4 > 0 (знакът се запазва): x² − 7x − 8 ≥ 0 → (x + 1)(x − 8) ≥ 0 → <strong>x ∈ (−∞; −1] ∪ [8; +∞)</strong>.` + numberLine(
+          [{pos:120,label:"−1",type:"closed"},{pos:260,label:"8",type:"closed"}],
+          "+",
+          [[24,120],[260,336]]
+        )
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
           text: "Да се реши рационалното неравенство <span class='math'>(x − 1)(x&sup2; − 7x + 6) &le; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; 6]", ["x &isin; (-&infin;; 1] &cup; [6; +&infin;)", "x &isin; [1; 6]", "x &isin; (-&infin;; 1] &cup; {6}"]),
-          solution: "<strong>Внимание — уловка!</strong> Разлагаме x² − 7x + 6 = (x − 1)(x − 6). Тогава (x − 1)(x − 1)(x − 6) = (x − 1)²(x − 6) ≤ 0. (x − 1)² ≥ 0 винаги. Анализ: <br>• Ако x = 1: произведението = 0 ≤ 0 ✓ <br>• Ако x ≠ 1: (x − 1)² > 0, тогава трябва (x − 6) ≤ 0 → x ≤ 6 (без x = 1, но x = 1 е вече включено отделно) <br>Двете обединено: <strong>x ∈ (−∞; 6]</strong>."
+          solution: `<strong>Внимание — уловка с четна кратност!</strong> Разлагаме x² − 7x + 6 = (x − 1)(x − 6). Тогава (x − 1)(x − 1)(x − 6) = (x − 1)²(x − 6) ≤ 0. (x − 1)² ≥ 0 винаги. Анализ: <br>• Ако x = 1: произведението = 0 ≤ 0 ✓ <br>• Ако x ≠ 1: (x − 1)² > 0, тогава трябва (x − 6) ≤ 0 → x ≤ 6 (без x = 1, но x = 1 е вече включено отделно) <br>Двете обединено: <strong>x ∈ (−∞; 6]</strong>.` + numberLine(
+          [{pos:130,label:"1",type:"closed",mult:2},{pos:260,label:"6",type:"closed"}],
+          "+",
+          [[24,260]]
+        )
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
           text: "Да се намерят целите числа от решенията на неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2x − 6</span><span class='frac-den'>x + 1</span></span></span> &gt; 0</span>.",
           ...buildOptions("Безкрайно много", ["{0; 1; 2}", "{2; 3}", "{ -1; 0; 1; 2 }"]),
-          solution: "ОДЗ: x ≠ -1. Нули: числител = 0 при x = 3; знаменател = 0 при x = -1. Метод на интервалите: на (3; +∞) знакът е (+)/(+) = +; на (-1; 3) знакът е (-)/(+) = -; на (-∞; -1) знакът е (-)/(-) = +. Решение: x ∈ (-∞; -1) ∪ (3; +∞) — безкрайно много цели числа (всички цели x ≤ -2 и x ≥ 4)."
+          solution: `<strong>ДМ:</strong> x ≠ −1. Нули: числител = 0 при x = 3; знаменател = 0 при x = −1. Метод на интервалите: на (3; +∞) знакът е (+)/(+) = +; на (−1; 3) знакът е (−)/(+) = −; на (−∞; −1) знакът е (−)/(−) = +. Решение: x ∈ (−∞; −1) ∪ (3; +∞) — безкрайно много цели числа (всички цели x ≤ −2 и x ≥ 4).` + numberLine(
+          [{pos:120,label:"−1",type:"excluded"},{pos:260,label:"3",type:"open"}],
+          "+",
+          [[24,120],[260,336]]
+        )
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
           text: "Да се намери множеството от решенията на неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x − 1</span><span class='frac-den'>x − 2</span></span></span> &lt; 1</span>.",
           ...buildOptions("x &isin; (-&infin;; 2)", ["x &isin; (2; +&infin;)", "x &isin; (1; 2)", "x &isin; (-&infin;; 1) &cup; (2; +&infin;)"]),
-          solution: "(x − 1)/(x − 2) − 1 < 0 → [(x − 1) − (x − 2)] / (x − 2) < 0 → 1/(x − 2) < 0. Дробта е отрицателна, когато знаменателят е отрицателен (числителят 1 > 0): x − 2 < 0 → <strong>x ∈ (−∞; 2)</strong>."
+          solution: `(x − 1)/(x − 2) − 1 < 0 → [(x − 1) − (x − 2)] / (x − 2) < 0 → 1/(x − 2) < 0. <strong>ДМ:</strong> x ≠ 2. Дробта е отрицателна, когато знаменателят е отрицателен (числителят 1 > 0): x − 2 < 0 → <strong>x ∈ (−∞; 2)</strong>.` + numberLine(
+          [{pos:240,label:"2",type:"excluded"}],
+          "+",
+          [[24,240]]
+        )
         },
         {
           topic: "Неравенства",
           visual: svgs.rational,
           text: "Да се реши дробното неравенство <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2x − 3</span><span class='frac-den'>x + 1</span></span></span> &le; 1</span>.",
           ...buildOptions("x &isin; (-1; 4]", ["x &isin; [-1; 4]", "x &isin; (-&infin;; -1) &cup; [4; +&infin;)", "x &isin; (-1; 4)"]),
-          solution: "(2x−3)/(x+1) − 1 ≤ 0 → (x−4)/(x+1) ≤ 0. Метод на интервалите: x ∈ (−1; 4]."
+          solution: `(2x−3)/(x+1) − 1 ≤ 0 → (x−4)/(x+1) ≤ 0. <strong>ДМ:</strong> x ≠ −1. Корени: −1 (изключен — нула на знаменателя), 4 (включен — ≤ обхваща числител = 0). Знаците по интервалите (от дясно наляво, старши коеф = + → дясно е +; нечетни кратности при всеки корен → сменят знака): (4; +∞): +; (−1; 4): −; (−∞; −1): +. Избираме интервалите където знакът е ≤ 0: <strong>x ∈ (−1; 4]</strong>.` + numberLine(
+          [{pos:140,label:"−1",type:"excluded"},{pos:260,label:"4",type:"closed"}],
+          "+",
+          [[140,260]]
+        )
         },
         {
           topic: "Неравенства",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'>x&sup2; - 6x + 5 < 0</span>.",
           ...buildOptions("x &isin; (1; 5)", ["x &isin; (-&infin;; 1) &cup; (5; +&infin;)", "x &isin; [1; 5]", "x &isin; (5; +&infin;)"]),
-          solution: "(x−1)(x−5) < 0. Параболата сочи нагоре, значи между корените: x ∈ (1; 5)."
+          solution: `Разлагаме: (x−1)(x−5) < 0. Корени: 1 и 5 (и двете отворени точки, защото неравенството е строго). Знаците от дясно наляво (старши коеф +): (5; +∞): +; (1; 5): −; (−∞; 1): +. Избираме интервал със знак минус: <strong>x ∈ (1; 5)</strong>.` + numberLine(
+          [{pos:130,label:"1",type:"open"},{pos:260,label:"5",type:"open"}],
+          "+",
+          [[130,260]]
+        )
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x + 1</span><span class='frac-den'>x − 2</span></span></span> &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1] &cup; (2; +&infin;)", ["x &isin; [-1; 2]", "x &isin; (-1; 2)", "x &isin; [-1; 2)"]),
-          solution: "ОДЗ: x ≠ 2. Нули: числител 0 при x = −1; знаменател 0 при x = 2. Метод на интервалите: на (2; +∞) знакът е (+)/(+) = +; на (−1; 2) знакът е (+)/(−) = −; на (−∞; −1) знакът е (−)/(−) = +. Включваме x = −1 (числителят е 0), изключваме x = 2 (знаменателят е 0). Решение: <strong>x ∈ (−∞; −1] ∪ (2; +∞)</strong>."
+          solution: `<strong>ДМ:</strong> x ≠ 2. Нули: числител 0 при x = −1; знаменател 0 при x = 2. Метод на интервалите: на (2; +∞) знакът е (+)/(+) = +; на (−1; 2) знакът е (+)/(−) = −; на (−∞; −1) знакът е (−)/(−) = +. Включваме x = −1 (числителят е 0), изключваме x = 2 (знаменателят е 0). Решение: <strong>x ∈ (−∞; −1] ∪ (2; +∞)</strong>.` + numberLine(
+          [{pos:140,label:"−1",type:"closed"},{pos:260,label:"2",type:"excluded"}],
+          "+",
+          [[24,140],[260,336]]
+        )
         },
         {
           topic: "Неравенства",
           visual: svgs.rational,
           text: "Да се реши <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x − 2</span><span class='frac-den'>3 − x</span></span></span> > 0</span>.",
           ...buildOptions("x &isin; (2; 3)", ["x &isin; (-&infin;; 2) &cup; (3; +&infin;)", "x &isin; [2; 3]", "x &isin; (-&infin;; 3)"]),
-          solution: "Дробта > 0 когато числителят и знаменателят са с еднакъв знак. x − 2 > 0 и 3 − x > 0 → 2 < x < 3. (Другият случай е празен.)"
+          solution: `Преобразуваме за стандартен вид: (x − 2)/(3 − x) > 0 ⟺ −(x − 2)/(x − 3) > 0 ⟺ (x − 2)/(x − 3) < 0. <strong>ДМ:</strong> x ≠ 3. Корени: 2 (отворен, строго >) и 3 (изключен, нула на знаменателя). Знаци (rightmost +): (3; +∞): +; (2; 3): −; (−∞; 2): +. Избираме интервал със знак − за решение на &lt; 0: <strong>x ∈ (2; 3)</strong>.` + numberLine(
+          [{pos:150,label:"2",type:"open"},{pos:260,label:"3",type:"excluded"}],
+          "+",
+          [[150,260]]
+        )
         },
         {
           topic: "Неравенства",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'>x&sup2; &ge; 9</span>.",
           ...buildOptions("x &isin; (-&infin;; -3] &cup; [3; +&infin;)", ["x &isin; [-3; 3]", "x &isin; [3; +&infin;)", "x &isin; (-&infin;; -3]"]),
-          solution: "x² − 9 ≥ 0 → (x−3)(x+3) ≥ 0 → x ≤ −3 или x ≥ 3."
+          solution: `Прехвърляме: x² − 9 ≥ 0 → (x−3)(x+3) ≥ 0. Корени: −3 и 3 (плътни точки, защото ≥ включва равенство). Знаци: (3; +∞): +; (−3; 3): −; (−∞; −3): +. Избираме интервали със знак +: <strong>x ∈ (−∞; −3] ∪ [3; +∞)</strong>.` + numberLine(
+          [{pos:130,label:"−3",type:"closed"},{pos:260,label:"3",type:"closed"}],
+          "+",
+          [[24,130],[260,336]]
+        )
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
           text: "Да се реши <span class='math'>(x + 2)&sup2;(x − 5) &ge; 0</span>.",
           ...buildOptions("x &isin; {-2} &cup; [5; +&infin;)", ["x &isin; [-2; 5]", "x &isin; [5; +&infin;)", "x &isin; (-&infin;; -2] &cup; [5; +&infin;)"]),
-          solution: "<strong>Внимание — уловка!</strong> (x+2)² ≥ 0 винаги (квадрат на реално число). Има три случая: <br>• Ако x = −2: произведението = 0 · (−7) = 0 ≥ 0 ✓<br>• Ако x − 5 ≥ 0 (т.е. x ≥ 5): и двата множителя ≥ 0, произведението ≥ 0 ✓<br>• Ако x < 5 и x ≠ −2: (x+2)² > 0, а (x − 5) < 0 → произведението < 0 ✗<br>Следователно <strong>x ∈ {−2} ∪ [5; +∞)</strong> — изолирана точка плюс непрекъснат интервал."
+          solution: `<strong>Внимание — уловка с четна кратност!</strong> (x+2)² ≥ 0 винаги (квадрат на реално число). Има три случая: <br>• Ако x = −2: произведението = 0 · (−7) = 0 ≥ 0 ✓<br>• Ако x − 5 ≥ 0 (т.е. x ≥ 5): и двата множителя ≥ 0, произведението ≥ 0 ✓<br>• Ако x &lt; 5 и x ≠ −2: (x+2)² > 0, а (x − 5) &lt; 0 → произведението &lt; 0 ✗<br>На числовата ос: при x = −2 (четна кратност) кривата докосва оста и се връща — знакът от двете страни остава ЕДНАКЪВ (−, −). При x = 5 (нечетна) знакът се сменя.<br>Следователно <strong>x ∈ {−2} ∪ [5; +∞)</strong> — изолирана точка плюс непрекъснат интервал.` + numberLine(
+          [{pos:130,label:"−2",type:"closed",mult:2},{pos:260,label:"5",type:"closed"}],
+          "+",
+          [[126,134],[260,336]]
+        )
         },
 
         // === Нови задачи: рационални неравенства — метод на интервалите ===
@@ -3392,35 +3656,55 @@
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'>(x + 3)(x − 1)(x − 4) > 0</span>.",
           ...buildOptions("x &isin; (-3; 1) &cup; (4; +&infin;)", ["x &isin; (-&infin;; -3) &cup; (1; 4)", "x &isin; (-3; 4)", "x &isin; (-&infin;; 1) &cup; (4; +&infin;)"]),
-          solution: "Нули: x = −3, x = 1, x = 4. Метод на интервалите — знаци: за x > 4 знакът е (+)(+)(+) = +. Редувайки през всяка нула: на (1; 4) знакът е −, на (−3; 1) знакът е +, на (−∞; −3) знакът е −. Решение: x ∈ (−3; 1) ∪ (4; +∞)."
+          solution: `Нули: x = −3, x = 1, x = 4 (всички с кратност 1 → нечетни). Старши коефициент = 1·1·1 = + → знакът в (4; +∞) е +. Редувайки през всяка нула: на (1; 4) знакът е −, на (−3; 1) знакът е +, на (−∞; −3) знакът е −. Точките са <em>отворени</em> (строго >). Избираме интервалите със знак +: <strong>x ∈ (−3; 1) ∪ (4; +∞)</strong>.` + numberLine(
+          [{pos:90,label:"−3",type:"open"},{pos:200,label:"1",type:"open"},{pos:290,label:"4",type:"open"}],
+          "+",
+          [[90,200],[290,336]]
+        )
         },
         {
           topic: "Неравенства · Метод на интервалите",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x − 2</span><span class='frac-den'>(x + 1)(x − 5)</span></span></span> &ge; 0</span>.",
           ...buildOptions("x &isin; (-1; 2] &cup; (5; +&infin;)", ["x &isin; [2; 5)", "x &isin; (-1; 5)", "x &isin; (-&infin;; -1) &cup; [2; 5)"]),
-          solution: "ОДЗ: x ≠ −1, x ≠ 5. Нули и забранени точки: −1, 2, 5. На (5; +∞): (+)/[(+)(+)] = +. Редувайки: (2; 5) знак (−), (−1; 2) знак (+), (−∞; −1) знак (−). При x = 2 числителят е 0 → включваме (≥). Решение: x ∈ (−1; 2] ∪ (5; +∞)."
+          solution: `<strong>ДМ:</strong> x ≠ −1, x ≠ 5. Нули и забранени точки: −1, 2, 5. На (5; +∞): (+)/[(+)(+)] = +. Редувайки: (2; 5) знак (−), (−1; 2) знак (+), (−∞; −1) знак (−). При x = 2 числителят е 0 → включваме (≥). Решение: x ∈ (−1; 2] ∪ (5; +∞).` + numberLine(
+          [{pos:110,label:"−1",type:"excluded"},{pos:190,label:"2",type:"closed"},{pos:270,label:"5",type:"excluded"}],
+          "+",
+          [[110,190],[270,336]]
+        )
         },
         {
           topic: "Неравенства · Метод на интервалите",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x&sup2; − 4</span><span class='frac-den'>x + 3</span></span></span> &lt; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -3) &cup; (-2; 2)", ["x &isin; (-3; -2) &cup; (2; +&infin;)", "x &isin; (-2; 2)", "x &isin; (-&infin;; -3) &cup; (2; +&infin;)"]),
-          solution: "Разлагаме: (x−2)(x+2)/(x+3) < 0. ОДЗ: x ≠ −3. Нули: −3, −2, 2. На (2; +∞): (+)(+)/(+) = +. Редувайки: (−2; 2) знак (−), (−3; −2) знак (+), (−∞; −3) знак (−). Строго неравенство → не включваме граничните точки. Решение: x ∈ (−∞; −3) ∪ (−2; 2)."
+          solution: `Разлагаме: (x−2)(x+2)/(x+3) < 0. <strong>ДМ:</strong> x ≠ −3. Нули: −3, −2, 2. На (2; +∞): (+)(+)/(+) = +. Редувайки: (−2; 2) знак (−), (−3; −2) знак (+), (−∞; −3) знак (−). Строго неравенство → не включваме граничните точки. Решение: x ∈ (−∞; −3) ∪ (−2; 2).` + numberLine(
+          [{pos:110,label:"−3",type:"excluded"},{pos:190,label:"−2",type:"open"},{pos:270,label:"2",type:"open"}],
+          "+",
+          [[24,110],[190,270]]
+        )
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>3</span><span class='frac-den'>x − 1</span></span></span> &le; 1</span>.",
           ...buildOptions("x &isin; (-&infin;; 1) &cup; [4; +&infin;)", ["x &isin; (1; 4]", "x &isin; [4; +&infin;)", "x &isin; (-&infin;; 4]"]),
-          solution: "ОДЗ: x ≠ 1. Прехвърляме всичко вляво: 3/(x − 1) − 1 ≤ 0 → (3 − (x − 1))/(x − 1) ≤ 0 → (4 − x)/(x − 1) ≤ 0 → (x − 4)/(x − 1) ≥ 0. Метод на интервалите: нули x = 1, x = 4. На (4; +∞): + / +; на (1; 4): − / +; на (−∞; 1): − / −. x = 4 включваме, x = 1 — не. Решение: x ∈ (−∞; 1) ∪ [4; +∞)."
+          solution: `<strong>ДМ:</strong> x ≠ 1. Прехвърляме всичко вляво: 3/(x − 1) − 1 ≤ 0 → (3 − (x − 1))/(x − 1) ≤ 0 → (4 − x)/(x − 1) ≤ 0 → (x − 4)/(x − 1) ≥ 0. Метод на интервалите: нули x = 1, x = 4. На (4; +∞): + / +; на (1; 4): − / +; на (−∞; 1): − / −. x = 4 включваме, x = 1 — не. Решение: x ∈ (−∞; 1) ∪ [4; +∞).` + numberLine(
+          [{pos:140,label:"1",type:"excluded"},{pos:260,label:"4",type:"closed"}],
+          "+",
+          [[24,140],[260,336]]
+        )
         },
         {
           topic: "Неравенства · Дробно",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>1</span><span class='frac-den'>x − 2</span></span></span> + <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>1</span><span class='frac-den'>x − 4</span></span></span> &gt; 0</span>.",
           ...buildOptions("x &isin; (2; 3) &cup; (4; +&infin;)", ["x &isin; (2; 4)", "x &isin; (3; 4)", "x &isin; (-&infin;; 2) &cup; (4; +&infin;)"]),
-          solution: "Привеждаме под общ знаменател: [(x − 4) + (x − 2)] / [(x − 2)(x − 4)] = (2x − 6) / [(x − 2)(x − 4)] > 0 → 2(x − 3) / [(x − 2)(x − 4)] > 0. Нули: 2, 3, 4. Метод на интервалите: знаците от дясно наляво: (4; +∞): +; (3; 4): −; (2; 3): +; (−∞; 2): −. Решение: x ∈ (2; 3) ∪ (4; +∞)."
+          solution: `Привеждаме под общ знаменател: [(x − 4) + (x − 2)] / [(x − 2)(x − 4)] = (2x − 6) / [(x − 2)(x − 4)] > 0 → 2(x − 3) / [(x − 2)(x − 4)] > 0. <strong>ДМ:</strong> x ≠ 2, x ≠ 4. Корени и забранени точки: 2 (изключена), 3 (отворена — строго >), 4 (изключена). Знаци (rightmost +): (4; +∞): +; (3; 4): −; (2; 3): +; (−∞; 2): −. Решение: <strong>x ∈ (2; 3) ∪ (4; +∞)</strong>.` + numberLine(
+          [{pos:110,label:"2",type:"excluded"},{pos:190,label:"3",type:"open"},{pos:270,label:"4",type:"excluded"}],
+          "+",
+          [[110,190],[270,336]]
+        )
         },
 
         {
@@ -3428,21 +3712,75 @@
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'>(x − 3)&sup2;(x + 1)(x − 5) &ge; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1] &cup; {3} &cup; [5; +&infin;)", ["x &isin; [-1; 5]", "x &isin; (-&infin;; -1] &cup; [5; +&infin;)", "x &isin; (-&infin;; -1] &cup; [3; 5]"]),
-          solution: "<strong>Внимание — уловка с двойна нула!</strong> (x − 3)² ≥ 0 винаги. Анализ: <br>• При x = 3: произведението = 0 ≥ 0 ✓ <br>• При x ≠ 3: (x − 3)² > 0, значи знакът е като на (x + 1)(x − 5). Това е ≥ 0 за x ≤ −1 или x ≥ 5. <br>Обединено: <strong>x ∈ (−∞; −1] ∪ {3} ∪ [5; +∞)</strong>. Учениците често забравят изолираната точка x = 3!"
+          solution: `<strong>Внимание — уловка с четна кратност!</strong> (x − 3)² ≥ 0 винаги. Анализ: <br>• При x = 3: произведението = 0 ≥ 0 ✓ <br>• При x ≠ 3: (x − 3)² > 0, значи знакът е като на (x + 1)(x − 5). Това е ≥ 0 за x ≤ −1 или x ≥ 5. <br>На числовата ос: при x = 3 (четна кратност) кривата докосва оста и се връща → знаците от двете страни са еднакви (−, −). Това е причината за <em>изолираната точка</em> {3}.<br>Обединено: <strong>x ∈ (−∞; −1] ∪ {3} ∪ [5; +∞)</strong>. Учениците често забравят изолираната точка x = 3!` + numberLine(
+          [{pos:80,label:"−1",type:"closed"},{pos:200,label:"3",type:"closed",mult:2},{pos:290,label:"5",type:"closed"}],
+          "+",
+          [[24,80],[196,204],[290,336]]
+        )
         },
         {
           topic: "Неравенства · Уловка",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'>(x&sup2; + 1)(x − 2)&sup2;(x − 1) &le; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; 1] &cup; {2}", ["x &isin; [1; 2]", "x &isin; (-&infin;; 1]", "x &isin; (-&infin;; 1] &cup; [2; +&infin;)"]),
-          solution: "<strong>Внимание — двойна уловка!</strong> Първи множител: x² + 1 ≥ 1 > 0 винаги. Втори множител: (x − 2)² ≥ 0 винаги. <br>• При x = 2: (x − 2)² = 0 → произведението = 0 ≤ 0 ✓ <br>• При x ≠ 2: (x² + 1)(x − 2)² > 0, значи знакът е като на (x − 1). Това е ≤ 0 за x ≤ 1. <br>Обединено: <strong>x ∈ (−∞; 1] ∪ {2}</strong>."
+          solution: `<strong>Внимание — двойна уловка с четна кратност!</strong> Първи множител: x² + 1 ≥ 1 > 0 винаги (няма реални нули). Втори множител: (x − 2)² ≥ 0 винаги. <br>• При x = 2: (x − 2)² = 0 → произведението = 0 ≤ 0 ✓ <br>• При x ≠ 2: (x² + 1)(x − 2)² > 0, значи знакът е като на (x − 1). Това е ≤ 0 за x ≤ 1. <br>На числовата ос: при x = 2 (четна кратност) кривата докосва оста (горна арка → горна арка). При x = 1 (нечетна) знакът се сменя.<br>Обединено: <strong>x ∈ (−∞; 1] ∪ {2}</strong>.` + numberLine(
+          [{pos:140,label:"1",type:"closed"},{pos:260,label:"2",type:"closed",mult:2}],
+          "+",
+          [[24,140],[256,264]]
+        )
         },
         {
           topic: "Неравенства · Дробно · Уловка",
           visual: svgs.rational,
           text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>(x − 4)&sup2;</span><span class='frac-den'>x + 1</span></span></span> &le; 0</span>.",
           ...buildOptions("x &isin; (-&infin;; -1) &cup; {4}", ["x &isin; (-&infin;; -1)", "x &isin; (-1; 4]", "x &isin; {4}"]),
-          solution: "<strong>Внимание — уловка!</strong> Числителят (x − 4)² ≥ 0 винаги; знаменателят определя знака. ОДЗ: x ≠ −1. <br>• При x = 4: числителят = 0, знаменателят = 5 ≠ 0 → дробта = 0 ≤ 0 ✓ <br>• При x ≠ 4 и x ≠ −1: (x − 4)² > 0, така че знакът е като на 1/(x + 1). Това е ≤ 0 (всъщност < 0) за x + 1 < 0, т.е. x < −1. <br>Обединено: <strong>x ∈ (−∞; −1) ∪ {4}</strong>."
+          solution: `<strong>Внимание — уловка с четна кратност!</strong> Числителят (x − 4)² ≥ 0 винаги; знаменателят определя знака. <strong>ДМ:</strong> x ≠ −1. <br>• При x = 4: числителят = 0, знаменателят = 5 ≠ 0 → дробта = 0 ≤ 0 ✓ <br>• При x ≠ 4 и x ≠ −1: (x − 4)² > 0, така че знакът е като на 1/(x + 1). Това е ≤ 0 (всъщност < 0) за x + 1 < 0, т.е. x < −1. <br><em>Забележка за числовата ос:</em> в точката x = 4 числителят има <strong>четна кратност</strong> (степен 2), затова знаците от двете страни са еднакви (+, +). Това е причината решението да съдържа изолирана точка {4}.<br>Обединено: <strong>x ∈ (−∞; −1) ∪ {4}</strong>.` + numberLine(
+          [{pos:140,label:"−1",type:"excluded"},{pos:260,label:"4",type:"closed",mult:2}],
+          "+",
+          [[24,140],[256,264]]
+        )
+        },
+
+        // === Задачи от класна работа №2 (по 4–5 точки) ===
+        {
+          topic: "Неравенства · Минус отпред",
+          visual: svgs.rational,
+          text: "Да се реши неравенството <span class='math'>(−x&sup2; − 6x − 9)(2x&sup2; − 13x + 15)(2x&sup2; + 3) &ge; 0</span>.",
+          ...buildOptions("x &isin; {-3} &cup; [3/2; 5]", ["x &isin; [-3; 3/2] &cup; [5; +&infin;)", "x &isin; [3/2; 5]", "x &isin; (-&infin;; -3] &cup; [3/2; 5]"]),
+          solution: `<strong>Тройна уловка!</strong> Разлагаме всеки множител:<br>
+          • <span class='math'>−x² − 6x − 9 = −(x² + 6x + 9) = −(x + 3)²</span> — винаги ≤ 0, равен на 0 само при x = −3.<br>
+          • <span class='math'>2x² − 13x + 15 = (2x − 3)(x − 5)</span>, корени 3/2 и 5.<br>
+          • <span class='math'>2x² + 3 ≥ 3 > 0</span> винаги — този множител не променя знака.<br>
+          Неравенството става: <span class='math'>−(x + 3)²(2x − 3)(x − 5)(2x² + 3) ≥ 0</span>. Делим на положителното (2x² + 3) и умножаваме по (−1) (сменя знака на неравенството): <span class='math'>(x + 3)²(2x − 3)(x − 5) ≤ 0</span>.<br>
+          На числовата ос: корен x = −3 е с <strong>четна кратност 2</strong> (от квадрата); 3/2 и 5 — с кратност 1. Старши коефициент (на (x+3)²(2x−3)(x−5)) е 1·2·1 = + (положителен), значи в (5; +∞) знакът е +.<br>
+          Редувайки: (5; +∞): +; през 5 (нечетна) сменя → (3/2; 5): −; през 3/2 (нечетна) сменя → (−3; 3/2): +; през −3 (четна) <em>запазва</em> → (−∞; −3): +.<br>
+          Избираме интервалите със знак ≤ 0: единствено (3/2; 5) и точките със стойност 0 (x = −3, x = 3/2, x = 5). Получаваме изолираната точка x = −3 (там израза е 0 ≤ 0 ✓) и затворения интервал [3/2; 5].<br>
+          <strong>Решение: x ∈ {−3} ∪ [3/2; 5]</strong>.` + numberLine(
+          [{pos:90,label:"−3",type:"closed",mult:2},{pos:200,label:"3/2",type:"closed"},{pos:290,label:"5",type:"closed"}],
+          "+",
+          [[86,94],[200,290]]
+        )
+        },
+        {
+          topic: "Неравенства · Привеждане",
+          visual: svgs.rational,
+          text: "Да се реши неравенството <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>3x</span><span class='frac-den'>x + 2</span></span></span> − <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>x + 1</span><span class='frac-den'>1 − x</span></span></span> &ge; <span class='frac-inline'><span class='frac-stack'><span class='frac-num'>2</span><span class='frac-den'>x&sup2; + x − 2</span></span></span></span>.",
+          ...buildOptions("x &isin; (-&infin;; -2) &cup; {0} &cup; (1; +&infin;)", ["x &isin; (-&infin;; -2) &cup; (1; +&infin;)", "x &isin; {0} &cup; (1; +&infin;)", "x &isin; (-2; 1)"]),
+          solution: `<strong>Стъпка 1 — разлагане на знаменателите.</strong> <span class='math'>x² + x − 2 = (x − 1)(x + 2)</span>. Освен това <span class='math'>1 − x = −(x − 1)</span>. <strong>ДМ:</strong> x ≠ −2, x ≠ 1.<br>
+          <strong>Стъпка 2 — пренасяме всичко вляво и взимаме общ знаменател (x − 1)(x + 2).</strong><br>
+          <span class='math'>(x + 1)/(1 − x) = −(x + 1)/(x − 1)</span>, така че второто събираемо вляво става <span class='math'>+(x + 1)/(x − 1)</span>.<br>
+          Привеждаме: <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>3x(x − 1) + (x + 1)(x + 2) − 2</span><span class='frac-den'>(x − 1)(x + 2)</span></span></span> &ge; 0</span>.<br>
+          <strong>Стъпка 3 — опростяваме числителя:</strong> 3x² − 3x + (x² + 3x + 2) − 2 = 4x². <br>
+          Неравенството става: <span class='math'><span class='frac-inline'><span class='frac-stack'><span class='frac-num'>4x&sup2;</span><span class='frac-den'>(x − 1)(x + 2)</span></span></span> &ge; 0</span>.<br>
+          <strong>Стъпка 4 — метод на интервалите.</strong> Числителят 4x² има корен x = 0 с <strong>четна кратност 2</strong>. Знаменател: корени −2 и 1 (двете изключени от ДМ).<br>
+          Старши коеф: 4/(1·1) = + (положителен), значи в (1; +∞) знакът е +.<br>
+          Редувайки: (1; +∞): +; през 1 (нечетна) → (0; 1): −; през 0 (четна) <em>запазва</em> → (−2; 0): −; през −2 (нечетна) → (−∞; −2): +.<br>
+          При x = 0 числителят е 0, а знаменателят (−1)(2) = −2 ≠ 0, така че 4x²/[(x−1)(x+2)] = 0 ≥ 0 ✓.<br>
+          <strong>Решение: x ∈ (−∞; −2) ∪ {0} ∪ (1; +∞)</strong>.` + numberLine(
+          [{pos:90,label:"−2",type:"excluded"},{pos:200,label:"0",type:"closed",mult:2},{pos:290,label:"1",type:"excluded"}],
+          "+",
+          [[24,90],[196,204],[290,336]]
+        )
         },
 
         // === Допълнителни задачи за разнообразие ===
@@ -3585,7 +3923,7 @@
             {
               text: "Прилагайки метода на интервалите за <span class='math'>(x − 3)&sup2;(x + 3)(x + 2) &le; 0</span>, множеството от решения е:",
               ...buildOptions("x &isin; [-3; -2] &cup; {3}", ["x &isin; [-3; -2]", "x &isin; (-&infin;; -3] &cup; [-2; 3]", "x &isin; [-3; -2] &cup; [3; +&infin;)"]),
-              solution: "Критични точки (корени) на произведението: x = −3, x = −2 и x = 3 (двойна кратност, защото (x−3)²). Подреждаме ги на числовата ос: −3 < −2 < 3. В най‑десния интервал (3; +∞) знакът е „+“. При преминаване през корен с нечетна кратност знакът се сменя (−3, −2), а при четна кратност не се променя (3). Знакова схема: (+) |_{−3} (−) |_{−2} (+) |_{3} (+). Търсим ≤ 0 ⇒ отрицателните интервали и точките, където произведението е 0: x ∈ [−3; −2] ∪ {3}."
+              solution: "Множителят (x−3)² ≥ 0 винаги (с равенство при x = 3). За (x+3)(x+2) ≤ 0 получаваме x ∈ [−3; −2]. Допълнително x = 3 е решение, защото (x−3)² = 0 прави цялото произведение 0. Окончателно: x ∈ [−3; −2] ∪ {3}."
             }
           ]
         },
@@ -3768,24 +4106,24 @@
             {
               text: "Подредете алгоритъма за намиране на радиуса <span class='math'>r</span> на вписаната окръжност:",
               ...buildAlgorithmOptions(
-                "1) Височина CH чрез теорема на Питагор в △ACH; 2) Лице S = (1/2)·AB·CH; 3) r = S/p, където p е полупериметърът",
+                "1) Височина CH чрез теорема на Питагор в △ACH; 2) Лице S = (1/2)·AB·CH; 3) От формулата S = p·r (където p е полупериметърът) → r = S/p",
                 [
                   "1) r = AB/2 (диаметър); 2) Лице; 3) Височина",
                   "1) Полупериметър p; 2) r = p/3; 3) Без височина",
                   "1) Лице директно от страните; 2) r от формула за описана; 3) Височина"
                 ]
               ),
-              solution: "При вписана окръжност радиусът се намира чрез формулата r = S/p. За да открием лицето, ни трябва височината — намираме я с теорема на Питагор в правоъгълния △ACH (AH = AB/2)."
+              solution: "Радиусът на вписаната окръжност се намира от <strong>формулата S = p·r</strong>, където S е лицето, а p е полупериметърът. За да открием лицето, ни трябва височината — намираме я с теорема на Питагор в правоъгълния △ACH (AH = AB/2)."
             },
             {
               text: "Височината <span class='math'>CH</span> от върха <span class='math'>C</span> към основата и лицето <span class='math'>S</span> на △ABC са:",
               ...buildOptions("CH = 8 cm, S = 48 cm&sup2;", ["CH = 6 cm, S = 36 cm&sup2;", "CH = 8 cm, S = 96 cm&sup2;", "CH = &radic;28 cm, S = 6&radic;28 cm&sup2;"]),
-              solution: "В равнобедрен △ височината от C е и медиана към AB, значи AH = AB/2 = 6. От правоъгълния △ACH: CH² = AC² − AH² = 100 − 36 = 64 → CH = 8 cm. Лицето: S = (1/2)·AB·CH = (1/2)·12·8 = 48 cm²."
+              solution: "В равнобедрен △ височината от C е и медиана към AB, значи AH = AB/2 = 6. От правоъгълния △ACH по теорема на Питагор: CH² = AC² − AH² = 100 − 36 = 64 → CH = 8 cm. Лицето: S = (1/2)·AB·CH = (1/2)·12·8 = 48 cm²."
             },
             {
               text: "Радиусът на вписаната окръжност <span class='math'>r</span> е:",
               ...buildOptions("r = 3 cm", ["r = 4 cm", "r = 6 cm", "r = 8/3 cm"]),
-              solution: "<strong>Начин 1 (S/p):</strong> Полупериметър p = (10 + 10 + 12)/2 = 16. <strong>r = S/p = 48/16 = 3 cm</strong>.<br><br><strong>Начин 2 (свойство на допирателните):</strong> Центърът O лежи на оста CH. От O построяваме перпендикуляр към AC с пето T. △ACH ~ △OCT (общ ъгъл при C, оба правоъгълни). От подобието: r/AH = (CH − r)/AC → r/6 = (8 − r)/10 → 10r = 48 − 6r → 16r = 48 → <strong>r = 3 cm</strong>."
+              solution: "<strong>Начин 1 (формула S = p·r):</strong> Полупериметър p = (10 + 10 + 12)/2 = 16. От S = p·r → 48 = 16·r → <strong>r = 3 cm</strong>.<br><br><strong>Начин 2 (свойство на допирателните):</strong> Центърът O лежи на оста CH. От O построяваме перпендикуляр към AC с пето T. △ACH ~ △OCT (общ ъгъл при C, оба правоъгълни). От подобието: r/AH = (CH − r)/AC → r/6 = (8 − r)/10 → 10r = 48 − 6r → 16r = 48 → <strong>r = 3 cm</strong>."
             }
           ]
         },
@@ -4128,9 +4466,9 @@
           ]
         },
 
-        // ===== ЗАДАЧА 4: Елементи на трапец, вписан в окръжност (4 стъпки) =====
+        // ===== ЗАДАЧА 4: Елементи на равнобедрен трапец (4 стъпки) =====
         {
-          topic: "Елементи на трапец, вписан в окръжност",
+          topic: "Елементи на равнобедрен трапец",
           context: "<strong>Дадено:</strong> Равнобедрен трапец <span class='math'>ABCD</span> с <span class='math'>AB &parallel; CD</span>, <span class='math'>AD = BC</span>, основи <span class='math'>AB = 21 cm</span> и <span class='math'>CD = 9 cm</span>, бедро <span class='math'>AD = 10 cm</span>.<br><strong>Намерете</strong> височината, диагонала и лицето на трапеца.",
           visual: `<svg class="svg-visual" viewBox="0 0 400 220">
             <polygon points="40,180 360,180 280,60 120,60" fill="none" stroke="#0f172a" stroke-width="1.8"/>
@@ -4162,12 +4500,12 @@
                   "1) Намиране на средната отсечка; 2) Лице; 3) Височина; 4) Диагонал"
                 ]
               ),
-              solution: "Стандартният алгоритъм за трапец, вписан в окръжност: височините отделят правоъгълни триъгълници, чиито катети дават всички търсени елементи."
+              solution: "Стандартният алгоритъм за равнобедрен трапец: височините отделят правоъгълни триъгълници, чиито катети дават всички търсени елементи."
             },
             {
               text: "Проекцията <span class='math'>AH&#8321;</span> на бедрото и височината <span class='math'>h</span> на трапеца са:",
               ...buildOptions("AH&#8321; = 6 cm, h = 8 cm", ["AH&#8321; = 12 cm, h = 8 cm", "AH&#8321; = 6 cm, h = 2&radic;19 cm", "AH&#8321; = 15 cm, h = 5 cm"]),
-              solution: "В трапец, вписан в окръжност двете проекции на бедрата са равни: AH₁ = (AB − CD)/2 = (21 − 9)/2 = 6 cm. От правоъгълния △ADH₁: h² = AD² − AH₁² = 100 − 36 = 64, h = 8 cm."
+              solution: "В равнобедрен трапец двете проекции на бедрата са равни: AH₁ = (AB − CD)/2 = (21 − 9)/2 = 6 cm. От правоъгълния △ADH₁: h² = AD² − AH₁² = 100 − 36 = 64, h = 8 cm."
             },
             {
               text: "Дължината на диагонала <span class='math'>BD</span> е:",
@@ -4370,9 +4708,6 @@
             <text x="208" y="123" class="point" fill="#dc2626">O</text>
             <!-- BD = 16 — на самия диагонал в долната свободна част (близо до B) -->
             <text x="265" y="175" fill="#1d4ed8" font-size="13" font-style="italic" font-weight="600">BD = 16</text>
-            <!-- Лицата S = 1 (в горната малка част на трапеца) и S = 9 (в долната голяма) -->
-            <text x="180" y="105" font-size="13" font-style="italic">S = 1</text>
-            <text x="180" y="178" font-size="13" font-style="italic">S = 9</text>
           </svg>`,
           steps: [
             {
@@ -4454,6 +4789,121 @@
               text: "Лицето на <span class='math'>&#9651;MDC</span> е:",
               ...buildOptions("S<sub>&#9651;MDC</sub> = 36 cm&sup2;", ["S<sub>&#9651;MDC</sub> = 24 cm&sup2;", "S<sub>&#9651;MDC</sub> = 100 cm&sup2;", "S<sub>&#9651;MDC</sub> = 25,6 cm&sup2;"]),
               solution: "Нека S(MDC) = 9t, тогава S(MAB) = 25t. S(ABCD) = S(MAB) − S(MDC) = 16t = 64, значи t = 4. Тогава S(MDC) = 9·4 = 36 cm²."
+            }
+          ]
+        },
+
+        // ===== ЗАДАЧА 10: Равнобедрен △ с дадени височина и радиус на вписана окр. (4 стъпки) =====
+        {
+          topic: "Равнобедрен △ · Вписана окр.",
+          context: "<strong>Дадено:</strong> Равнобедрен <span class='math'>&#9651;ABC</span> (<span class='math'>AC = BC</span>) с височина към основата <span class='math'>h = CH = 36 cm</span> и радиус на вписаната окръжност <span class='math'>r = 10 cm</span>.<br><strong>Намерете</strong> основата <span class='math'>AB</span> на триъгълника.",
+          visual: `<svg class="svg-visual" viewBox="0 0 400 280">
+            <!-- Равнобедрен △ABC с CH = 36, AB = 30, бедро = 39 (изчислени).
+                 Мащаб 4 px/cm: AB = 120 px, h = 144 px, бедро ≈ 156 px.
+                 A(140, 230), B(260, 230), C(200, 230 - 144) = (200, 86).
+                 H = средата на AB = (200, 230). Център на вписаната окръжност: на CH, на разстояние r от AB.
+                 Център I = (200, 230 - 40) = (200, 190), радиус 40 px (= 10 cm). -->
+            <polygon points="140,230 260,230 200,86" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Височина CH -->
+            <line x1="200" y1="86" x2="200" y2="230" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>
+            <!-- Прав ъгъл при H -->
+            <path d="M 190 230 L 190 220 L 200 220" fill="none" stroke="#0f172a" stroke-width="1"/>
+            <!-- Вписана окръжност -->
+            <circle cx="200" cy="190" r="40" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+            <circle cx="200" cy="190" r="2.5" fill="#1d4ed8"/>
+            <!-- Тикчета за равенство на бедрата -->
+            <line x1="165" y1="155" x2="175" y2="170" stroke="#0f172a" stroke-width="1.5"/>
+            <line x1="225" y1="155" x2="235" y2="170" stroke="#0f172a" stroke-width="1.5"/>
+            <!-- Етикети -->
+            <text x="125" y="245" class="point">A</text>
+            <text x="265" y="245" class="point">B</text>
+            <text x="195" y="78" class="point">C</text>
+            <text x="195" y="248" class="point">H</text>
+            <text x="207" y="196" font-size="12" fill="#1d4ed8">I</text>
+            <text x="210" y="160" font-size="13" font-style="italic" fill="#1d4ed8">r = 10</text>
+            <text x="155" y="160" font-size="13" font-style="italic" fill="#475569">h = 36</text>
+          </svg>`,
+          steps: [
+            {
+              text: "Подредете алгоритъма за намирането на основата <span class='math'>AB</span>:",
+              ...buildAlgorithmOptions(
+                "1) Нотация: AB = 2a, бедро AC = BC = b; 2) Теорема на Питагор за бедрото: b² = h² + a²; 3) Формула S = p·r, където S = a·h, p = a + b; 4) Решаване на системата",
+                [
+                  "1) r = h/2 директно; 2) AB = h/2; 3) Готово; 4) Няма стъпка 4",
+                  "1) AB = 2r; 2) Бедро по теорема на Питагор; 3) Готово; 4) Няма стъпка 4",
+                  "1) Лице S = h·r; 2) Полупериметър p = h + r; 3) AB = 2S/h; 4) Готово"
+                ]
+              ),
+              solution: "В равнобедрен △ центърът на вписаната окръжност лежи на симетралата (височината CH). Лицето на триъгълника се изразява чрез радиуса на вписаната окръжност и полупериметъра по формулата <strong>S = p·r</strong>, където <span class='math'>p</span> е полупериметърът. Това дава уравнение, което заедно с теоремата на Питагор решава задачата."
+            },
+            {
+              text: "От формулата <span class='math'>S = p&middot;r</span> (където <span class='math'>S = a&middot;h</span> е лицето, а <span class='math'>p = a + b</span> е полупериметърът) се получава връзката между <span class='math'>a</span> и <span class='math'>b</span>:",
+              ...buildOptions("<span class='math'>b = 2,6 a</span>", ["<span class='math'>b = a + r</span>", "<span class='math'>b = h − r</span>", "<span class='math'>b = 3a</span>"]),
+              solution: "Лицето е S = (1/2)·AB·h = (1/2)·2a·h = a·h. Полупериметърът е p = (AB + 2b)/2 = (2a + 2b)/2 = a + b. <br>От формулата S = p·r: a·h = (a + b)·r → a·36 = (a + b)·10 → 36a = 10a + 10b → 26a = 10b → <strong>b = 2,6·a = 13a/5</strong>."
+            },
+            {
+              text: "Заместване в <span class='math'>b&sup2; = h&sup2; + a&sup2;</span> (теорема на Питагор в △ACH) и решаване дава <span class='math'>a</span>:",
+              ...buildOptions("a = 15 cm", ["a = 12 cm", "a = 18 cm", "a = 20 cm"]),
+              solution: "(13a/5)² = 36² + a² → 169a²/25 = 1296 + a² → 169a² = 25·1296 + 25a² → 144a² = 32400 → a² = 225 → a = 15 cm."
+            },
+            {
+              text: "Дължината на основата <span class='math'>AB</span> е:",
+              ...buildOptions("AB = 30 cm", ["AB = 15 cm", "AB = 36 cm", "AB = 39 cm"]),
+              solution: "AB = 2a = 2·15 = 30 cm. (Проверка: бедро b = 13·15/5 = 39 cm; полупериметър p = a + b = 15 + 39 = 54; S = a·h = 15·36 = 540; r = S/p = 540/54 = 10 ✓.)"
+            }
+          ]
+        },
+
+        // ===== ЗАДАЧА 11: Правоъгълен трапец — доказване, че се вписва окръжност (3 стъпки) =====
+        {
+          topic: "Правоъг. трапец · Вписана окр.",
+          context: "<strong>Дадено:</strong> Правоъгълен трапец <span class='math'>ABCD</span> (<span class='math'>AD &perp; AB</span>) с основа <span class='math'>AB = 6 cm</span>, <span class='math'>CD = 2 cm</span> и бедро <span class='math'>BC = 5 cm</span>.<br><strong>Докажете</strong>, че в трапеца може да се впише окръжност и <strong>намерете</strong> нейния радиус <span class='math'>r</span>.",
+          visual: `<svg class="svg-visual" viewBox="0 0 420 240">
+            <!-- AB = 6, CD = 2, AD = 3 (изчислено), BC = 5. Мащаб 30 px/cm.
+                 A(60, 200), B(60+180, 200) = (240, 200), D(60, 200-90) = (60, 110),
+                 C(60 + 60, 110) = (120, 110). Перп. от C: E = (120, 200).
+                 Радиус на вписаната = AD/2 = 1,5 cm = 45 px.
+                 Център I = (60+45, 200-45) = (105, 155). -->
+            <polygon points="60,200 240,200 120,110 60,110" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+            <!-- Перпендикуляр от C към AB (E) -->
+            <line x1="120" y1="110" x2="120" y2="200" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="115" y="215" class="point">E</text>
+            <!-- Прави ъгли при A и D -->
+            <path d="M 60 188 L 72 188 L 72 200" fill="none" stroke="#0f172a" stroke-width="1.2"/>
+            <path d="M 60 122 L 72 122 L 72 110" fill="none" stroke="#0f172a" stroke-width="1.2"/>
+            <!-- Прав ъгъл при E (от перпендикуляра) -->
+            <path d="M 108 200 L 108 188 L 120 188" fill="none" stroke="#0f172a" stroke-width="1"/>
+            <!-- Вписана окръжност (доказва се) -->
+            <circle cx="105" cy="155" r="45" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <circle cx="105" cy="155" r="2.5" fill="#1d4ed8"/>
+            <!-- Етикети -->
+            <text x="48" y="215" class="point">A</text>
+            <text x="248" y="215" class="point">B</text>
+            <text x="125" y="105" class="point">C</text>
+            <text x="48" y="105" class="point">D</text>
+            <!-- Стойности -->
+            <text x="142" y="220" font-size="13" font-style="italic">AB = 6</text>
+            <text x="75" y="103" font-size="13" font-style="italic">CD = 2</text>
+            <text x="40" y="160" font-size="13" font-style="italic">AD</text>
+            <text x="190" y="155" font-size="13" font-style="italic">BC = 5</text>
+            <text x="115" y="153" font-size="11" fill="#1d4ed8">I</text>
+            <text x="118" y="180" font-size="13" font-style="italic" fill="#1d4ed8">r = ?</text>
+          </svg>`,
+          steps: [
+            {
+              text: "Първо намерете дължината на бедрото <span class='math'>AD</span>. Спускаме перпендикуляр от <span class='math'>C</span> към <span class='math'>AB</span> с пето <span class='math'>E</span>. Дължината на <span class='math'>AD</span> е:",
+              ...buildOptions("AD = 3 cm", ["AD = 4 cm", "AD = &radic;7 cm", "AD = 2 cm"]),
+              solution: "AE = CD = 2 (защото ABCD горе има успоредни AD и CE — те са равни). EB = AB − AE = 6 − 2 = 4. В правоъгълния △BEC (прав ъгъл при E): BC² = BE² + CE² → 25 = 16 + CE² → CE² = 9 → CE = 3. Но AD = CE = 3 cm (две успоредни перпендикулярни отсечки между двете успоредни прави AB и CD)."
+            },
+            {
+              text: "Условието за вписана окръжност в четириъгълник е <span class='math'>AB + CD = AD + BC</span>. Проверете:",
+              ...buildOptions("Да: 6 + 2 = 3 + 5 = 8 ✓ — окръжност се вписва", ["Не: 6 + 2 ≠ 3 + 5", "Условието не важи за трапец", "Трябва AB · CD = AD · BC"]),
+              solution: "AB + CD = 6 + 2 = 8. AD + BC = 3 + 5 = 8. Двете суми са равни, следователно <strong>в трапеца може да се впише окръжност</strong> (теорема на Питотá: четириъгълник е описан около окръжност ⟺ сборът на срещуположните страни е равен)."
+            },
+            {
+              text: "Радиусът <span class='math'>r</span> на вписаната окръжност е:",
+              ...buildOptions("r = 1,5 cm", ["r = 2 cm", "r = 3 cm", "r = 2,5 cm"]),
+              solution: "В правоъгълен трапец перпендикулярното бедро <span class='math'>AD</span> е едновременно височина на трапеца. Тогава диаметърът на вписаната окръжност = AD, тоест <strong>r = AD/2 = 3/2 = 1,5 cm</strong>. (Проверка: центърът I е на разстояние r = 1,5 от AB и AD, а също и от CD на разстояние AD − r = 1,5; до BC: разстояние от I до правата BC също трябва да е 1,5 — следва от равенството на сумите.)"
             }
           ]
         }
@@ -4711,9 +5161,7 @@
     }
 
     function generateMission() {
-      
-      document.body.classList.remove("end-mode");
-clearState();
+      clearState();
       selectedPuzzle = puzzleImages[Math.floor(Math.random() * puzzleImages.length)];
 
       // Връща нормализиран „корен" на топика — за да блокираме сходни теми.
@@ -4760,42 +5208,11 @@ clearState();
 
       // ВАЖНО: избираме първо chains (комплексни), за да им гарантираме разнообразие.
       // После short задачите се филтрират спрямо вече избраните chain топик-корени.
-      const chainPool = getChainTasks().map((c,i) => ({ ...c, __uid: 'C' + i }));
-      const shortPool = getShortQuestions().map((q,i) => ({ ...q, __uid: 'S' + i }));
-
-      const allChains = pickUniqueByTopic(chainPool, 9, []);
+      const allChains = pickUniqueByTopic(getChainTasks(), 9, []);
       const chainRoots = allChains.map(c => topicRoot(c.topic));
-      const allShorts = pickUniqueByTopic(shortPool, 21, chainRoots);
+      const allShorts = pickUniqueByTopic(getShortQuestions(), 21, chainRoots);
 
-      // Абсолютна защита: без повторение на една и съща задача в рамките на една мисия (по __uid)
-      (function enforceUniqueMission() {
-        const used = new Set();
-        const uniqueShorts = [];
-        for (const q of allShorts) {
-          if (!used.has(q.__uid)) { used.add(q.__uid); uniqueShorts.push(q); }
-        }
-        const uniqueChains = [];
-        for (const ch of allChains) {
-          if (!used.has(ch.__uid)) { used.add(ch.__uid); uniqueChains.push(ch); }
-        }
-        // Ако сме загубили елементи (теоретично), попълваме от остатъка без повторения.
-        if (uniqueChains.length < 9) {
-          for (const ch of chainPool) {
-            if (uniqueChains.length === 9) break;
-            if (!used.has(ch.__uid)) { used.add(ch.__uid); uniqueChains.push(ch); }
-          }
-        }
-        if (uniqueShorts.length < 21) {
-          for (const q of shortPool) {
-            if (uniqueShorts.length === 21) break;
-            if (!used.has(q.__uid)) { used.add(q.__uid); uniqueShorts.push(q); }
-          }
-        }
-        allChains.length = 0; allChains.push(...uniqueChains);
-        allShorts.length = 0; allShorts.push(...uniqueShorts);
-      })();
-
-let mixedItems = [];
+      let mixedItems = [];
       allShorts.forEach(q => mixedItems.push({ type: 'single', data: q }));
       allChains.forEach(ch => mixedItems.push({ type: 'chain', data: ch }));
       mixedItems = shuffle(mixedItems);
@@ -4955,57 +5372,65 @@ let mixedItems = [];
     }
 
     // ===== Анимация „ключ" — обратна връзка =====
+    let _keyFeedbackTimeoutId = null;
     function showKeyFeedback(isCorrect) {
       // Премахни предишен overlay, ако има
       const existing = document.querySelector('.key-overlay');
       if (existing) existing.remove();
+      // Изчистваме предишния timeout (ако още не е стартирал)
+      if (_keyFeedbackTimeoutId) {
+        clearTimeout(_keyFeedbackTimeoutId);
+        _keyFeedbackTimeoutId = null;
+      }
 
       const overlay = document.createElement('div');
       overlay.className = 'key-overlay show';
 
       if (isCorrect) {
+        const goldId = 'goldGrad_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
         overlay.innerHTML = `
           <div class="key-card correct">
             <div class="key-svg-wrap">
               <div class="key-light"></div>
               <svg class="key-correct-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient id="${goldId}" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#fde68a"/>
                     <stop offset="50%" stop-color="#f59e0b"/>
                     <stop offset="100%" stop-color="#b45309"/>
                   </linearGradient>
                 </defs>
                 <!-- Глава на ключа (кръг с дупка) -->
-                <circle cx="28" cy="50" r="18" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+                <circle cx="28" cy="50" r="18" fill="url(#${goldId})" stroke="#92400e" stroke-width="2"/>
                 <circle cx="28" cy="50" r="7" fill="#fef3c7" stroke="#92400e" stroke-width="1.5"/>
                 <!-- Тяло на ключа -->
-                <rect x="44" y="46" width="42" height="8" rx="2" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+                <rect x="44" y="46" width="42" height="8" rx="2" fill="url(#${goldId})" stroke="#92400e" stroke-width="2"/>
                 <!-- Зъбци -->
-                <rect x="72" y="54" width="6" height="10" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
-                <rect x="80" y="54" width="6" height="7" fill="url(#goldGrad)" stroke="#92400e" stroke-width="2"/>
+                <rect x="72" y="54" width="6" height="10" fill="url(#${goldId})" stroke="#92400e" stroke-width="2"/>
+                <rect x="80" y="54" width="6" height="7" fill="url(#${goldId})" stroke="#92400e" stroke-width="2"/>
               </svg>
             </div>
             <div class="key-text correct-text">🎉 Отключено! Продължи напред.</div>
           </div>
         `;
       } else {
+        const silverId = 'silverGrad_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
         overlay.innerHTML = `
           <div class="key-card wrong">
             <div class="key-svg-wrap">
               <svg class="key-wrong-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient id="${silverId}" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#e5e7eb"/>
                     <stop offset="50%" stop-color="#9ca3af"/>
                     <stop offset="100%" stop-color="#4b5563"/>
                   </linearGradient>
                 </defs>
-                <circle cx="28" cy="50" r="18" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
+                <circle cx="28" cy="50" r="18" fill="url(#${silverId})" stroke="#374151" stroke-width="2"/>
                 <circle cx="28" cy="50" r="7" fill="#f3f4f6" stroke="#374151" stroke-width="1.5"/>
-                <rect x="44" y="46" width="42" height="8" rx="2" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
-                <rect x="72" y="54" width="6" height="10" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
-                <rect x="80" y="54" width="6" height="7" fill="url(#silverGrad)" stroke="#374151" stroke-width="2"/>
+                <rect x="44" y="46" width="42" height="8" rx="2" fill="url(#${silverId})" stroke="#374151" stroke-width="2"/>
+                <rect x="72" y="54" width="6" height="10" fill="url(#${silverId})" stroke="#374151" stroke-width="2"/>
+                <rect x="80" y="54" width="6" height="7" fill="url(#${silverId})" stroke="#374151" stroke-width="2"/>
               </svg>
               <svg class="lock-appear" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
                 <rect x="8" y="18" width="24" height="18" rx="3" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1.5"/>
@@ -5022,8 +5447,9 @@ let mixedItems = [];
       document.body.appendChild(overlay);
 
       // Премахни overlay след анимацията
-      setTimeout(() => {
+      _keyFeedbackTimeoutId = setTimeout(() => {
         if (overlay && overlay.parentNode) overlay.remove();
+        _keyFeedbackTimeoutId = null;
       }, 2100);
     }
 
@@ -5056,7 +5482,7 @@ let mixedItems = [];
             Имаш свой подход към задачата? Чудесно! Въведи крайния отговор и аз ще проверя дали си стигнал до правилния резултат. Стъпките се пропускат.
           </p>
           <p class="free-mode-hint">
-            <strong>Подсказка:</strong> Очаква се числен или точен (с радикали/дроби) отговор. Например: <code>10</code>, <code>10 cm</code>, <code>√97</code>, <code>3√5</code>, <code>288/7</code>.
+            <strong>Подсказка:</strong> Очаква се числов или точен (с радикали/дроби) отговор. Например: <code>10</code>, <code>10 cm</code>, <code>√97</code>, <code>3√5</code>, <code>288/7</code>.
           </p>
           <div class="free-mode-options">
             <button class="free-mode-show-options" id="freeModeToggleOptions">Покажи възможните отговори ▾</button>
@@ -5132,7 +5558,21 @@ let mixedItems = [];
         .replace(/[\(\)]/g, '');    // премахва скоби
     }
 
+    // Извлича основната числова/символна "сърцевина" от отговор — без мерни единици
+    // Това позволява "10" и "10cm" да се сравняват като ядрото "10".
+    function extractCore(s) {
+      if (!s) return '';
+      // Премахва "cm", "cm²", "см", "градус(а)" и подобни мерни единици
+      return s
+        .replace(/cm²|cm³|cm|см²|см³|см|°|градуса?|grad/gi, '')
+        .replace(/[\s,]/g, '');
+    }
+
+    let _freeModeSubmitting = false;
     function submitFreeMode(globalIdx, userAnswer, expectedAnswer) {
+      // Защита от двойно изпращане (бързо щракване / двукратен Enter)
+      if (_freeModeSubmitting) return;
+
       const overlay = document.getElementById('freeModeOverlay');
       if (!overlay) return;
 
@@ -5146,12 +5586,14 @@ let mixedItems = [];
         input.placeholder = 'Моля, въведи отговор…';
         return;
       }
+      _freeModeSubmitting = true;
 
-      // Допускаме съответствие, ако userNorm съдържа expectedNorm или обратното
-      // (защото ученикът може да напише „10" вместо „10 cm" — числото съвпада)
+      // Строго сравнение по нормализирания низ или по "ядрото" (без мерни единици).
+      // Това предотвратява false positives като "100".includes("10") → true.
+      const userCore = extractCore(userNorm);
+      const expectedCore = extractCore(expectedNorm);
       const isCorrect = userNorm === expectedNorm
-        || userNorm.includes(expectedNorm)
-        || expectedNorm.includes(userNorm);
+        || (userCore.length > 0 && userCore === expectedCore);
 
       overlay.remove();
 
@@ -5195,6 +5637,7 @@ let mixedItems = [];
       buildMap();
       saveState();
       renderScreen();
+      _freeModeSubmitting = false;
     }
 
     window.handleOption = function(globalIdx, optIdx) {
@@ -5437,9 +5880,7 @@ let mixedItems = [];
     let reviewMode = false;
 
     function renderEndScreen() {
-      
-      document.body.classList.add("end-mode");
-document.getElementById('progress').style.width = `100%`;
+      document.getElementById('progress').style.width = `100%`;
       document.getElementById('statLevel').textContent = "Завършена";
       // Покажи името на картинката
       if (selectedPuzzle) {
@@ -5585,10 +6026,11 @@ document.getElementById('progress').style.width = `100%`;
       ctx.font = '700 36px "Segoe UI", system-ui, sans-serif';
       ctx.fillText('Математически пъзел: Класна работа №2', W / 2, 130);
 
-      // Име
+      // Име (труниране при много дълги имена за canvas)
+      const displayName = (playerName || '—').slice(0, 40);
       ctx.font = '500 28px "Segoe UI", system-ui, sans-serif';
       ctx.fillStyle = '#475569';
-      ctx.fillText('Играч: ' + (playerName || '—'), W / 2, 180);
+      ctx.fillText('Играч: ' + displayName, W / 2, 180);
 
       // Резултат — голяма цифра
       const finalScore = Math.round(score);
@@ -5634,7 +6076,7 @@ document.getElementById('progress').style.width = `100%`;
       ctx.fillStyle = '#94a3b8';
       ctx.fillText(date, W / 2, H - 80);
       ctx.font = 'italic 16px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText('Идея: Валя Витковска  ·  Реализация: Claude, ChatGPT', W / 2, H - 55);
+      ctx.fillText('Идея: Валя Витковска  ·  Реализация: Claude', W / 2, H - 55);
 
       return canvas;
     }
